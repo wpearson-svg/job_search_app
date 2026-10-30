@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Postings</h1>
+<div class="bar">
+  <form method="post" action="{{ url_for('fetch') }}">
+    <button>Fetch</button>
+    <select name="profile" title="Which profile to search for">
+      <option value="all">all profiles</option>
+      {% for p in profiles %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+    </select></form>
+  <form method="post" action="{{ url_for('rescore') }}"><button class="plain">Re-score all</button></form>
+  <form method="get" class="filters">
+    <label>Show
+      <select name="status" onchange="this.form.submit()">
+        <option value="active" {{ 'selected' if status=='active' }}>not dismissed</option>
+        {% for key, label in statuses %}<option value="{{ key }}" {{ 'selected' if key==status }}>{{ label }}</option>{% endfor %}
+        <option value="all" {{ 'selected' if status=='all' }}>all</option>
+      </select></label>
+    <label>Profile
+      <select name="profile" onchange="this.form.submit()">
+        <option value="">all</option>
+        {% for p in profiles %}<option value="{{ p.id }}" {{ 'selected' if profile==p.id|string }}>{{ p.name }}</option>{% endfor %}
+      </select></label>
+    <label>Sort by
+      <select name="sort" onchange="this.form.submit()">
+        <option value="score" {{ 'selected' if sort=='score' }}>match score</option>
+        <option value="applied" {{ 'selected' if sort=='applied' }}>applied date</option>
+        <option value="newest" {{ 'selected' if sort=='newest' }}>newest first</option>
+      </select></label>
+    <label>Score at least <input type="number" name="min" value="{{ min_score }}" min="0" max="100" onchange="this.form.submit()"></label>
+  </form>
+</div>
+<details class="muted" style="margin:.5rem 0">
+  <summary>Clean up the list</summary>
+  <p>Only fetched postings you haven't touched (status New) can be removed. Anything you saved, dismissed, applied to, pasted or logged is kept. Removed postings can come back on the next Fetch.</p>
+  <form method="post" action="{{ url_for('dedupe') }}" style="display:inline" onsubmit="return confirm('Merge postings that are the same job listed twice? Untouched duplicates are removed and their links kept on the one that stays.')">
+    <button class="plain">Merge duplicates</button></form>
+  <form method="post" action="{{ url_for('purge') }}" style="display:inline" onsubmit="return confirm('Permanently remove {{ purge_counts.outside }} posting(s) outside your areas?')">
+    <input type="hidden" name="scope" value="outside"><button class="plain" {{ 'disabled' if not purge_counts.outside }}>Remove outside my areas ({{ purge_counts.outside }})</button></form>
+  <form method="post" action="{{ url_for('purge') }}" style="display:inline" onsubmit="return confirm('Permanently remove {{ purge_counts.untouched }} untouched fetched posting(s)?')">
+    <input type="hidden" name="scope" value="untouched"><button class="plain" {{ 'disabled' if not purge_counts.untouched }}>Remove all untouched fetched ({{ purge_counts.untouched }})</button></form>
+</details>
+{% if not jobs %}<p class="muted">No postings yet. Fetch from open sources, or paste one from LinkedIn or Indeed.</p>{% endif %}
+<table>
+<thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Source</th><th>Status</th><th></th></tr></thead>
+<tbody>
+{% for j in jobs %}
+<tr>
+  <td><span class="score s{{ (j.score // 25) }}">{{ j.score }}</span></td>
+  <td><a href="{{ url_for('job', job_id=j.id) }}">{{ j.title }}</a>{% for t in tags.get(j.id, []) %}<span class="tag">{{ t }}</span> {% endfor %}{% if j.flags %}<span class="flag" title="{{ j.flags|join(' ') }}">!</span>{% endif %}</td>
+  <td>{{ j.company }}</td>
+  <td>{{ j.location }}{% if not j.location_ok %} <span class="muted">(outside your areas)</span>{% endif %}</td>
+  <td>{{ 'pasted' if j.pasted else j.source }}</td>
+  <td>{{ status_label.get(j.status, j.status) }}{% if j.applied_on %}<br><span class="muted">{{ j.applied_on }}</span>{% endif %}</td>
+  <td>{% if j.status not in applied_stages and j.status != 'dismissed' %}<button type="button" class="small" data-url="{{ j.url|safe_url }}" data-post="{{ url_for('apply_to', job_id=j.id) }}" onclick="applyTo(this)" title="{{ 'Opens the posting in a new tab and marks it applied' if j.url|safe_url else 'Marks it applied (no link saved)' }}">{{ 'Apply' if j.url|safe_url else 'Mark applied' }}</button>{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

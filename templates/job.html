@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ j.title }}{% endblock %}
+{% block body %}
+<p><a href="{{ url_for('index') }}">&larr; All postings</a></p>
+<h1>{{ j.title }}</h1>
+<p class="muted">{{ j.company }}{% if j.location %} &middot; {{ j.location }}{% endif %} &middot; {{ 'pasted' if j.pasted else j.source }}{% if j.url|safe_url %} &middot; <a href="{{ j.url|safe_url }}" target="_blank" rel="noopener">open original</a>{% endif %}</p>
+<div class="cards">
+  <div class="card"><div class="big"><span class="score s{{ (j.score // 25) }}">{{ j.score }}</span></div><div>match score</div></div>
+  <div class="card"><div class="big">{{ j.matched|length }}</div><div>skills you show</div></div>
+  <div class="card"><div class="big">{{ j.gaps|length }}</div><div>gaps</div></div>
+</div>
+{% if j.flags %}<div class="flash">{% for f in j.flags %}<p>{{ f }}</p>{% endfor %}</div>{% endif %}
+<form method="post" action="{{ url_for('set_status', job_id=j.id) }}" class="bar">
+  <label>Status
+    <select name="status" onchange="this.form.submit()">
+      {% for key, label in statuses %}<option value="{{ key }}" {{ 'selected' if key==j.status }}>{{ label }}</option>{% endfor %}
+    </select></label>
+  {% if j.status not in applied_stages and j.status != 'dismissed' %}<button type="button" data-url="{{ j.url|safe_url }}" data-post="{{ url_for('apply_to', job_id=j.id) }}" onclick="applyTo(this)">{{ 'Apply: open the posting and mark applied' if j.url|safe_url else 'Mark applied' }}</button>{% endif %}
+  {% if j.applied_on %}<span class="muted">Applied {{ j.applied_on }}. <a href="{{ url_for('applications') }}">All applications</a></span>{% endif %}
+</form>
+<h2>What this posting asks for that your resume does not show</h2>
+{% if j.gaps %}
+<ul class="gaps">
+{% for term, w in j.gaps %}
+  <li><strong>{{ term }}</strong> {% if w >= 2 %}<span class="tag">required</span>{% endif %}
+    <form method="post" action="{{ url_for('have') }}" class="inline"><input type="hidden" name="term" value="{{ term }}"><button class="plain small" title="You have this, the resume just does not say so">I have this</button></form></li>
+{% endfor %}
+</ul>
+{% else %}<p class="muted">No gaps found from your skills list.</p>{% endif %}
+<h2>What you already show</h2>
+<p>{% for t in j.matched %}<span class="tag ok">{{ t }}</span> {% else %}<span class="muted">nothing matched</span>{% endfor %}</p>
+<h2 id="documents">Resume and cover letter</h2>
+<p class="muted">Copy the posting, paste it into your resume builder project in Claude, then paste its reply back here to keep it with this posting.</p>
+<div class="bar">
+  <button type="button" data-l="Copy for Claude: resume" onclick="cp('pkg_resume', this)">Copy for Claude: resume</button>
+  <button type="button" class="plain" data-l="Copy for Claude: resume and cover letter" onclick="cp('pkg_cover', this)">Copy for Claude: resume and cover letter</button>
+</div>
+<form method="post" action="{{ url_for('queue_job', job_id=j.id) }}" class="bar">
+  <span class="muted">Or send it to the folder:</span>
+  <button name="kind" value="resume" class="plain">Send to folder: resume</button>
+  <button name="kind" value="resume_cover" class="plain">Send to folder: resume and cover letter</button>
+</form>
+<details><summary class="muted">See what gets copied</summary>
+  <textarea id="pkg_resume" readonly rows="6" style="width:100%">{{ pkg_resume }}</textarea>
+  <textarea id="pkg_cover" readonly rows="2" style="width:100%">{{ pkg_cover }}</textarea>
+</details>
+<form method="post" action="{{ url_for('import_reply', job_id=j.id) }}" class="paste">
+  <label>Claude's reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here (resume, cover letter, review notes)"></textarea></label>
+  <button>Keep this reply</button>
+</form>
+{% if has_key %}
+<form method="post" action="{{ url_for('build', job_id=j.id) }}" class="bar">
+  <button class="plain">Build with the API instead</button>
+  <label><input type="checkbox" name="cover_letter" value="1"> also a cover letter</label>
+</form>
+{% endif %}
+<script>
+function cp(id, btn) {
+  var box = document.getElementById(id);
+  var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = btn.dataset.l; }, 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { box.select(); document.execCommand("copy"); done(); }); }
+  else { box.select(); document.execCommand("copy"); done(); }
+}
+</script>
+{% for kind, label in [('resume','Resume'),('cover_letter','Cover letter'),('review_notes','Review notes')] %}
+{% if outs.get(kind) %}
+<h3>{{ label }}</h3>
+{% for w in outs[kind].warnings %}<div class="flash"><p>{{ w }}</p></div>{% endfor %}
+<pre class="posting">{{ outs[kind].content }}</pre>
+{% endif %}{% endfor %}
+{% if outs.get('resume') %}<p class="muted">Saved: {% for f in outs['resume'].files %}{{ f }}{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+<h2 id="prep">Interview prep</h2>
+<p class="muted">Copy this into your resume builder project in Claude. It asks for likely questions with answer outlines from your real experience, questions for you to ask them, and how to handle each gap. Paste the reply back to keep it here.</p>
+<div class="bar"><button type="button" data-l="Copy for Claude: interview prep" onclick="cp('pkg_prep', this)">Copy for Claude: interview prep</button></div>
+<form method="post" action="{{ url_for('queue_job', job_id=j.id) }}" class="bar">
+  <button name="kind" value="prep" class="plain">Send to folder: interview prep</button>
+</form>
+<details><summary class="muted">See what gets copied</summary>
+  <textarea id="pkg_prep" readonly rows="8" style="width:100%">{{ pkg_prep }}</textarea>
+</details>
+<form method="post" action="{{ url_for('import_prep', job_id=j.id) }}" class="paste">
+  <label>Claude's prep reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here"></textarea></label>
+  <button>Keep this prep</button>
+</form>
+{% if prep %}
+{% for label, text in prep_sections %}<h3>{{ label }}</h3><pre class="posting">{{ text }}</pre>{% endfor %}
+{% if not prep_sections %}<pre class="posting">{{ prep.content }}</pre>{% endif %}
+<p class="muted">Saved: {% for f in prep.files %}{{ f }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+{% endif %}
+<h2 id="calendar">Interviews and follow-ups</h2>
+{% if events %}<ul>{% for e in events %}
+  <li{% if e.past %} class="muted"{% endif %}><strong>{{ e.kind }}</strong> {{ e.when }} ({{ e.minutes }} min){% if e.place %} &middot; {{ e.place }}{% endif %}
+    &middot; <a href="{{ e.gcal }}" target="_blank" rel="noopener">Add to Google Calendar</a> &middot; <a href="{{ url_for('event_ics', event_id=e.id) }}">.ics</a>
+    <form method="post" action="{{ url_for('delete_event', event_id=e.id) }}" class="inline"><button class="plain small">Remove</button></form></li>
+{% endfor %}</ul>{% else %}<p class="muted">Nothing scheduled.</p>{% endif %}
+<form method="post" action="{{ url_for('add_event', job_id=j.id) }}" class="bar">
+  <label>What <select name="kind">{% for k in event_kinds %}<option>{{ k }}</option>{% endfor %}</select></label>
+  <label>When <input type="datetime-local" name="starts_at" value="{{ now_local }}" required></label>
+  <label>Minutes <input type="number" name="minutes" value="60" min="5" max="600" style="width:5rem"></label>
+  <label>Where or link <input type="text" name="place"></label>
+  <label>Notes <input type="text" name="notes"></label>
+  <button>Add</button>
+</form>
+{% if links %}<h2>Also listed at</h2>
+<ul>{% for l in links %}{% if l.url|safe_url %}<li><a href="{{ l.url|safe_url }}" target="_blank" rel="noopener">{{ l.source }}</a></li>{% endif %}{% endfor %}</ul>{% endif %}
+<h2>Posting text</h2>
+<pre class="posting">{{ j.description }}</pre>
+{% endblock %}

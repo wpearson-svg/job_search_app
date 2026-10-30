@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Profiles{% endblock %}
+{% block body %}
+<h1>Profiles</h1>
+<p class="muted">A profile is a focus for the search: its own keywords, job titles and place. Fetch runs one profile or all of them, and every posting it finds is tagged with the profile, so you can filter the list by it. A posting found by two profiles carries both tags. Each profile you run uses its own requests on LinkedIn, Indeed and Adzuna, so keep the keyword lists short.</p>
+{% for p in profiles %}
+<form method="post" action="{{ url_for('save_profile') }}" class="paste" style="margin-bottom:1.5rem">
+  <input type="hidden" name="id" value="{{ p.id }}">
+  <label>Name <input type="text" name="name" value="{{ p.name }}" required></label>
+  <label>Keywords to search (one per line) <textarea name="keywords" rows="4">{{ p.keywords }}</textarea></label>
+  <label>Job titles to keep (one per line; blank uses the keywords) <textarea name="titles" rows="4">{{ p.titles }}</textarea></label>
+  <label>Place (blank uses config.json) <input type="text" name="location" value="{{ p.location }}" placeholder="Kansas City, Missouri"></label>
+  <div class="bar"><button>Save</button>
+    <span class="muted">{{ p.count }} posting(s) tagged</span>
+    <button class="plain" formaction="{{ url_for('delete_profile', pid=p.id) }}" formnovalidate onclick="return confirm('Remove this profile? Its postings stay in the list.')">Remove</button></div>
+</form>
+{% endfor %}
+<h2>New profile</h2>
+<form method="post" action="{{ url_for('save_profile') }}" class="paste">
+  <label>Name <input type="text" name="name" required placeholder="Project management"></label>
+  <label>Keywords to search (one per line) <textarea name="keywords" rows="4"></textarea></label>
+  <label>Job titles to keep (one per line; blank uses the keywords) <textarea name="titles" rows="4"></textarea></label>
+  <label>Place (blank uses config.json) <input type="text" name="location"></label>
+  <button>Add profile</button>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Weekly summary{% endblock %}
+{% block body %}
+<h1>Weekly summary</h1>
+<form method="get" class="bar">
+  <label>Look back
+    <select name="days" onchange="this.form.submit()">
+      {% for d in (7, 14, 30) %}<option value="{{ d }}" {{ 'selected' if d==days }}>{{ d }} days</option>{% endfor %}
+    </select></label>
+</form>
+<div class="cards">
+  <div class="card"><div class="big">{{ applied|length }}</div><div>applications sent</div></div>
+  <div class="card"><div class="big">{{ interviews|length }}</div><div>phone screens / interviews</div></div>
+  <div class="card"><div class="big">{{ rate }}</div><div>of those applications</div></div>
+  <div class="card"><div class="big">{{ waiting|length }}</div><div>waiting 14+ days</div></div>
+</div>
+<h2>Ready to paste</h2>
+<p class="muted">Plain facts for a post or a check-in. Add your own story around them.</p>
+<textarea id="weekly_text" rows="6" style="width:100%" readonly>{{ summary }}</textarea>
+<div class="bar"><button type="button" data-l="Copy" onclick="cp('weekly_text', this)">Copy</button></div>
+<script>
+function cp(id, btn) {
+  var box = document.getElementById(id);
+  var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = btn.dataset.l; }, 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { box.select(); document.execCommand("copy"); done(); }); }
+  else { box.select(); document.execCommand("copy"); done(); }
+}
+</script>
+{% macro list(title, items) %}
+{% if items %}<h2>{{ title }}</h2>
+<ul>{% for j in items %}<li><a href="{{ url_for('job', job_id=j.id) }}">{{ j.title }}</a> <span class="muted">{{ j.company }} &middot; {{ status_label.get(j.status, j.status) }}{% if j.applied_on %} &middot; applied {{ j.applied_on }}{% endif %}</span></li>{% endfor %}</ul>{% endif %}
+{% endmacro %}
+{{ list("Applied in this period", applied) }}
+{{ list("Moved to a phone screen or interview", interviews) }}
+{{ list("Closed out", rejected) }}
+{{ list("Due for a follow-up", waiting) }}
+{% if upcoming %}<h2>Coming up (next 2 weeks)</h2>
+<ul>{% for e in upcoming %}<li><a href="{{ url_for('job', job_id=e.job_id) }}">{{ e.title }}</a> <span class="muted">{{ e.when }}</span></li>{% endfor %}</ul>{% endif %}
+{% endblock %}

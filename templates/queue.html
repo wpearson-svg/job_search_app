@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Queue{% endblock %}
+{% block body %}
+<h1>Queue</h1>
+<p class="muted">Requests go out as files and the replies come back as files. Use the "Send to folder" buttons on a posting or on the Gap plan page. Then, in a Claude session that can see this folder, say: <strong>process the requests listed in TODO.md</strong>. When it has written the replies, press Import.</p>
+<p class="muted">Folder: <code>{{ folder }}</code> (requests in <code>requests</code>, replies in <code>replies</code>, the list in <code>TODO.md</code>)</p>
+<form method="post" action="{{ url_for('queue_import') }}" class="bar"><button>Import replies</button><span class="muted">{{ waiting }} waiting</span></form>
+{% if not items %}<p class="muted">Nothing here yet.</p>{% endif %}
+<table>
+{% if items %}<thead><tr><th>Request</th><th>For</th><th>Status</th><th></th></tr></thead>{% endif %}
+<tbody>
+{% for i in items %}
+<tr><td>{{ i.label }}<br><span class="muted">{{ i.name }}</span></td>
+  <td>{% if i.job_id %}<a href="{{ url_for('job', job_id=i.job_id) }}">{{ i.what }}</a>{% else %}{{ i.what }}{% endif %}</td>
+  <td>{% if i.status == 'waiting' %}{{ 'Reply found, ready to import' if i.reply_ready else 'Waiting for a reply' }}{% elif i.status == 'imported' %}Imported {{ (i.imported_at or '')[:10] }}{% else %}{{ i.status }}{% endif %}</td>
+  <td>{% if i.status == 'waiting' %}<form method="post" action="{{ url_for('queue_delete', item_id=i.id) }}" class="inline"><button class="plain small">Remove</button></form>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

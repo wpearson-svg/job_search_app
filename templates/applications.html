@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block body %}
+{% if upcoming %}<h2>Coming up</h2>
+<ul>{% for e in upcoming %}<li><a href="{{ url_for('job', job_id=e.job_id) }}">{{ e.title }}</a> <span class="muted">{{ e.when }}</span>
+  <a href="{{ e.gcal }}" target="_blank" rel="noopener">Google Calendar</a> &middot; <a href="{{ url_for('event_ics', event_id=e.id) }}">.ics</a></li>{% endfor %}</ul>
+<p class="muted"><a href="{{ url_for('calendar_ics') }}">Download every event as one .ics file</a></p>{% endif %}
+<h1>Applications</h1>
+<div class="cards">
+  {% for key, label in statuses if key in counts %}<div class="card"><div class="big">{{ counts[key] }}</div><div>{{ label }}</div></div>{% endfor %}
+</div>
+{% if not jobs %}<p class="muted">Nothing yet. Change a posting's status to Applied, or log an application below.</p>{% endif %}
+{% if jobs %}
+<table>
+<thead><tr><th>Job</th><th>Applied</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+<tbody>
+{% for j in jobs %}
+<tr>
+  <td><a href="{{ url_for('job', job_id=j.id) }}">{{ j.title }}</a>{% if j.url|safe_url %} <a href="{{ j.url|safe_url }}" target="_blank" rel="noopener" class="muted">(posting)</a>{% endif %}<br><span class="muted">{{ j.company }}</span></td>
+  <td>
+    <form method="post" action="{{ url_for('set_application', job_id=j.id) }}" class="inline" id="app{{ j.id }}">
+      <input type="date" name="applied_on" value="{{ j.applied_on or '' }}" max="{{ today }}">
+    </form>
+    {% if j.days is not none %}<br><span class="muted">{{ j.days }} days ago</span>{% endif %}
+    {% if j.follow_up %}<br><span class="flag">No news in {{ j.days }} days. Maybe follow up.</span>{% endif %}
+  </td>
+  <td>
+    <form method="post" action="{{ url_for('set_status', job_id=j.id) }}" class="inline">
+      <select name="status" onchange="this.form.submit()">
+        {% for key, label in statuses %}<option value="{{ key }}" {{ 'selected' if key==j.status }}>{{ label }}</option>{% endfor %}
+      </select>
+    </form>
+  </td>
+  <td><input type="text" name="notes" value="{{ j.notes }}" form="app{{ j.id }}" placeholder="contact, interview date, next step" style="width:100%"></td>
+  <td><button class="plain small" form="app{{ j.id }}">Save</button></td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+<h2>Log an application made elsewhere</h2>
+<form method="post" action="{{ url_for('log_application') }}" class="paste">
+  <label>Job title <input name="title" required></label>
+  <label>Company <input name="company"></label>
+  <label>Link <input name="url" placeholder="optional"></label>
+  <label>Applied on <input type="date" name="applied_on" value="{{ today }}" max="{{ today }}"></label>
+  <label>Status
+    <select name="status">{% for key, label in statuses if key in counts %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></label>
+  <button>Log it</button>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Job search{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a class="brand" href="{{ url_for('index') }}">Job search</a>
+  <nav>
+    <a href="{{ url_for('index') }}">Postings</a>
+    <a href="{{ url_for('profiles_page') }}">Profiles</a>
+    <a href="{{ url_for('add') }}">Paste a posting</a>
+    <a href="{{ url_for('applications') }}">Applications</a>
+    <a href="{{ url_for('queue_page') }}">Queue</a>
+    <a href="{{ url_for('weekly') }}">Weekly</a>
+    <a href="{{ url_for('gaps_page') }}">Gap plan</a>
+    <a href="{{ url_for('resume_page') }}">My resume</a>
+    <a href="{{ url_for('settings_page') }}">Settings</a>
+  </nav>
+</header>
+<main>
+{% with msgs = get_flashed_messages() %}{% if msgs %}<div class="flash">{% for m in msgs %}<p>{{ m }}</p>{% endfor %}</div>{% endif %}{% endwith %}
+{% if setup_missing and request.endpoint != 'settings_page' %}<div class="flash"><p>Finish setup: add {{ setup_missing|join(' and ') }} on the <a href="{{ url_for('settings_page') }}">Settings</a> page.</p></div>{% endif %}
+{% block body %}{% endblock %}
+</main>
+<script>
+// Apply button: open the posting's page in a new tab, and record it as applied.
+function applyTo(btn) {
+  if (btn.dataset.url) { window.open(btn.dataset.url, "_blank", "noopener"); }
+  fetch(btn.dataset.post, { method: "POST" }).then(function () { location.reload(); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+node_modules/
+jobs.db
+jobs.db-journal
+keys.local.json
+.env
+output/
+requests/
+replies/
+TODO.md
+# Personal files: resume, the instructions built from it, and anything with your contact details
+Willis_Pearson_Resume_Master.docx
+Willis_Resume_Builder_API_System_Prompt.md
+*.local.*
+!keys.local.example.json
+
+# Per-user settings, uploaded resume, instructions
+data/
+
+# One-time cleanup script
+clean_github.bat

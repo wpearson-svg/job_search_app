@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Gap plan</h1>
+<p class="muted">The app finds the gaps between your resume and the postings. The planning is done by Claude in your resume builder project: copy the request below, paste it there, then paste the reply back to keep it.</p>
+
+<form method="get" class="bar filters">
+  <label>Focus
+    <select name="profile" onchange="this.form.submit()">
+      <option value="">all profiles</option>
+      {% for p in profiles %}<option value="{{ p.id }}" {{ 'selected' if profile==p.id|string }}>{{ p.name }}</option>{% endfor %}
+    </select></label>
+  <label>Postings scoring at least <input type="number" name="min" value="{{ min_score }}" min="0" max="100" style="width:5rem" onchange="this.form.submit()"></label>
+  <label>Hours a week <input type="number" name="hours" value="{{ hours }}" min="1" max="40" style="width:5rem" onchange="this.form.submit()"></label>
+  <label>Weeks <input type="number" name="weeks" value="{{ weeks }}" min="1" max="52" style="width:5rem" onchange="this.form.submit()"></label>
+  <label>Gaps included <input type="number" name="top" value="{{ top }}" min="3" max="40" style="width:5rem" onchange="this.form.submit()"></label>
+</form>
+<p class="muted">Built from {{ count }} postings ({{ focus }}) that are not dismissed.</p>
+
+{% if not rows %}<p>No gaps yet. Add postings first, or lower the score filter.</p>{% else %}
+<h2>1. Copy for Claude</h2>
+<div class="bar">
+  <button type="button" data-l="Copy for Claude: gap plan" onclick="cp('pkg_gaps', this)">Copy for Claude: gap plan</button>
+</div>
+<form method="post" action="{{ url_for('queue_gaps') }}" class="bar">
+  <input type="hidden" name="profile" value="{{ profile }}"><input type="hidden" name="min" value="{{ min_score }}">
+  <input type="hidden" name="hours" value="{{ hours }}"><input type="hidden" name="weeks" value="{{ weeks }}"><input type="hidden" name="top" value="{{ top }}">
+  <button class="plain">Send to folder instead</button>
+</form>
+<details><summary class="muted">See what gets copied</summary>
+  <textarea id="pkg_gaps" readonly rows="14" style="width:100%">{{ message }}</textarea>
+</details>
+<h2>2. Paste Claude's reply</h2>
+<form method="post" action="{{ url_for('save_gap_plan') }}" class="paste">
+  <input type="hidden" name="scope" value="{{ focus }}">
+  <input type="hidden" name="back" value="{{ request.query_string.decode() and '?' ~ request.query_string.decode() }}">
+  <label>Claude's plan <textarea name="reply" rows="8" placeholder="Paste the whole reply here"></textarea></label>
+  <button>Keep this plan</button>
+</form>
+{% endif %}
+
+<h2 id="saved">Saved plans</h2>
+{% if not plans %}<p class="muted">None yet.</p>{% endif %}
+{% for pl in plans %}
+<details {{ 'open' if loop.first }}>
+  <summary><strong>{{ pl.scope }}</strong> <span class="muted">{{ pl.created_at[:10] }}</span></summary>
+  {% for label, text in pl.sections %}<h3>{{ label }}</h3><pre class="posting">{{ text }}</pre>{% endfor %}
+  {% if not pl.sections %}<pre class="posting">{{ pl.content }}</pre>{% endif %}
+  <p class="muted">Saved as {{ pl.file }}</p>
+  <form method="post" action="{{ url_for('delete_gap_plan', plan_id=pl.id) }}" onsubmit="return confirm('Remove this saved plan?')"><button class="plain small">Remove</button></form>
+</details>
+{% endfor %}
+
+{% if rows %}
+<details style="margin-top:1.5rem"><summary><strong>Quick ranked list (no AI)</strong> <span class="muted">the basic version</span></summary>
+{% for p in phases %}
+<div class="phase"><h3>{{ p.label }}</h3>
+{% for r in p['items'] %}<p><strong>{{ r.term }}</strong> <span class="muted">({{ r.jobs }} postings, {{ r.required }} as required)</span><br>{{ r.action }}</p>{% endfor %}
+</div>
+{% endfor %}
+</details>
+<h2>All gaps, ranked</h2>
+<table><thead><tr><th>Skill</th><th>Kind</th><th>Postings</th><th>Required in</th><th></th></tr></thead><tbody>
+{% for r in rows %}
+<tr><td>{{ r.term }}</td><td>{{ r.kind }}</td><td>{{ r.jobs }}</td><td>{{ r.required }}</td>
+<td><form method="post" action="{{ url_for('have') }}" class="inline"><input type="hidden" name="term" value="{{ r.term }}"><button class="plain small">I have this</button></form></td></tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+<script>
+function cp(id, btn) {
+  var box = document.getElementById(id);
+  var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = btn.dataset.l; }, 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { box.select(); document.execCommand("copy"); done(); }); }
+  else { box.select(); document.execCommand("copy"); done(); }
+}
+</script>
+{% endblock %}

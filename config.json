@@ -1,0 +1,56 @@
+{
+  "resume_file": "",
+  "target_titles": [],
+  "search_keywords": [],
+  "locations": [
+    "remote",
+    "united states",
+    "usa"
+  ],
+  "greenhouse_boards": [],
+  "lever_companies": [],
+  "adzuna": {
+    "where": "",
+    "country": "us"
+  },
+  "usajobs": {
+    "location": ""
+  },
+  "min_score_to_show": 0,
+  "max_jobs_per_source": 60,
+  "anthropic_model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "system_prompt_file": "",
+  "output_dir": "output",
+  "linkedin": {
+    "enabled": false,
+    "location": "",
+    "dateSincePosted": "past week",
+    "limit": 25,
+    "max_keywords": 3,
+    "max_descriptions": 25,
+    "jobType": "",
+    "remoteFilter": "",
+    "experienceLevel": ""
+  },
+  "jobspy": {
+    "enabled": true,
+    "sites": [
+      "indeed",
+      "linkedin"
+    ],
+    "location": "",
+    "distance": 25,
+    "results_wanted": 25,
+    "linkedin_results_wanted": 15,
+    "linkedin_fetch_description": true,
+    "hours_old": 168,
+    "max_keywords": 3,
+    "country_indeed": "USA",
+    "pause_seconds": 3
+  },
+  "reference_docx": "",
+  "resume_check_phrases": [],
+  "send_resume_in_requests": true,
+  "your_name": ""
+}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Settings</h1>
+<p class="muted">Everything here is saved on this computer only, in the <code>data</code> folder (and <code>keys.local.json</code> for keys). None of it is uploaded to GitHub.</p>
+
+<h2>1. Master resume</h2>
+<p>{% if resume_name %}Current file: <strong>{{ resume_name }}</strong>.{% else %}<strong>No resume yet.</strong>{% endif %}
+Every posting is scored against it, and Claude only uses facts from it.</p>
+<form method="post" action="{{ url_for('settings_resume') }}" enctype="multipart/form-data">
+  <input type="file" name="resume" accept=".docx,.md,.txt"> <button>Upload resume</button>
+  <span class="muted">Word (.docx), Markdown or text. Uploading replaces the old one and re-scores everything.</span>
+</form>
+
+<form method="post" action="{{ url_for('settings_save') }}">
+<h2>2. About you and your search</h2>
+<p><label>Your name<br><input name="your_name" value="{{ c.your_name }}" size="40"></label></p>
+<p><label>Job titles you want (one per line). Postings with these in the title score higher.<br>
+<textarea name="target_titles" rows="6" cols="50">{{ c.target_titles|join('\n') }}</textarea></label></p>
+<p><label>Search keywords (one per line). Used when fetching from job boards.<br>
+<textarea name="search_keywords" rows="4" cols="50">{{ c.search_keywords|join('\n') }}</textarea></label></p>
+<p><label>Where you will work: places that count as a match (one per line, e.g. your city, state, "remote").<br>
+<textarea name="locations" rows="5" cols="50">{{ c.locations|join('\n') }}</textarea></label></p>
+<p><label>Main place to search (e.g. "Denver, CO")<br><input name="place" value="{{ c.jobspy.location }}" size="40"></label></p>
+
+<h2>3. Where to fetch postings</h2>
+<p><label><input type="checkbox" name="jobspy_enabled" {% if c.jobspy.enabled %}checked{% endif %}> Indeed and LinkedIn (JobSpy)</label></p>
+<p><label><input type="checkbox" name="linkedin_enabled" {% if c.linkedin.enabled %}checked{% endif %}> LinkedIn through the Node package (needs Node.js)</label></p>
+<p class="muted">RemoteOK and Remotive are always on. Adzuna and USAJOBS turn on when you add their keys below.</p>
+
+<h2>4. How Claude writes for you</h2>
+<p><label><input type="checkbox" name="claude_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>
+My Claude project already holds my resume and instructions, so do not repeat them in each request.</label></p>
+<p><label>Resume-writing instructions {% if not has_custom %}(the app's general default is shown; edit to make it yours){% endif %}<br>
+<textarea name="instructions" rows="14" cols="90">{{ instructions }}</textarea></label></p>
+<p><label><input type="checkbox" name="reset_instructions"> Go back to the default instructions</label></p>
+
+<h2>5. Keys (optional)</h2>
+<p class="muted">Saved keys are never shown again. Leave a box empty to keep what is saved.</p>
+{% for k, label in key_fields %}
+<p><label>{{ label }} {% if k in key_set %}<strong>(saved)</strong>{% endif %}<br><input type="password" name="{{ k }}" size="50" autocomplete="off"></label></p>
+{% endfor %}
+<p><label><input type="checkbox" name="clear_keys"> Delete all saved keys</label></p>
+
+<p><button>Save settings</button></p>
+</form>
+{% endblock %}

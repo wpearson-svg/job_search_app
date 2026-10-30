@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Paste a posting</h1>
+<p class="muted">Copy the whole job description from LinkedIn, Indeed or any site and paste it here. It is scored the same as fetched postings.</p>
+<form method="post" class="paste">
+  <label>Title <input name="title" value="{{ form.get('title','') }}" placeholder="e.g. Implementation Specialist"></label>
+  <label>Company <input name="company" value="{{ form.get('company','') }}"></label>
+  <label>Location <input name="location" value="{{ form.get('location','') }}" placeholder="e.g. Kansas City, MO or Remote"></label>
+  <label>Link <input name="url" value="{{ form.get('url','') }}" placeholder="optional"></label>
+  <label>Posting text <textarea name="text" rows="18" placeholder="Paste the full description here">{{ form.get('text','') }}</textarea></label>
+  <button>Score this posting</button>
+</form>
+{% endblock %}

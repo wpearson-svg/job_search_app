@@ -1,0 +1,8 @@
+{
+  "name": "job-search-app-linkedin-bridge",
+  "private": true,
+  "description": "Node side of the job search app: runs the linkedin-jobs-api package.",
+  "dependencies": {
+    "linkedin-jobs-api": "*"
+  }
+}
