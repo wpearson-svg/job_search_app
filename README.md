@@ -1,4 +1,4 @@
-# Job search app
+# WildThing
 
 A local app that finds job postings, scores each one against your master resume, shows what each posting asks for that your resume does not, and helps you get a tailored resume, cover letter, interview prep and a skills plan from an AI assistant of your choice. It runs only on your computer at http://127.0.0.1:5050. Nothing is sent anywhere unless you copy it into an AI yourself or switch on an optional source.
 
@@ -22,7 +22,7 @@ Until a master resume and target titles are set, a banner reminds you.
 
 ## What each page does
 
-- **Postings.** Every posting with a 0 to 100 match score, filters for status and profile, and a button to **Fetch** new ones. On each row: **Apply** opens the posting in a new tab and marks it applied. Clean-up buttons: **Merge duplicates**, **Re-score all**, and removing fetched postings you have not touched, or the untouched ones outside your areas. Only postings still at status New that you did not paste yourself are ever removed. Click a title to open the posting page.
+- **Postings.** Every posting with a 0 to 100 match score, filters for status and profile, and a button to **Fetch** new ones. Click a row to fill the side panels: the **bottom panel is about the posting** (its text, profile tags, what you match and what it asks for that your resume does not show, with an "I have this" button for each gap) and the **right panel is about you** (status, applied date and notes, interviews with calendar links, and the state of your resume, cover letter and prep). With nothing selected the right panel shows follow-ups due, interviews coming up, replies waiting and your top gaps. The three icons at the top of the page open and close the menu, the right panel and the bottom panel, and the app remembers your choice. On a phone the menu slides over the page, postings become cards, and a tap opens the full posting page. On each row: **Apply** opens the posting in a new tab and marks it applied. Clean-up buttons: **Merge duplicates**, **Re-score all**, and removing fetched postings you have not touched, or the untouched ones outside your areas. Only postings still at status New that you did not paste yourself are ever removed. Click a title to open the posting page.
 - **Posting page.** What it matches, what it asks for that your resume does not show, the full text, the links where else it was listed, your status and notes, interview dates, and the AI buttons described below.
 - **Profiles.** A profile is a saved focus: its own keywords, target titles and place (for example "Project management" or "Help desk, Denver"). Pick one when you press Fetch and every posting found is tagged with it. Filter the Postings page by profile to see one focus at a time. A posting can carry several tags.
 - **Paste a posting.** Paste the description from LinkedIn, Indeed or anywhere. This always works, even when the fetchers are off.
@@ -109,6 +109,6 @@ Defaults live in `config.json`; your own settings in `data/user_settings.json` a
 
 ## License
 
-Copyright (c) 2026 Willis Pearson. Licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+Copyright (c) 2026 Willis Pearson. WildThing is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
 
 You may use, change and share this app. If you share it, or run a changed version as a service others can use over a network, you must keep this credit and notice, publish your source code, and release it under the same license. The full terms are in the `LICENSE` file. The footer of every page links to the source, which is how a hosted copy meets that requirement.

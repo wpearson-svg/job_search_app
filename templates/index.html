@@ -41,20 +41,44 @@
     <input type="hidden" name="scope" value="untouched"><button class="plain" {{ 'disabled' if not purge_counts.untouched }}>Remove all untouched fetched ({{ purge_counts.untouched }})</button></form>
 </details>
 {% if not jobs %}<p class="muted">No postings yet. Fetch from open sources, or paste one from LinkedIn or Indeed.</p>{% endif %}
-<table>
+<table class="list">
 <thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Source</th><th>Status</th><th></th></tr></thead>
 <tbody>
 {% for j in jobs %}
-<tr>
+<tr class="job{{ ' sel' if sel and sel.id == j.id }}" data-sel="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile, sel=j.id) }}" data-full="{{ url_for('job', job_id=j.id) }}">
   <td><span class="score s{{ (j.score // 25) }}">{{ j.score }}</span></td>
-  <td><a href="{{ url_for('job', job_id=j.id) }}">{{ j.title }}</a>{% for t in tags.get(j.id, []) %}<span class="tag">{{ t }}</span> {% endfor %}{% if j.flags %}<span class="flag" title="{{ j.flags|join(' ') }}">!</span>{% endif %}</td>
+  <td><a href="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile, sel=j.id) }}">{{ j.title }}</a>{% if j.flags %}<span class="flag" title="{{ j.flags|join(' ') }}">!</span>{% endif %}</td>
   <td>{{ j.company }}</td>
   <td>{{ j.location }}{% if not j.location_ok %} <span class="muted">(outside your areas)</span>{% endif %}</td>
-  <td>{{ 'pasted' if j.pasted else j.source }}</td>
-  <td>{{ status_label.get(j.status, j.status) }}{% if j.applied_on %}<br><span class="muted">{{ j.applied_on }}</span>{% endif %}</td>
+  <td class="src">{{ 'pasted' if j.pasted else j.source }}</td>
+  <td><span class="st {{ j.status }}">{{ status_label.get(j.status, j.status) }}</span>{% if j.applied_on %}<br><span class="muted">{{ j.applied_on }}</span>{% endif %}</td>
   <td>{% if j.status not in applied_stages and j.status != 'dismissed' %}<button type="button" class="small" data-url="{{ j.url|safe_url }}" data-post="{{ url_for('apply_to', job_id=j.id) }}" onclick="applyTo(this)" title="{{ 'Opens the posting in a new tab and marks it applied' if j.url|safe_url else 'Marks it applied (no link saved)' }}">{{ 'Apply' if j.url|safe_url else 'Mark applied' }}</button>{% endif %}</td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
+<script>
+// Choosing a row fills the side panels. On a small screen there are no panels, so it opens the full posting page.
+(function () {
+  var narrow = function () { return window.matchMedia("(max-width: 900px)").matches; };
+  document.querySelectorAll("tr.job").forEach(function (tr) {
+    tr.addEventListener("click", function (e) {
+      var a = e.target.closest("a");
+      if (e.target.closest("button, form, select, input")) return;
+      if (narrow()) { e.preventDefault(); location.href = tr.dataset.full; return; }
+      if (window.wtKeepScroll) window.wtKeepScroll();
+      if (a) return;                     // the title link goes to the same place on its own
+      location.href = tr.dataset.sel;
+    });
+  });
+})();
+</script>
+{% endblock %}
+
+{% block right %}
+{% include "_panel_right.html" %}
+{% endblock %}
+
+{% block bottom %}
+{% if sel %}{% include "_panel_bottom.html" %}{% endif %}
 {% endblock %}

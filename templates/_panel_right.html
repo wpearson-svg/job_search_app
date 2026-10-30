@@ -1,0 +1,76 @@
+{# Right panel: about you. A selected posting shows your progress on it; nothing selected shows what needs you. #}
+{% set back = request.full_path.rstrip('?') %}
+<div class="panel">
+{% if sel %}
+  {% set j = sel %}
+  <p class="title">{{ j.title }}</p>
+  <p class="muted" style="margin:0">{{ j.company }}{% if j.location %} &middot; {{ j.location }}{% endif %}</p>
+  <p style="margin:6px 0 0"><a href="{{ url_for('job', job_id=j.id) }}">Open the full page</a>
+    &middot; <a href="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile) }}">Close</a></p>
+
+  <h3>My progress</h3>
+  {% if j.follow_up %}<div class="warnbox">Applied {{ j.applied_on }}. No change in 14 days, so time to follow up.</div>{% endif %}
+  <form method="post" action="{{ url_for('set_status', job_id=j.id) }}">
+    <label>Status
+      <select name="status" onchange="wtKeepScroll(); this.form.submit()">
+        {% for key, label in statuses %}<option value="{{ key }}" {{ 'selected' if key==j.status }}>{{ label }}</option>{% endfor %}
+      </select></label>
+  </form>
+  {% if j.status not in applied_stages and j.status != 'dismissed' %}
+  <p><button type="button" data-url="{{ j.url|safe_url }}" data-post="{{ url_for('apply_to', job_id=j.id) }}" onclick="applyTo(this)">{{ 'Apply: open the posting and mark applied' if j.url|safe_url else 'Mark applied' }}</button></p>
+  {% endif %}
+  <form method="post" action="{{ url_for('set_application', job_id=j.id) }}">
+    <label>Applied on <input type="date" name="applied_on" value="{{ j.applied_on or '' }}"></label>
+    <label>Notes <textarea name="notes">{{ j.notes }}</textarea></label>
+    <p><button class="plain small">Save notes</button></p>
+  </form>
+
+  <h3>Interviews</h3>
+  {% for e in j.events %}
+  <div style="margin:6px 0">
+    <strong>{{ e.kind }}</strong>{% if e.past %} <span class="muted">(past)</span>{% endif %}<br>
+    {{ e.when }}{% if e.place %} &middot; {{ e.place }}{% endif %}<br>
+    <a href="{{ e.gcal }}" target="_blank" rel="noopener">Add to Google Calendar</a> &middot; <a href="{{ url_for('event_ics', event_id=e.id) }}">.ics</a>
+    <form method="post" action="{{ url_for('delete_event', event_id=e.id) }}" class="inline"><input type="hidden" name="back" value="{{ back }}"><button class="plain small">remove</button></form>
+  </div>
+  {% else %}<p class="muted">None yet.</p>{% endfor %}
+  <form method="post" action="{{ url_for('add_event', job_id=j.id) }}">
+    <input type="hidden" name="back" value="{{ back }}">
+    <label>Add <select name="kind">{% for k in event_kinds %}<option>{{ k }}</option>{% endfor %}</select></label>
+    <label>When <input type="datetime-local" name="starts_at" value="{{ now_local }}"></label>
+    <label>Where <input name="place" placeholder="Zoom, address, phone"></label>
+    <p><button class="plain small">Add</button></p>
+  </form>
+
+  <h3>AI work</h3>
+  {% for kind, label in (('resume', 'Resume'), ('cover_letter', 'Cover letter'), ('prep', 'Interview prep')) %}
+    <div class="rowline"><span>{{ label }}</span>
+      <span class="muted">{% if j.outs.get(kind) %}saved {{ j.outs[kind][:10] }}{% elif j.waiting.get(kind) %}waiting for a reply{% else %}not yet{% endif %}</span></div>
+  {% endfor %}
+  <form method="post" action="{{ url_for('queue_job', job_id=j.id) }}" class="rowline" style="margin-top:8px">
+    <button name="kind" value="resume" class="plain small" title="Writes a request file to the requests folder">Send to folder: resume</button>
+    <button name="kind" value="resume_cover" class="plain small">resume + letter</button>
+    <button name="kind" value="prep" class="plain small">prep</button>
+  </form>
+  <p class="muted" style="font-size:.88rem">To copy a request or paste a reply back, <a href="{{ url_for('job', job_id=j.id) }}#documents">open the full page</a>.</p>
+{% else %}
+  <p class="title">Today</p>
+  <p class="muted" style="margin:0">Choose a posting to see your progress on it here.</p>
+
+  <h3>Follow-ups due</h3>
+  {% for f in dash.follow %}<p style="margin:4px 0"><a href="{{ url_for('index', sel=f.id) }}">{{ f.title }}</a><br><span class="muted">{{ f.company }} &middot; applied {{ f.days }} days ago</span></p>
+  {% else %}<p class="muted">Nothing waiting 14+ days.</p>{% endfor %}
+  {% if dash.follow_total > dash.follow|length %}<p class="muted">and {{ dash.follow_total - dash.follow|length }} more on the <a href="{{ url_for('applications') }}">Applications</a> page.</p>{% endif %}
+
+  <h3>Coming up, next 2 weeks</h3>
+  {% for e in dash.events %}<p style="margin:4px 0"><strong>{{ e.kind }}</strong> &middot; {{ e.when }}<br><a href="{{ url_for('index', sel=e.job_id) }}">{{ e.title }}</a></p>
+  {% else %}<p class="muted">No interviews or follow-ups scheduled.</p>{% endfor %}
+
+  <h3>Replies waiting</h3>
+  <p>{% if dash.waiting %}{{ dash.waiting }} request{{ '' if dash.waiting == 1 else 's' }} in the folder. <a href="{{ url_for('queue_page') }}">Open the Queue</a>{% else %}<span class="muted">None.</span>{% endif %}</p>
+
+  <h3>Top gaps</h3>
+  {% for term, w in dash.gaps %}<span class="tag gap">{{ term }}</span> {% else %}<span class="muted">No gaps yet.</span>{% endfor %}
+  {% if dash.gaps %}<p class="muted" style="font-size:.88rem">See the <a href="{{ url_for('gaps_page') }}">Gap plan</a>.</p>{% endif %}
+{% endif %}
+</div>

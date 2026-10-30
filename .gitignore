@@ -22,3 +22,5 @@ data/
 clean_github.bat
 push_fix.bat
 push_license.bat
+push_rename.bat
+push_ui.bat

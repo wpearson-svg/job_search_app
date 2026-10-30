@@ -1,0 +1,31 @@
+{# Bottom panel: about the posting. #}
+{% set j = sel %}
+<div class="panel">
+  <div class="rowline" style="justify-content:space-between">
+    <div>
+      <p class="title">{% if j.url|safe_url %}<a href="{{ j.url|safe_url }}" target="_blank" rel="noopener">{{ j.title }}</a>{% else %}{{ j.title }}{% endif %}</p>
+      <span class="muted">{{ j.company }}{% if j.location %} &middot; {{ j.location }}{% endif %} &middot; {{ 'pasted' if j.pasted else j.source }}{% if j.posted %} &middot; posted {{ j.posted }}{% endif %}</span>
+      {% for t in j.tags %}<span class="tag">{{ t }}</span> {% endfor %}
+    </div>
+    <span class="score s{{ (j.score // 25) }}" title="Match score">{{ j.score }}</span>
+  </div>
+  {% if j.links %}<p class="muted" style="margin:6px 0 0">Also listed at:
+    {% for l in j.links %}{% if l.url|safe_url %}<a href="{{ l.url|safe_url }}" target="_blank" rel="noopener">{{ l.source }}</a>{% if not loop.last %}, {% endif %}{% endif %}{% endfor %}</p>{% endif %}
+  <div class="cols" style="margin-top:12px">
+    <div>
+      <h3>Posting text</h3>
+      <pre class="posting">{{ j.description }}</pre>
+    </div>
+    <div>
+      <h3>Why this score</h3>
+      {% for f in j.flags %}<div class="warnbox">{{ f }}</div>{% endfor %}
+      <p><strong>You show</strong><br>{% for t in j.matched %}<span class="tag ok">{{ t }}</span> {% else %}<span class="muted">nothing matched</span>{% endfor %}</p>
+      <p><strong>Asked for, not on your resume</strong>
+        {% for group, label in ((j.required, 'required'), (j.preferred, 'preferred')) %}{% for term in group %}
+        <br><span class="tag gap">{{ term }}</span> <span class="muted">{{ label }}</span>
+        <form method="post" action="{{ url_for('have') }}" class="inline"><input type="hidden" name="term" value="{{ term }}"><button class="plain small" title="You have this, the resume just does not say it">I have this</button></form>
+        {% endfor %}{% endfor %}
+        {% if not j.gaps %}<br><span class="muted">No gaps found from your skills list.</span>{% endif %}</p>
+    </div>
+  </div>
+</div>

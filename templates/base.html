@@ -3,34 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Job search{% endblock %}</title>
+<title>{% block title %}WildThing{% endblock %}</title>
+<link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='wildthing-64.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='wildthing-192.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script>
+// Panel state is read before the page paints so it does not flash. Wide screens start with the left bar open;
+// narrow ones start closed. The choice is remembered (narrow screens only for this tab).
+(function () {
+  var h = document.documentElement, narrow = window.matchMedia("(max-width: 900px)").matches;
+  function get(k, d) { try { var v = (k === "left" && narrow ? sessionStorage : localStorage).getItem("wt_" + k); return v === null ? d : v === "1"; } catch (e) { return d; } }
+  if (!get("left", !narrow)) h.classList.add("wt-left-closed");
+  if (!get("right", true)) h.classList.add("wt-right-closed");
+  if (!get("bottom", true)) h.classList.add("wt-bottom-closed");
+})();
+</script>
 </head>
 <body>
-<header>
-  <a class="brand" href="{{ url_for('index') }}">Job search</a>
-  <nav>
-    <a href="{{ url_for('index') }}">Postings</a>
-    <a href="{{ url_for('profiles_page') }}">Profiles</a>
-    <a href="{{ url_for('add') }}">Paste a posting</a>
-    <a href="{{ url_for('applications') }}">Applications</a>
-    <a href="{{ url_for('queue_page') }}">Queue</a>
-    <a href="{{ url_for('weekly') }}">Weekly</a>
-    <a href="{{ url_for('gaps_page') }}">Gap plan</a>
-    <a href="{{ url_for('resume_page') }}">My resume</a>
-    <a href="{{ url_for('settings_page') }}">Settings</a>
-  </nav>
-</header>
-<main>
+{% set has_right = self.right()|trim %}
+{% set has_bottom = self.bottom()|trim %}
+<div class="shell">
+  <aside class="left" id="left">
+    <a class="brand" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='wildthing-64.png') }}" alt="" width="34" height="34">WildThing</a>
+    <nav>
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('index') }}" class="{{ 'on' if ep in ('index',) }}">Postings</a>
+      <a href="{{ url_for('profiles_page') }}" class="{{ 'on' if ep == 'profiles_page' }}">Profiles</a>
+      <a href="{{ url_for('add') }}" class="{{ 'on' if ep == 'add' }}">Paste a posting</a>
+      <a href="{{ url_for('applications') }}" class="{{ 'on' if ep == 'applications' }}">Applications</a>
+      <a href="{{ url_for('queue_page') }}" class="{{ 'on' if ep == 'queue_page' }}">Queue</a>
+      <a href="{{ url_for('weekly') }}" class="{{ 'on' if ep == 'weekly' }}">Weekly</a>
+      <a href="{{ url_for('gaps_page') }}" class="{{ 'on' if ep == 'gaps_page' }}">Gap plan</a>
+      <a href="{{ url_for('resume_page') }}" class="{{ 'on' if ep == 'resume_page' }}">My resume</a>
+      <a href="{{ url_for('settings_page') }}" class="{{ 'on' if ep == 'settings_page' }}">Settings</a>
+    </nav>
+    <p class="side-foot">Free software under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a>.
+      <a href="https://github.com/wpearson-svg/job_search_app" target="_blank" rel="noopener">Source code</a></p>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="center">
+    <div class="topbar">
+      <button type="button" class="tgl" id="tgl-left" title="Show or hide the menu" aria-label="Show or hide the menu">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect class="fill" x="2.2" y="3.2" width="4.3" height="9.6" rx="1.2" fill="currentColor"/></svg></button>
+      <a class="brand-small" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='wildthing-64.png') }}" alt="" width="22" height="22">WildThing</a>
+      <span class="spacer"></span>
+      {% if has_bottom %}<button type="button" class="tgl" id="tgl-bottom" title="Show or hide the posting details" aria-label="Show or hide the posting details">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect class="fill" x="2.2" y="8.2" width="11.6" height="4.6" rx="1.2" fill="currentColor"/></svg></button>{% endif %}
+      {% if has_right %}<button type="button" class="tgl" id="tgl-right" title="Show or hide the side panel" aria-label="Show or hide the side panel">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect class="fill" x="9.5" y="3.2" width="4.3" height="9.6" rx="1.2" fill="currentColor"/></svg></button>{% endif %}
+    </div>
+    <div class="body">
+      <div class="content" id="content">
+        <main>
 {% with msgs = get_flashed_messages() %}{% if msgs %}<div class="flash">{% for m in msgs %}<p>{{ m }}</p>{% endfor %}</div>{% endif %}{% endwith %}
 {% if setup_missing and request.endpoint != 'settings_page' %}<div class="flash"><p>Finish setup: add {{ setup_missing|join(' and ') }} on the <a href="{{ url_for('settings_page') }}">Settings</a> page.</p></div>{% endif %}
 {% block body %}{% endblock %}
-</main>
-<footer class="muted" style="max-width:1100px;margin:2rem auto;padding:0 1rem;font-size:.85rem">Free software under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">GNU AGPL-3.0</a>. <a href="https://github.com/wpearson-svg/job_search_app" target="_blank" rel="noopener">Source code</a>.</footer>
+        </main>
+      </div>
+      {% if has_bottom %}<section class="bottom" id="bottom">{% block bottom %}{% endblock %}</section>{% endif %}
+    </div>
+  </div>
+  {% if has_right %}<aside class="right" id="right">{% block right %}{% endblock %}</aside>{% endif %}
+</div>
 <script>
+(function () {
+  var h = document.documentElement, narrow = function () { return window.matchMedia("(max-width: 900px)").matches; };
+  function save(k, v) { try { (k === "left" && narrow() ? sessionStorage : localStorage).setItem("wt_" + k, v ? "1" : "0"); } catch (e) {} }
+  function wire(id, key) {
+    var b = document.getElementById("tgl-" + id); if (!b) return;
+    b.addEventListener("click", function () { var closed = h.classList.toggle("wt-" + id + "-closed"); save(id, !closed); });
+  }
+  wire("left", "left"); wire("right", "right"); wire("bottom", "bottom");
+  var scrim = document.getElementById("scrim");
+  if (scrim) scrim.addEventListener("click", function () { h.classList.add("wt-left-closed"); save("left", false); });
+  // keep the list where it was after choosing a posting
+  var c = document.getElementById("content");
+  try { var y = sessionStorage.getItem("wt_scroll"); if (c && y) { c.scrollTop = +y; sessionStorage.removeItem("wt_scroll"); } } catch (e) {}
+  window.wtKeepScroll = function () { try { sessionStorage.setItem("wt_scroll", c.scrollTop); } catch (e) {} };
+})();
 // Apply button: open the posting's page in a new tab, and record it as applied.
 function applyTo(btn) {
   if (btn.dataset.url) { window.open(btn.dataset.url, "_blank", "noopener"); }
+  if (window.wtKeepScroll) window.wtKeepScroll();
   fetch(btn.dataset.post, { method: "POST" }).then(function () { location.reload(); });
 }
 </script>

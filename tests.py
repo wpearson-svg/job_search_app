@@ -897,3 +897,59 @@ class SettingsTests(unittest.TestCase):
         self.assertTrue(msg.endswith("DO THE THING"))
         self.c.post("/settings", data={"target_titles": "x", "claude_has_resume": "on"})
         self.assertEqual(appmod.with_context("DO THE THING"), "DO THE THING")
+
+
+class PanelTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(self.tmp, "t.db")
+        appmod.app.config["TESTING"] = True
+        self.c = appmod.app.test_client()
+        self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme", "text": GOOD})
+        self.jid = db.connect().execute("SELECT id FROM jobs").fetchone()[0]
+
+    def test_nothing_selected_shows_the_dashboard_and_no_bottom_panel(self):
+        page = self.c.get("/").data
+        self.assertIn(b"Follow-ups due", page)
+        self.assertIn(b'id="right"', page)
+        self.assertNotIn(b'id="bottom"', page)
+        self.assertIn(b"wildthing-64.png", page)
+
+    def test_selecting_a_posting_fills_both_panels(self):
+        page = self.c.get(f"/?sel={self.jid}").data.decode()
+        self.assertIn('id="bottom"', page)
+        self.assertIn("My progress", page)
+        self.assertIn("AI work", page)
+        self.assertIn("Why this score", page)
+        self.assertIn("Posting text", page)
+        self.assertIn("tr class=\"job sel\"", page)
+        self.assertIn("itil", page)                        # a gap, with its I-have-this button
+        self.assertEqual(self.c.get("/?sel=99999").status_code, 200)   # unknown id falls back to the dashboard
+        self.assertEqual(self.c.get("/?sel=abc").status_code, 200)
+
+    def test_panel_forms_return_to_the_same_page_and_never_leave_the_site(self):
+        back = f"/?status=active&sel={self.jid}"
+        r = self.c.post(f"/job/{self.jid}/event", data={"kind": "Interview", "starts_at": "2030-01-05T10:00", "back": back})
+        self.assertEqual(r.headers["Location"], back)
+        page = self.c.get(back).data.decode()
+        self.assertIn("Add to Google Calendar", page)
+        for bad in ("https://evil.example/x", "//evil.example/x"):
+            r = self.c.post(f"/job/{self.jid}/event", data={"kind": "Interview", "starts_at": "2030-01-06T10:00", "back": bad})
+            self.assertIn("/job/", r.headers["Location"])
+        eid = db.connect().execute("SELECT id FROM events").fetchone()[0]
+        r = self.c.post(f"/event/{eid}/delete", data={"back": back})
+        self.assertEqual(r.headers["Location"], back)
+
+    def test_queue_and_status_from_the_panel(self):
+        self.c.application.config["QUEUE_ROOT"] = self.tmp
+        r = self.c.post(f"/job/{self.jid}/queue", data={"kind": "prep"}, headers={"Referer": f"http://localhost/?sel={self.jid}"})
+        self.assertIn(f"sel={self.jid}", r.headers["Location"])
+        page = self.c.get(f"/?sel={self.jid}").data.decode()
+        self.assertIn("waiting for a reply", page)
+        self.c.application.config.pop("QUEUE_ROOT")
+
+    def test_dashboard_lists_follow_ups(self):
+        conn = db.connect()
+        conn.execute("UPDATE jobs SET status='applied', applied_on='2020-01-01' WHERE id=?", (self.jid,)); conn.commit()
+        self.assertIn(b"applied", self.c.get("/").data)
+        self.assertIn(b"time to follow up", self.c.get(f"/?sel={self.jid}").data)

@@ -1,4 +1,4 @@
-"""Job search helper: local web app. Run with run.bat (Windows) or `python app.py`, then open http://127.0.0.1:5050.
+"""WildThing, a job search helper: local web app. Run with run.bat (Windows) or `python app.py`, then open http://127.0.0.1:5050.
 
 What it does: pulls postings from open sources, lets you paste postings from LinkedIn/Indeed, scores each against your
 master resume, and turns the gaps into one plan. It never edits your resume and never invents experience.
@@ -160,8 +160,63 @@ def index():
     for r in conn.execute("SELECT jp.job_id, p.name FROM job_profiles jp JOIN profiles p ON p.id=jp.profile_id ORDER BY p.name"):
         tags.setdefault(r["job_id"], []).append(r["name"])
     purge_counts = {"outside": len(purge_candidates(conn, "outside")), "untouched": len(purge_candidates(conn, "untouched"))}
+    sel = request.args.get("sel", "")
+    selected = panel_data(conn, int(sel), tags) if sel.isdigit() else None
+    keep = {"status": status, "min": min_score, "sort": sort, "profile": profile}
     return render_template("index.html", jobs=jobs, status=status, min_score=min_score, sort=sort, purge_counts=purge_counts,
-                           profiles=profs, profile=profile, tags=tags)
+                           profiles=profs, profile=profile, tags=tags, sel=selected, keep=keep,
+                           dash=None if selected else dashboard_data(conn), event_kinds=EVENT_KINDS,
+                           now_local=datetime.now().strftime("%Y-%m-%dT%H:%M"))
+
+
+def panel_data(conn, job_id, tags):
+    """Everything the two side panels show about one posting (and about you, for that posting)."""
+    r = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+    if not r:
+        return None
+    j = db.row_to_job(r)
+    j["tags"] = tags.get(job_id, [])
+    j["links"] = [dict(x) for x in conn.execute("SELECT source, url FROM job_links WHERE job_id=?", (job_id,))]
+    j["events"] = [event_view(e, j) for e in conn.execute("SELECT * FROM events WHERE job_id=? ORDER BY starts_at", (job_id,))]
+    j["outs"] = {o["kind"]: o["created_at"] for o in conn.execute("SELECT kind, created_at FROM outputs WHERE job_id=?", (job_id,))}
+    waiting = {q["kind"] for q in conn.execute("SELECT kind FROM queue_items WHERE job_id=? AND status='waiting'", (job_id,))}
+    j["waiting"] = {"resume": bool(waiting & {"resume", "resume_cover"}), "cover_letter": "resume_cover" in waiting, "prep": "prep" in waiting}
+    j["required"] = [t for t, w in j["gaps"] if w >= 2]
+    j["preferred"] = [t for t, w in j["gaps"] if w < 2]
+    j["follow_up"] = False
+    if j["status"] == "applied" and j.get("applied_on"):
+        try:
+            j["follow_up"] = (date.today() - date.fromisoformat(j["applied_on"])).days >= 14
+        except ValueError:
+            pass
+    return j
+
+
+def dashboard_data(conn):
+    """What the right panel shows when no posting is selected."""
+    today = date.today()
+    follow = []
+    for r in conn.execute("SELECT id, title, company, applied_on FROM jobs WHERE status='applied' AND applied_on IS NOT NULL ORDER BY applied_on"):
+        try:
+            days = (today - date.fromisoformat(r["applied_on"])).days
+        except ValueError:
+            continue
+        if days >= 14:
+            follow.append({"id": r["id"], "title": r["title"], "company": r["company"], "days": days})
+    weight = {}
+    for r in conn.execute("SELECT gaps_json FROM jobs WHERE status != 'dismissed'"):
+        for t, w in json.loads(r["gaps_json"]):
+            weight[t] = weight.get(t, 0) + w
+    top = sorted(weight.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    return {"follow": follow[:5], "follow_total": len(follow), "events": upcoming_events(conn, 14)[:5],
+            "waiting": conn.execute("SELECT COUNT(*) FROM queue_items WHERE status='waiting'").fetchone()[0],
+            "gaps": top}
+
+
+def back_to(default):
+    """Where to go after a panel form: a local path the form named, else the default. Never an outside address."""
+    p = request.form.get("back", "")
+    return p if p.startswith("/") and not p.startswith("//") else default
 
 
 def lines(text):
@@ -531,13 +586,13 @@ def add_event(job_id):
         minutes = max(5, min(int(request.form.get("minutes") or 60), 600))
     except ValueError:
         flash("Pick a date and time for the event.")
-        return redirect(url_for("job", job_id=job_id) + "#calendar")
+        return redirect(back_to(url_for("job", job_id=job_id) + "#calendar"))
     conn.execute("INSERT INTO events(job_id, kind, starts_at, minutes, place, notes) VALUES (?,?,?,?,?,?)",
                  (job_id, kind, start.strftime("%Y-%m-%dT%H:%M"), minutes, request.form.get("place", "").strip(),
                   request.form.get("notes", "").strip()))
     conn.commit()
     flash(f"{kind} added. Use the buttons beside it to put it in Google Calendar.")
-    return redirect(url_for("job", job_id=job_id) + "#calendar")
+    return redirect(back_to(url_for("job", job_id=job_id) + "#calendar"))
 
 
 @app.post("/event/<int:event_id>/delete")
@@ -548,7 +603,7 @@ def delete_event(event_id):
         return "No such event", 404
     conn.execute("DELETE FROM events WHERE id=?", (event_id,))
     conn.commit()
-    return redirect(url_for("job", job_id=r["job_id"]) + "#calendar")
+    return redirect(back_to(url_for("job", job_id=r["job_id"]) + "#calendar"))
 
 
 @app.get("/event/<int:event_id>.ics")
