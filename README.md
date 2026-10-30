@@ -23,7 +23,7 @@ On a posting, under "Resume and cover letter":
 
 If the project answers without the `<resume>` tags, the whole reply is kept as the resume.
 
-**Optional: build through the API instead.** If you add an Anthropic API key (paid separately from a Claude subscription), a "Build with the API instead" button appears. It sends `Willis_Resume_Builder_API_System_Prompt.md` as the system prompt, with the same checks and saved files. `.docx` copies are made if pandoc is installed.
+**Optional: build through the API instead.** If you add an Anthropic API key (paid separately from a Claude subscription), a "Build with the API instead" button appears. It sends your resume-writing instructions (from Settings) as the system prompt, with the same checks and saved files. `.docx` copies are made if pandoc is installed.
 
 Nothing from "I have this" is put in the copied text. If a new fact is true and belongs on resumes, add it to your master resume first.
 

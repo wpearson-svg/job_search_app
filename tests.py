@@ -9,12 +9,34 @@ LEX = matcher.load_lexicon()
 # Tests run against a private data folder holding a sample user (the resume and settings the app was built around),
 # never against the real data/ folder.
 settings.DATA_DIR = tempfile.mkdtemp()
-shutil.copy(os.path.join(HERE, "Willis_Pearson_Resume_Master.docx"), os.path.join(settings.DATA_DIR, "master_resume.docx"))
-shutil.copy(os.path.join(HERE, "Willis_Resume_Builder_API_System_Prompt.md"),
-            os.path.join(settings.DATA_DIR, "resume_instructions.md"))
+SAMPLE_RESUME = """Jane Doe
+Springfield, IL
+
+SUMMARY
+Project coordinator and IT support specialist with 3 years of experience.
+
+EXPERIENCE
+Acme Services, Implementation Specialist, 2022 - 2025
+- Led the software implementation of new scheduling software for 40 customer sites; delivered user training and ongoing user training sessions.
+- Provided tier 1-3 support for a help desk, troubleshooting tickets and writing SQL queries and Excel reports.
+- Ran agile / scrum ceremonies for a 5-person team and handled vendor management and stakeholder communication.
+- Built internal tools with C# and Docker, and prototyped an AI / LLM assistant for the support team.
+"""
+with open(os.path.join(settings.DATA_DIR, "master_resume.md"), "w", encoding="utf-8") as _f:
+    _f.write(SAMPLE_RESUME)
+
+
+def make_docx(text):
+    """A minimal valid .docx holding the given text, for upload tests."""
+    import zipfile
+    path = os.path.join(tempfile.mkdtemp(), "r.docx")
+    paras = "".join("<w:p><w:r><w:t>%s</w:t></w:r></w:p>" % l for l in text.splitlines() if l.strip())
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("word/document.xml", '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>%s</w:body></w:document>' % paras)
+    return path
+
+
 SAMPLE_USER = json.loads(r"""{
- "resume_file": "Willis_Pearson_Resume_Master.docx",
- "system_prompt_file": "Willis_Resume_Builder_API_System_Prompt.md",
  "target_titles": [
   "it support",
   "technical support",
@@ -44,22 +66,22 @@ SAMPLE_USER = json.loads(r"""{
   "service desk"
  ],
  "locations": [
-  "kansas city",
-  "overland park",
-  "kansas",
-  "missouri",
+  "springfield",
+  "riverton",
+  "illinois",
+  "illinois",
   "remote",
   "united states",
   "usa"
  ],
  "adzuna": {
-  "where": "Kansas City",
+  "where": "Springfield",
   "country": "us"
  },
  "usajobs": {
-  "location": "Kansas City, Missouri"
+  "location": "Springfield, Illinois"
  },
- "your_name": "Willis Pearson",
+ "your_name": "Jane Doe",
  "send_resume_in_requests": false,
  "resume_check_phrases": [
   [
@@ -72,13 +94,12 @@ SAMPLE_USER = json.loads(r"""{
   ]
  ],
  "linkedin": {
-  "location": "Kansas City, Missouri"
+  "location": "Springfield, Illinois"
  },
  "jobspy": {
-  "location": "Kansas City, MO"
+  "location": "Springfield, IL"
  }
 }""")
-SAMPLE_USER.pop("resume_file", None); SAMPLE_USER.pop("system_prompt_file", None)
 with open(os.path.join(settings.DATA_DIR, "user_settings.json"), "w") as _f:
     json.dump(SAMPLE_USER, _f)
 appmod.app.config["KEYS_PATH"] = os.path.join(settings.DATA_DIR, "keys.local.json")
@@ -93,8 +114,9 @@ SENIOR = """Senior Director of Engineering. Requirements: 10+ years of experienc
 
 class ResumeTests(unittest.TestCase):
     def test_reads_docx(self):
-        self.assertIn("TrackTik", RESUME)
-        self.assertIn("Champion National Security", RESUME)
+        self.assertIn("Acme Services", RESUME)
+        p = make_docx("Line one\nLine two about SQL")
+        self.assertIn("Line two about SQL", resumemod.read_resume(p))
 
     def test_resume_terms(self):
         t = matcher.find_terms(RESUME, LEX)
@@ -197,7 +219,7 @@ class AppTests(unittest.TestCase):
     def test_paste_flow_and_gap_plan_and_have(self):
         r = self.c.get("/")
         self.assertEqual(r.status_code, 200)
-        r = self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme", "location": "Kansas City, MO",
+        r = self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme", "location": "Springfield, IL",
                                       "text": GOOD}, follow_redirects=True)
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"itil", r.data)
@@ -242,8 +264,8 @@ class AppTests(unittest.TestCase):
 
 FAKE_REPLY = """Built it.
 <resume>
-**Willis T. Pearson III**
-Kansas City, MO
+**Jane Doe**
+Springfield, IL
 
 ### SUMMARY
 Led a software rollout in 6 weeks against a 6-month plan.
@@ -261,7 +283,7 @@ Hard gaps: none
 class WriterTests(unittest.TestCase):
     def test_parse_blocks(self):
         p = writer.parse_blocks(FAKE_REPLY)
-        self.assertTrue(p["resume"].startswith("**Willis"))
+        self.assertTrue(p["resume"].startswith("**Jane"))
         self.assertIn("Hard gaps", p["review_notes"])
         self.assertIn("Dear Hiring Team", p["cover_letter"])
         self.assertIsNone(writer.parse_blocks("<resume>x</resume>")["cover_letter"])
@@ -281,9 +303,8 @@ class WriterTests(unittest.TestCase):
 
     def test_system_prompt_is_the_whole_file(self):
         sp = writer.load_system_prompt(CFG)
-        self.assertIn("career_knowledge_base", sp)
-        self.assertIn("skills_bank", sp)
-        self.assertGreater(len(sp), 30000)
+        self.assertIn("Hard rules", sp)
+        self.assertEqual(sp, open(os.path.join(HERE, "default_instructions.md"), encoding="utf-8").read())
 
     def test_generate_with_fake_model_and_files(self):
         tmp = tempfile.mkdtemp()
@@ -295,7 +316,7 @@ class WriterTests(unittest.TestCase):
         res = writer.generate(job, True, {**CFG, "output_dir": tmp}, {"anthropic_api_key": "k"}, caller=fake)
         self.assertEqual(seen["key"], "k")
         self.assertEqual(seen["model"], "claude-sonnet-5-5")
-        self.assertIn("career_knowledge_base", seen["system"])
+        self.assertIn("Hard rules", seen["system"])
         names = [os.path.basename(f) for f in res["files"] if f.endswith(".md")]
         self.assertTrue(any(n.endswith("_resume.md") for n in names))
         self.assertTrue(any(n.endswith("_cover_letter.md") for n in names))
@@ -474,7 +495,7 @@ class TrackingTests(unittest.TestCase):
         def ins(ext, loc, status="new", pasted=0):
             conn.execute("INSERT INTO jobs(source, ext_id, title, location, description, pasted, status, added_at) "
                          "VALUES ('remoteok', ?, 'T', ?, 'd', ?, ?, 'x')", (ext, loc, pasted, status))
-        ins("a", "Anywhere in the world"); ins("b", "Kansas City"); ins("c", "Berlin", "saved")
+        ins("a", "Anywhere in the world"); ins("b", "Springfield"); ins("c", "Berlin", "saved")
         ins("d", "Berlin", "applied"); ins("e", "Berlin", "dismissed"); ins("f", "Berlin", "new", 1)
         conn.commit()
         self.assertEqual(self.c.post("/purge", data={"scope": "bogus"}).status_code, 400)
@@ -492,7 +513,7 @@ class TrackingTests(unittest.TestCase):
         mk = lambda e, loc: {"source": "remoteok", "ext_id": e, "title": "IT Support", "company": "A", "location": loc,
                              "url": "", "description": "d", "posted": ""}
         orig = sources.fetch_all
-        sources.fetch_all = lambda cfg, keys: ([mk("w1", "Worldwide"), mk("k1", "Kansas City, MO"), mk("u1", "USA")], [])
+        sources.fetch_all = lambda cfg, keys: ([mk("w1", "Worldwide"), mk("k1", "Springfield, IL"), mk("u1", "USA")], [])
         try:
             self.c.post("/fetch")
         finally:
@@ -503,14 +524,14 @@ class TrackingTests(unittest.TestCase):
         self.assertEqual(got, {"k1", "u1"})
 
     def test_worldwide_is_never_in_area(self):
-        allowed = ["kansas city", "remote", "usa"]
+        allowed = ["springfield", "remote", "usa"]
         for loc in ("Worldwide", "Anywhere", "Remote - Worldwide", "Remote (Anywhere)"):
             self.assertFalse(matcher.location_ok(loc, "", allowed), loc)
-        for loc in ("Kansas City, MO", "Remote", "USA", ""):
+        for loc in ("Springfield, IL", "Remote", "USA", ""):
             self.assertTrue(matcher.location_ok(loc, "", allowed), loc)
 
     def test_linkedin_parse_and_description(self):
-        items = [{"position": "IT Support Specialist", "company": "Acme", "location": "Kansas City, MO", "date": "2026-10-29",
+        items = [{"position": "IT Support Specialist", "company": "Acme", "location": "Springfield, IL", "date": "2026-10-29",
                   "agoTime": "1 day ago", "jobUrl": "https://www.linkedin.com/jobs/view/it-support-specialist-at-acme-3987654321?trk=x"},
                  {"position": "", "jobUrl": "https://www.linkedin.com/jobs/view/1"}]
         j = sources.parse_linkedin(items)
@@ -599,7 +620,7 @@ class TrackingTests(unittest.TestCase):
     def test_fetch_merges_same_job_from_another_source(self):
         import sources
         mk = lambda src, e, url: {"source": src, "ext_id": e, "title": "Help Desk Technician", "company": "Acme Inc.",
-                                  "location": "Kansas City, MO", "url": url, "description": "d", "posted": ""}
+                                  "location": "Springfield, IL", "url": url, "description": "d", "posted": ""}
         orig = sources.fetch_all
         sources.fetch_all = lambda cfg, keys: ([mk("linkedin", "1", "https://linkedin.com/jobs/1"),
                                                 mk("indeed", "a", "https://indeed.com/viewjob?jk=a")], [])
@@ -617,14 +638,14 @@ class TrackingTests(unittest.TestCase):
 
     def test_merge_duplicates_button_keeps_touched_ones(self):
         conn = db.connect()
-        def ins(ext, status="new", loc="Kansas City", score=10):
+        def ins(ext, status="new", loc="Springfield", score=10):
             conn.execute("INSERT INTO jobs(source, ext_id, title, company, location, url, description, status, score, added_at) "
                          "VALUES ('x', ?, 'Analyst', 'Beta LLC', ?, ?, 'd', ?, ?, 'x')", (ext, loc, "https://x/" + ext, status, score))
         ins("a", score=50); ins("b", score=20); ins("c", status="applied"); ins("d", loc="Tulsa")
         conn.commit()
         self.c.post("/dedupe")
         left = {r[0] for r in conn.execute("SELECT ext_id FROM jobs WHERE company='Beta LLC'")}
-        self.assertEqual(left, {"c", "d"})                       # applied one kept, other Kansas City copies merged into it
+        self.assertEqual(left, {"c", "d"})                       # applied one kept, other Springfield copies merged into it
         self.assertEqual(conn.execute("SELECT COUNT(*) FROM job_links").fetchone()[0], 2)
         self.assertEqual(db.dup_key("IT Support", ""), "")
         conn.close()
@@ -636,7 +657,7 @@ class TrackingTests(unittest.TestCase):
         def fake(cfg, keys):
             seen.append((cfg["search_keywords"], cfg["target_titles"], cfg["jobspy"]["location"]))
             kw = cfg["search_keywords"][0]
-            return ([{"source": "remoteok", "ext_id": kw, "title": kw.title(), "company": "Co " + kw, "location": "Kansas City",
+            return ([{"source": "remoteok", "ext_id": kw, "title": kw.title(), "company": "Co " + kw, "location": "Springfield",
                       "url": "https://x/" + kw, "description": "d", "posted": ""}], [])
         self.c.get("/profiles")                       # first visit creates the General profile
         self.c.post("/profiles/save", data={"name": "PM", "keywords": "project coordinator\nprogram manager",
@@ -669,7 +690,7 @@ class TrackingTests(unittest.TestCase):
 
     def test_same_job_found_by_two_profiles_gets_both_tags(self):
         import sources
-        job = {"source": "remoteok", "ext_id": "z1", "title": "Coordinator", "company": "Zed", "location": "Kansas City",
+        job = {"source": "remoteok", "ext_id": "z1", "title": "Coordinator", "company": "Zed", "location": "Springfield",
                "url": "https://x/z1", "description": "d", "posted": ""}
         orig = sources.fetch_all
         sources.fetch_all = lambda cfg, keys: ([dict(job)], [])
@@ -687,7 +708,7 @@ class TrackingTests(unittest.TestCase):
     def test_jobspy_parse_and_fetch(self):
         import sys, types
         nan = float("nan")
-        rows = [{"site": "indeed", "id": "in-1", "title": "Help Desk Technician", "company": "Acme", "location": "Kansas City, MO, US",
+        rows = [{"site": "indeed", "id": "in-1", "title": "Help Desk Technician", "company": "Acme", "location": "Springfield, IL, US",
                  "job_url": "https://www.indeed.com/viewjob?jk=1", "description": "Reset passwords", "min_amount": 20.0,
                  "max_amount": nan, "interval": "hourly", "job_type": "fulltime", "date_posted": "2026-10-29"},
                 {"site": "linkedin", "id": None, "title": "Cook", "company": "X", "job_url": "https://linkedin.com/jobs/view/9", "description": nan},
@@ -822,7 +843,7 @@ class SettingsTests(unittest.TestCase):
             r = self.c.get(url)
             self.assertEqual(r.status_code, 200, url)
         self.assertIn(b"Finish setup", self.c.get("/").data)
-        self.assertNotIn(b"Willis", self.c.get("/settings").data)
+        self.assertNotIn(b"Jane", self.c.get("/settings").data)
 
     def test_upload_resume(self):
         import io
@@ -832,7 +853,7 @@ class SettingsTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(settings.DATA_DIR, "master_resume.txt")))
         self.assertIn("sql", matcher.find_terms(appmod.resume_text(), LEX))
         # replacing with a different type removes the old one
-        with open(os.path.join(HERE, "Willis_Pearson_Resume_Master.docx"), "rb") as f:
+        with open(make_docx("Jane Doe\nSQL"), "rb") as f:
             self.c.post("/settings/resume", data={"resume": (f, "x.docx")}, content_type="multipart/form-data")
         self.assertFalse(os.path.exists(os.path.join(settings.DATA_DIR, "master_resume.txt")))
         self.assertTrue(os.path.exists(os.path.join(settings.DATA_DIR, "master_resume.docx")))

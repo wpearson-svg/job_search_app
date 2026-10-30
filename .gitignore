@@ -10,8 +10,8 @@ requests/
 replies/
 TODO.md
 # Personal files: resume, the instructions built from it, and anything with your contact details
-Willis_Pearson_Resume_Master.docx
-Willis_Resume_Builder_API_System_Prompt.md
+*Resume_Master*
+*Resume_Builder*
 *.local.*
 !keys.local.example.json
 
@@ -20,3 +20,4 @@ data/
 
 # One-time cleanup script
 clean_github.bat
+push_fix.bat
