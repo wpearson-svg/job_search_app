@@ -26,6 +26,7 @@
 {% if setup_missing and request.endpoint != 'settings_page' %}<div class="flash"><p>Finish setup: add {{ setup_missing|join(' and ') }} on the <a href="{{ url_for('settings_page') }}">Settings</a> page.</p></div>{% endif %}
 {% block body %}{% endblock %}
 </main>
+<footer class="muted" style="max-width:1100px;margin:2rem auto;padding:0 1rem;font-size:.85rem">Free software under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">GNU AGPL-3.0</a>. <a href="https://github.com/wpearson-svg/job_search_app" target="_blank" rel="noopener">Source code</a>.</footer>
 <script>
 // Apply button: open the posting's page in a new tab, and record it as applied.
 function applyTo(btn) {

@@ -21,3 +21,4 @@ data/
 # One-time cleanup script
 clean_github.bat
 push_fix.bat
+push_license.bat

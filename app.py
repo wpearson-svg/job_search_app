@@ -795,8 +795,8 @@ def write_todo(conn):
         lines += ["Each request file already contains my instructions and my master resume. Use only facts from my master "
                   "resume. Do not invent experience.", ""]
     else:
-        lines += [f"Before you start, read `{c.get('system_prompt_file')}` (your instructions) and `{c.get('resume_file')}` "
-                  "(the facts about me) in this folder. Use only facts from those files. Do not invent experience.", ""]
+        lines += ["Use the instructions and master resume you already hold for me. Use only facts from my master resume. "
+                  "Do not invent experience.", ""]
     if not waiting:
         lines.append("Nothing waiting.")
     for it in waiting:
@@ -814,8 +814,7 @@ def queue_add(conn, kind, job_id, scope, label, message):
     if c.get("send_resume_in_requests", True):
         context = "My instructions and my master resume are included below. Use only facts from them."
     else:
-        context = (f"Read `{c.get('system_prompt_file')}` and `{c.get('resume_file')}` in this folder first, and use only "
-                   "facts from them.")
+        context = "Use the instructions and master resume you already hold for me, and only facts from the master resume."
     body = (f"# Request: {QUEUE_KINDS[kind]}, {label}\n\n"
             f"Write your answer to `replies/{name}` in this folder. {context} Follow the reply format described below. "
             "The reply file should contain the tagged parts and nothing else.\n\n---\n\n" + with_context(message) + "\n")

@@ -27,9 +27,9 @@ Every posting is scored against it, and Claude only uses facts from it.</p>
 <p><label><input type="checkbox" name="linkedin_enabled" {% if c.linkedin.enabled %}checked{% endif %}> LinkedIn through the Node package (needs Node.js)</label></p>
 <p class="muted">RemoteOK and Remotive are always on. Adzuna and USAJOBS turn on when you add their keys below.</p>
 
-<h2>4. How Claude writes for you</h2>
+<h2>4. How the AI writes for you</h2>
 <p><label><input type="checkbox" name="claude_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>
-My Claude project already holds my resume and instructions, so do not repeat them in each request.</label></p>
+My AI assistant (a project or saved chat) already holds my resume and instructions, so do not repeat them in each request.</label></p>
 <p><label>Resume-writing instructions {% if not has_custom %}(the app's general default is shown; edit to make it yours){% endif %}<br>
 <textarea name="instructions" rows="14" cols="90">{{ instructions }}</textarea></label></p>
 <p><label><input type="checkbox" name="reset_instructions"> Go back to the default instructions</label></p>

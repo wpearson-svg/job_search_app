@@ -1,64 +1,114 @@
 # Job search app
 
-A local app that finds job postings, scores each against your master resume, turns the gaps into one plan, and helps you build a tailored resume and cover letter through your resume builder project. It runs only on your computer (http://127.0.0.1:5050).
+A local app that finds job postings, scores each one against your master resume, shows what each posting asks for that your resume does not, and helps you get a tailored resume, cover letter, interview prep and a skills plan from an AI assistant of your choice. It runs only on your computer at http://127.0.0.1:5050. Nothing is sent anywhere unless you copy it into an AI yourself or switch on an optional source.
+
+The app never edits your resume and never makes up experience. Matching is a word list, not understanding (see Limits).
 
 ## Start it
-Double-click `run.bat`. The first run sets itself up (needs Python from python.org, with "py launcher" ticked). A browser tab opens.
+
+Double-click `run.bat` (Windows). The first run sets itself up; it needs Python from python.org with the "py launcher" option ticked. A browser tab opens. To run the checks: `python -m unittest tests`.
+
+## First run: Settings
+
+Open **Settings** (top bar) and go top to bottom:
+
+1. **Master resume.** Upload a .docx, .md or .txt. Every posting is scored against it, and the AI is told to use only facts from it. Uploading a new one re-scores everything.
+2. **Your search.** The job titles you want, search keywords, the places that count as a match (your city, state, "remote"), and your main place to search.
+3. **Sources.** Indeed and LinkedIn through JobSpy are on by default. Adzuna and USAJOBS turn on when you add their free keys.
+4. **How the AI writes for you.** The app ships general resume-writing instructions. Replace them with your own if you have some.
+5. **Keys** (optional). Saved on this computer and never shown again.
+
+Until a master resume and target titles are set, a banner reminds you.
 
 ## What each page does
-- **Postings:** every posting with a 0 to 100 match score; the status filter covers all statuses. "Fetch from open sources" pulls new ones. Click a title to see what it matches, what it asks for that your resume does not show, and to build documents.
-- **Paste a posting:** copy the full description from LinkedIn, Indeed or anywhere and paste it. Pasting always works, even with the LinkedIn and Indeed fetchers below switched off.
-- **Applications:** every posting you have applied for, with a status dropdown (Applied, Phone screen, Interview, Offer, Rejected, No response, Withdrawn), the applied date, a notes box and a count per status. A posting still at "Applied" after 14 days is marked for a follow-up. You can log an application made somewhere else with the form at the bottom. The same status dropdown is on each posting; the first time you set an applied status, today's date is filled in, and you can change it.
-- **Gap plan:** the gaps across all postings that are not dismissed, ranked by how often they appear and how often they are listed as required, grouped into two-week blocks with advice by kind (certification, tool, skill, method).
-- **My resume:** the skills the app found in your master resume (uploaded on the Settings page), and anything you marked "I have this".
 
-## "I have this"
-If a posting asks for something you have done but the resume does not say, press "I have this". It counts as a match from then on and the postings are re-scored. It does not change the resume and is not sent to Claude. If it is true and belongs on resumes, add it to your master resume first.
+- **Postings.** Every posting with a 0 to 100 match score, filters for status and profile, and a button to **Fetch** new ones. On each row: **Apply** opens the posting in a new tab and marks it applied. Clean-up buttons: **Merge duplicates**, **Re-score all**, and removing fetched postings you have not touched, or the untouched ones outside your areas. Only postings still at status New that you did not paste yourself are ever removed. Click a title to open the posting page.
+- **Posting page.** What it matches, what it asks for that your resume does not show, the full text, the links where else it was listed, your status and notes, interview dates, and the AI buttons described below.
+- **Profiles.** A profile is a saved focus: its own keywords, target titles and place (for example "Project management" or "Help desk, Denver"). Pick one when you press Fetch and every posting found is tagged with it. Filter the Postings page by profile to see one focus at a time. A posting can carry several tags.
+- **Paste a posting.** Paste the description from LinkedIn, Indeed or anywhere. This always works, even when the fetchers are off.
+- **Applications.** Everything you applied for with a status (Applied, Phone screen, Interview, Offer, Rejected, No response, Withdrawn), the date applied, notes, a count per status, and upcoming interviews. A posting still at "Applied" after 14 days is marked for a follow-up. You can log an application made somewhere else at the bottom.
+- **Queue.** The folder way of working with an AI (next section).
+- **Weekly.** Choose 7, 14 or 30 days back: applications sent, phone screens and interviews, the rate, and how many are waiting 14+ days, with a plain-facts block you can copy into a post or check-in. It also lists what is coming up in the next two weeks.
+- **Gap plan.** The gaps across all postings you have not dismissed, ranked by how often they appear and how often they are required, with a quick list and plans you can have the AI write (below).
+- **My resume.** The skills the app found in your master resume, and anything you marked "I have this".
+- **Settings.** As above.
 
-## Building a resume (through your Claude project)
-On a posting, under "Resume and cover letter":
-1. Press **Copy for Claude: resume** (or **resume and cover letter**). The text copied is the posting with a one-line request, in the form your builder prompt expects.
-2. Paste it into your resume builder project chat in Claude.
-3. Paste Claude's whole reply into the box on the posting and press **Keep this reply**. The app saves it in `output/` as `.md` files (resume, cover letter, review notes), shows it with the posting, and warns if the resume has a bracket marker, "managed a team", "2.5", or runs long.
+### Interviews and calendar
+On a posting page, add an interview or follow-up with a date and time. Each one gets an **Add to Google Calendar** link and a downloadable `.ics` file; `/calendar.ics` has all of them for any calendar app. Times are saved as local times with no time zone, so check them after adding.
 
-If the project answers without the `<resume>` tags, the whole reply is kept as the resume.
+### "I have this"
+If a posting asks for something you have really done but your resume does not say, press **I have this**. It counts as a match from then on and postings are re-scored. It does not change your resume. If it is true and belongs on resumes, add it to your master resume.
 
-**Optional: build through the API instead.** If you add an Anthropic API key (paid separately from a Claude subscription), a "Build with the API instead" button appears. It sends your resume-writing instructions (from Settings) as the system prompt, with the same checks and saved files. `.docx` copies are made if pandoc is installed.
+### Duplicates
+The same job found on two boards (or fetched twice) is detected by company, title and place. **Merge duplicates** keeps one posting, keeps your status and notes, and lists the other links under "Also listed at".
 
-Nothing from "I have this" is put in the copied text. If a new fact is true and belongs on resumes, add it to your master resume first.
+## Working with an AI assistant
 
-## Keys (copy `keys.local.example.json` to `keys.local.json`; that file is never committed)
-- `anthropic_api_key`: optional, only for "Build with the API instead". Or set the ANTHROPIC_API_KEY environment variable.
-- Adzuna (`adzuna_app_id`, `adzuna_app_key`) and USAJOBS (`usajobs_key`, `usajobs_email`): optional extra sources. Without them those two are skipped.
+The app does not call any AI by itself. It writes a request, you give it to the AI you use, and the answer comes back to the app. Any assistant that can follow written instructions works. There are two ways to hand things over; both do the same job.
 
-## Settings you can edit
-- `config.json`: target titles, search words, your areas, Greenhouse boards and Lever companies to watch (add the company's board name), the model.
-- `skills.json`: the skills list the matching uses. Add terms and aliases as you meet them in postings.
+### Way 1: copy and paste
+On a posting, press a **Copy for Claude** button (the label says Claude, but the text works with any assistant): resume, resume and cover letter, or interview prep. On the Gap plan page, press **Copy for Claude: gap plan**. Paste it into your AI, then paste the whole reply into the box on the same page and press **Keep this reply** (or **Keep this prep**, **Keep this plan**). The app saves what it finds and warns about things like leftover [bracket markers] or a resume that runs long.
 
-## Honest limits
-- Matching is a word list, not understanding. A posting that says "help desk" and one that says "service desk" are both covered; wording not in the list is missed. Add terms to `skills.json`.
-- The open sources are mostly remote jobs. Jobs near you come from Adzuna, USAJOBS, company boards you add, and your pasted postings.
-- Adzuna gives only a short snippet of each description, so scores on those are rough.
-- Tested here with sample data only; the live job feeds and the optional Claude API call were not reachable from the build environment. If a source fails, the page says which and the rest still work.
+### Way 2: a work folder (for an AI that can read and write files)
+Use the **Send to folder** buttons instead. Each one writes a request file and adds it to the **Queue** page. This is the layout, inside the app's folder:
 
+```
+requests/   one file per request, named like 003_prep_acme-co.md
+replies/    the AI writes its answer here, using the same file name
+TODO.md     the list of requests still waiting
+```
 
-## LinkedIn and Indeed fetching
+**For an AI agent reading this:** open `TODO.md` in this folder. Each unchecked line names a file in `requests/` and the matching file to create in `replies/`. For each one, open the request file and follow it. It contains the instructions, the master resume (unless the person keeps those in your project), and the posting or data to work from. Write your answer to the reply file with the same name, using the tags the request asks for, and nothing else in the file. Skip any request whose reply file already exists. Use only facts from the master resume. Do not invent experience.
 
-Switched on or off in `config.json` (`jobspy.enabled`, `linkedin.enabled`). Both services' terms restrict automated collection, so use them at your own judgment and keep the volume small.
+**For the person:** tell your AI "process the requests listed in TODO.md in this folder". If it works on its own copy of the folder, point it at this one. When it has written the replies, open the **Queue** page and press **Import replies**. Each reply is filed exactly as if you had pasted it. A reply that fails to import stays waiting and the page says why.
 
-- **JobSpy** (on by default) uses the free [python-jobspy](https://github.com/speedyapply/JobSpy) library, which `run.bat` installs. No key or account is needed. `jobspy.sites` picks the boards (`indeed`, `linkedin`, and also `zip_recruiter` or `glassdoor` if you want them). Indeed returns full descriptions. LinkedIn only gives descriptions when `jobspy.linkedin_fetch_description` is true, which costs one extra request per posting, and LinkedIn may answer with a rate-limit error (HTTP 429) or block the request; each Fetch report says when that happens. Settings: `results_wanted`, `linkedin_results_wanted`, `hours_old` (168 = last week), `max_keywords` (how many of a profile's keywords are searched), `location` and `distance`.
-- **LinkedIn through the npm package** ([linkedin-jobs-api](https://github.com/VishwaGauravIn/linkedin-jobs-api)) is off by default now, since JobSpy covers LinkedIn. It needs Node.js; `run.bat` runs `npm install` when Node is present.
-- Each source reports its own result (or why it was skipped) after a Fetch, and a failure in one never stops the others. Profiles (Profiles page) change the keywords, titles and place for each run.
+Reply tags, for reference (the request file repeats these, so the AI does not need this list):
 
+| Request | Tags in the reply |
+|---|---|
+| Resume, or resume and cover letter | `<resume>`, `<cover_letter>`, `<review_notes>` |
+| Interview prep | `<likely_questions>`, `<questions_to_ask>`, `<gap_prep>`, `<research>` |
+| Gap plan | `<priorities>`, `<plan>`, `<proof>`, `<resume_changes>`, `<skip>`, `<questions>` |
 
-## Setting it up for yourself (first run)
+A resume reply without `<resume>` tags is kept whole as the resume. Saved resumes and letters also go in `output/` as `.md` files.
 
-Open **Settings** (top bar) and fill in, top to bottom:
+### If your AI already holds your resume and instructions
+Requests normally include your instructions and master resume, so they work in any new chat. If your assistant has a project or saved chat that already holds them, tick the box on the Settings page to stop repeating them.
 
-1. **Master resume.** Upload your resume (.docx, .md or .txt). Every posting is scored against it and Claude only uses facts from it.
-2. **Your search.** Job titles you want, search keywords, places that count as a match, and your main place to search.
-3. **Sources.** Indeed/LinkedIn (JobSpy) is on by default. Adzuna and USAJOBS turn on when you add their free keys.
-4. **How Claude writes for you.** The app ships general resume-writing instructions. Replace them with your own if you have some. Every request you copy to Claude includes the instructions and your resume, so it works in any chat. If your Claude project already holds them, tick the box to stop repeating them.
-5. **Keys** (optional). Saved in `keys.local.json` on this computer and never shown again.
+### Optional: write through the Anthropic API
+If you add an Anthropic API key (paid separately from a Claude subscription), a **Build with the API instead** button appears on the posting page. It sends your instructions as the system prompt and saves the same files. `.docx` copies are made if pandoc is installed.
 
-Your personal files live in the `data/` folder and `keys.local.json`, plus the `requests/`, `replies/`, `output/` folders and the database. All of them are in `.gitignore`, so sharing the code does not share your information.
+## Fetching postings
+
+**Fetch** pulls from every source that is switched on and reports each one's result, or why it was skipped. One source failing never stops the others. A posting whose location does not match your places (worldwide and "anywhere" do not count as a match) is skipped.
+
+- **RemoteOK and Remotive:** always on, mostly remote jobs.
+- **JobSpy** (Indeed and LinkedIn; on by default): the free [python-jobspy](https://github.com/speedyapply/JobSpy) library, installed by `run.bat`. No key or account. Indeed returns full descriptions. LinkedIn only returns descriptions when `jobspy.linkedin_fetch_description` is true, which costs one extra request per posting, and LinkedIn may rate-limit (HTTP 429) or block requests. Other boards (`zip_recruiter`, `glassdoor`) can be added to `jobspy.sites`. Other settings: `results_wanted`, `linkedin_results_wanted`, `hours_old` (168 is one week), `max_keywords`, `distance`.
+- **LinkedIn through the npm package** ([linkedin-jobs-api](https://github.com/VishwaGauravIn/linkedin-jobs-api)): off by default; needs Node.js (`run.bat` runs `npm install` when Node is present).
+- **Adzuna and USAJOBS:** need free keys. Adzuna gives only a short snippet of each description, so those scores are rough.
+- **Company boards:** add Greenhouse board names or Lever company names in `config.json` (`greenhouse_boards`, `lever_companies`).
+
+LinkedIn's and Indeed's terms restrict automated collection. Use them at your own judgment and keep the volume small.
+
+## Your files and privacy
+
+Everything personal stays on this computer and is listed in `.gitignore`, so sharing the code does not share your information:
+
+- `data/`: your settings, master resume and instructions
+- `keys.local.json`: your keys (copy `keys.local.example.json` to create it, or use the Settings page)
+- `jobs.db`: postings, statuses and notes
+- `output/`, `requests/`, `replies/`, `TODO.md`: generated resumes and the work folder
+
+Defaults live in `config.json`; your own settings in `data/user_settings.json` are laid over them. `skills.json` is the word list the matching uses: add terms and aliases as you meet them in postings.
+
+## Limits
+
+- Matching is a word list. "Help desk" and "service desk" are both covered; wording not in `skills.json` is missed.
+- Live job feeds and AI replies could not be tested from the build environment. If a source fails, the page says which and the rest still work.
+- Calendar links carry local times only; there is no two-way calendar sync.
+
+## License
+
+Copyright (c) 2026 Willis Pearson. Licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+
+You may use, change and share this app. If you share it, or run a changed version as a service others can use over a network, you must keep this credit and notice, publish your source code, and release it under the same license. The full terms are in the `LICENSE` file. The footer of every page links to the source, which is how a hosted copy meets that requirement.
