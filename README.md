@@ -16,10 +16,10 @@ Open **Settings** (top bar) and go top to bottom:
 
 1. **Master resume.** Upload a .docx, .md or .txt. Every posting is scored against it until you have a career file (below), and the AI is told to use only facts from it. Uploading a new one re-scores everything.
 2. **Your search.** The job titles you want, search keywords, the places that count as a match (your city, state, "remote"), and your main place to search.
-3. **Sources.** Indeed and LinkedIn through JobSpy are on by default. Adzuna and USAJOBS turn on when you add their free keys.
+3. **Sources.** A list of every source with a box to switch each one on or off (see "Where postings come from"). USAJOBS needs your free key.
 4. **How the AI writes for you.** The app ships general resume-writing instructions. Replace them with your own if you have some.
 5. **Google Drive** (optional): link Google so the AI queue and shared details use the `WildThing` folder in your Drive directly, the same one the phone uses. See [Google Drive on the desktop](#google-drive-on-the-desktop).
-6. **Keys** (optional): for Adzuna and USAJOBS, and the Google OAuth client. Saved on this computer and never shown again.
+6. **Keys** (optional): for USAJOBS and the Google OAuth client. Saved on this computer and never shown again.
 
 Until a master resume and target titles are set, a banner reminds you.
 
@@ -115,11 +115,12 @@ The same two Drive access choices as the phone apply: **Only files WildThing cre
 
 **Fetch** pulls from every source that is switched on and reports each one's result, or why it was skipped. One source failing never stops the others. A posting whose location does not match your places (worldwide and "anywhere" do not count as a match) is skipped.
 
-- **RemoteOK and Remotive:** always on, mostly remote jobs.
-- **JobSpy** (Indeed and LinkedIn; on by default): the free [python-jobspy](https://github.com/speedyapply/JobSpy) library, installed by `run.bat`. No key or account. Indeed returns full descriptions. LinkedIn only returns descriptions when `jobspy.linkedin_fetch_description` is true, which costs one extra request per posting, and LinkedIn may rate-limit (HTTP 429) or block requests. Other boards (`zip_recruiter`, `glassdoor`) can be added to `jobspy.sites`. Other settings: `results_wanted`, `linkedin_results_wanted`, `hours_old` (168 is one week), `max_keywords`, `distance`.
-- **LinkedIn through the npm package** ([linkedin-jobs-api](https://github.com/VishwaGauravIn/linkedin-jobs-api)): off by default; needs Node.js (`run.bat` runs `npm install` when Node is present).
-- **Adzuna and USAJOBS:** need free keys. Adzuna gives only a short snippet of each description, so those scores are rough.
-- **Company boards:** add Greenhouse board names or Lever company names in `config.json` (`greenhouse_boards`, `lever_companies`).
+Settings section 3 lists every source with a box to switch it on or off (this computer only):
+
+- **RemoteOK and Remotive** (on by default): mostly remote jobs. No key.
+- **Indeed and LinkedIn** (on by default), **ZipRecruiter, Glassdoor and Google Jobs** (off by default), all through the free [python-jobspy](https://github.com/speedyapply/JobSpy) library, installed by `run.bat`. No key or account. Indeed returns full descriptions. LinkedIn returns descriptions when `jobspy.linkedin_fetch_description` is true, which costs one extra request per posting, and it may rate-limit (HTTP 429). ZipRecruiter and Glassdoor block automated requests often; Google Jobs gathers postings from many boards and is searched as "keyword jobs near your place". Other settings in `config.json` under `jobspy`: `results_wanted`, `linkedin_results_wanted`, `hours_old` (168 is one week), `max_keywords`, `distance`.
+- **USAJOBS** (on by default, runs once the key is saved): US federal jobs. Request a free key at developer.usajobs.gov ("API Request"); it is emailed to you. Enter it and that email address in Settings section 6.
+- **Company boards:** list Greenhouse board names or Lever company names in Settings section 3.
 
 LinkedIn's and Indeed's terms restrict automated collection. Use them at your own judgment and keep the volume small.
 
@@ -179,7 +180,7 @@ When you add or change a feature:
 
 Differences on purpose (and why):
 
-- **Indeed and LinkedIn fetching (JobSpy, the LinkedIn npm bridge)**: desktop only. Scraping from a phone app raises terms-of-service and blocking problems; on Android you share postings into the app from those apps instead.
+- **Indeed and LinkedIn fetching (JobSpy)**: desktop only. Scraping from a phone app raises terms-of-service and blocking problems; on Android you share postings into the app from those apps instead.
 - **Where the AI queue lives**: both can talk to the `WildThing` folder in Google Drive directly; the desktop can also use a folder on this computer instead. Same format. Android also has the share sheet.
 - **Google Calendar**: Android writes interviews to it through the linked account; the desktop links Google for Drive only and keeps its Google Calendar links and `.ics` files.
 - **Saving .md / .docx files to `output/`**: desktop only. On Android, saved AI work stays in the app and can be copied or shared.

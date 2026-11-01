@@ -12,7 +12,7 @@ import java.net.URLEncoder
 
 /**
  * Job sources that allow programmatic use: open APIs and the public boards companies publish themselves.
- * A port of sources.py without JobSpy and the LinkedIn npm bridge, which do not belong in a phone app
+ * A port of sources.py without JobSpy, which does not belong in a phone app
  * (on Android, postings from LinkedIn or Indeed come in through the share menu instead).
  * The parse functions take already downloaded data, so they are tested against shared_tests/sources.json.
  */
@@ -27,16 +27,16 @@ data class FetchConfig(
     val searchKeywords: List<String>,
     val greenhouseBoards: List<String> = emptyList(),
     val leverCompanies: List<String> = emptyList(),
-    val adzunaWhere: String = "",
-    val adzunaCountry: String = "us",
     val usajobsLocation: String = "",
     val maxJobsPerSource: Int = 60,
+    /** The keys of the sources that are on (Sources.enabled). */
+    val sources: List<String> = Sources.enabled(emptyMap()),
 )
 
-data class FetchKeys(
-    val adzunaAppId: String = "", val adzunaAppKey: String = "",
-    val usajobsKey: String = "", val usajobsEmail: String = "",
-)
+data class FetchKeys(val usajobsKey: String = "", val usajobsEmail: String = "")
+
+/** A source the phone can run: key, name, what it is, on by default. */
+data class SourceInfo(val key: String, val label: String, val about: String, val default: Boolean)
 
 data class SourceReport(val name: String, val count: Int, val error: String)
 
@@ -47,6 +47,18 @@ fun interface Http {
 
 object Sources {
     const val UA = "WildThing-android/1.0 (personal use)"
+
+    /** sources.SOURCES less the JobSpy sites, which the phone does not run. Settings saves {key: on} as "sources". */
+    val PHONE = listOf(
+        SourceInfo("remoteok", "RemoteOK", "Remote jobs. No key needed.", true),
+        SourceInfo("remotive", "Remotive", "Remote jobs. No key needed.", true),
+        SourceInfo("usajobs", "USAJOBS", "US federal jobs. Needs your free key and email (Keys, below).", true),
+        SourceInfo("greenhouse", "Greenhouse boards", "The company boards listed below.", true),
+        SourceInfo("lever", "Lever companies", "The companies listed below.", true),
+    )
+
+    /** The keys of the sources that are on, in PHONE order: the person's choices over each source's default. */
+    fun enabled(chosen: Map<String, Boolean>): List<String> = PHONE.filter { chosen[it.key] ?: it.default }.map { it.key }
     private const val TIMEOUT_MS = 25_000
 
     val defaultHttp = Http { url, headers ->
@@ -118,13 +130,6 @@ object Sources {
             j.s("hostedUrl"), (j.s("descriptionPlain") + "\n" + extra).pyStrip(), j.s("createdAt"))
     }
 
-    // ---- Adzuna (free key). The API gives a short snippet, not the full description. ----------------------
-    fun parseAdzuna(data: JsonElement): List<Posting> = data.obj()?.get("results").arr().mapNotNull { el ->
-        val j = el.obj() ?: return@mapNotNull null
-        Posting("adzuna", j.id("id"), j.s("title"), j["company"].obj().s("display_name"),
-            j["location"].obj().s("display_name"), j.s("redirect_url"), Html.strip(j.s("description")), j.s("created"))
-    }
-
     // ---- USAJOBS (free key) --------------------------------------------------------------------------------
     fun parseUsajobs(data: JsonElement): List<Posting> =
         data.obj()?.get("SearchResult").obj()?.get("SearchResultItems").arr().mapNotNull { el ->
@@ -162,19 +167,8 @@ object Sources {
             .filter { titleWanted(it.title, cfg.targetTitles) }
     }
 
-    fun fetchAdzuna(cfg: FetchConfig, keys: FetchKeys, http: Http): List<Posting> {
-        if (keys.adzunaAppId.isEmpty() || keys.adzunaAppKey.isEmpty()) throw RuntimeException("no Adzuna key in Settings (skipped)")
-        val found = LinkedHashMap<String, Posting>()
-        for (kw in cfg.searchKeywords) {
-            val url = "https://api.adzuna.com/v1/api/jobs/${q(cfg.adzunaCountry.ifEmpty { "us" })}/search/1?app_id=${q(keys.adzunaAppId)}" +
-                "&app_key=${q(keys.adzunaAppKey)}&what=${q(kw)}&where=${q(cfg.adzunaWhere)}&results_per_page=30&content-type=application/json"
-            parseAdzuna(json(http, url)).forEach { found[it.extId] = it }
-        }
-        return found.values.toList()
-    }
-
     fun fetchUsajobs(cfg: FetchConfig, keys: FetchKeys, http: Http): List<Posting> {
-        if (keys.usajobsKey.isEmpty() || keys.usajobsEmail.isEmpty()) throw RuntimeException("no USAJOBS key in Settings (skipped)")
+        if (keys.usajobsKey.isEmpty() || keys.usajobsEmail.isEmpty()) throw RuntimeException("no USAJOBS key yet: add it in Settings, Keys (skipped)")
         val found = LinkedHashMap<String, Posting>()
         for (kw in cfg.searchKeywords) {
             val url = "https://data.usajobs.gov/api/search?Keyword=${q(kw)}&LocationName=${q(cfg.usajobsLocation)}&ResultsPerPage=25"
@@ -184,19 +178,20 @@ object Sources {
         return found.values.toList()
     }
 
-    /** Runs every source. One failing never stops the others; each one's count or error is reported. */
+    /** Runs every source that is on. One failing never stops the others; each one's count or error is reported. */
     fun fetchAll(cfg: FetchConfig, keys: FetchKeys, http: Http = defaultHttp): Pair<List<Posting>, List<SourceReport>> {
-        val runners = listOf<Pair<String, () -> List<Posting>>>(
-            "RemoteOK" to { fetchRemoteOk(cfg, http) },
-            "Remotive" to { fetchRemotive(cfg, http) },
-            "Greenhouse boards" to { fetchGreenhouse(cfg, http) },
-            "Lever companies" to { fetchLever(cfg, http) },
-            "Adzuna" to { fetchAdzuna(cfg, keys, http) },
-            "USAJOBS" to { fetchUsajobs(cfg, keys, http) },
+        val runners = mapOf<String, () -> List<Posting>>(
+            "remoteok" to { fetchRemoteOk(cfg, http) },
+            "remotive" to { fetchRemotive(cfg, http) },
+            "greenhouse" to { fetchGreenhouse(cfg, http) },
+            "lever" to { fetchLever(cfg, http) },
+            "usajobs" to { fetchUsajobs(cfg, keys, http) },
         )
         val jobs = mutableListOf<Posting>()
         val report = mutableListOf<SourceReport>()
-        for ((name, run) in runners) {
+        for (key in cfg.sources) {
+            val run = runners[key] ?: continue
+            val name = PHONE.first { it.key == key }.label
             try {
                 val got = run().take(cfg.maxJobsPerSource)
                 jobs += got

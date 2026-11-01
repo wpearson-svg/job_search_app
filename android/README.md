@@ -54,13 +54,15 @@ The app needs Android 13 or newer.
 | Scoring, gaps, duplicates, requests and replies, parsers, follow-up rules | `../shared_tests/*.json` | `core/src/test/.../SharedFixturesTest.kt` runs every case |
 | Reply tags, statuses, export file | `../docs/formats.md` | `core` (`Replies`, `Tracking`, `ExportFormat`) |
 
-`:core` is plain Kotlin (no Android code): `Matcher` (matcher.py), `Dedupe` (db.py helpers), `Gaps` (gaps.py), `Replies` and `Tracking` (writer.py, tracking.py), `Sources` (sources.py without JobSpy and the LinkedIn bridge), `Docx` (resume.py), `ExportFormat` (exchange.py), `SharedDb` (shared_db.py), `Marks` (the tag list in db.py), `Career` (career.py). `:app` is the Compose UI, the SQLite database (same tables as `db.py`, plus a time zone on events) and the phone-only parts.
+`:core` is plain Kotlin (no Android code): `Matcher` (matcher.py), `Dedupe` (db.py helpers), `Gaps` (gaps.py), `Replies` and `Tracking` (writer.py, tracking.py), `Sources` (sources.py without JobSpy), `Docx` (resume.py), `ExportFormat` (exchange.py), `SharedDb` (shared_db.py), `Marks` (the tag list in db.py), `Career` (career.py). `:app` is the Compose UI, the SQLite database (same tables as `db.py`, plus a time zone on events) and the phone-only parts.
 
 See the root README's **Parity checklist** for how to keep the two in line.
 
 ## How it works on a phone
 
 ### LinkedIn and Indeed: share them in
+**Settings > Sources** switches each of the phone's sources on or off: RemoteOK, Remotive, USAJOBS (once its free key and email are saved under Keys), and the Greenhouse and Lever company boards you list. The choice stays on this phone.
+
 The phone version does not scrape LinkedIn or Indeed. Instead, in the LinkedIn app, the Indeed app or a browser, tap **Share** on a posting and pick **WildThing**. It opens **Paste a posting** with the link (and any text) filled in. If only a link came through, tap **Open link**, copy the description, and paste it so it can be scored. RemoteOK, Remotive, Greenhouse, Lever, Adzuna and USAJOBS are fetched directly (the last two need their free keys in Settings).
 
 ### Working with an AI

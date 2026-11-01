@@ -83,7 +83,7 @@ imported resume. **API keys are never in the file.** A sample is `shared_tests/e
   "settings": {
     "your_name": "", "target_titles": [], "search_keywords": [], "locations": [],
     "greenhouse_boards": [], "lever_companies": [],
-    "adzuna": {"where": "", "country": "us"}, "usajobs": {"location": ""},
+    "usajobs": {"location": ""}, "sources": {"remoteok": true, "glassdoor": false},
     "send_resume_in_requests": true, "resume_check_phrases": [["phrase", "warning"]]
   },
   "resume": {"filename": "master_resume.docx", "base64": "..."},

@@ -189,39 +189,6 @@
    ]
   }
  ],
- "adzuna": [
-  {
-   "data": {
-    "results": [
-     {
-      "id": 3,
-      "title": "T",
-      "company": {
-       "display_name": "X"
-      },
-      "location": {
-       "display_name": "KC"
-      },
-      "redirect_url": "u",
-      "description": "d",
-      "created": "2026-10-03"
-     }
-    ]
-   },
-   "expect": [
-    {
-     "source": "adzuna",
-     "ext_id": "3",
-     "title": "T",
-     "company": "X",
-     "location": "KC",
-     "url": "u",
-     "description": "d",
-     "posted": "2026-10-03"
-    }
-   ]
-  }
- ],
  "usajobs": [
   {
    "data": {

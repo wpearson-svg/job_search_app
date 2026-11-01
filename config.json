@@ -9,10 +9,6 @@
   ],
   "greenhouse_boards": [],
   "lever_companies": [],
-  "adzuna": {
-    "where": "",
-    "country": "us"
-  },
   "usajobs": {
     "location": ""
   },
@@ -20,23 +16,7 @@
   "max_jobs_per_source": 60,
   "system_prompt_file": "",
   "output_dir": "output",
-  "linkedin": {
-    "enabled": false,
-    "location": "",
-    "dateSincePosted": "past week",
-    "limit": 25,
-    "max_keywords": 3,
-    "max_descriptions": 25,
-    "jobType": "",
-    "remoteFilter": "",
-    "experienceLevel": ""
-  },
   "jobspy": {
-    "enabled": true,
-    "sites": [
-      "indeed",
-      "linkedin"
-    ],
     "location": "",
     "distance": 25,
     "results_wanted": 25,

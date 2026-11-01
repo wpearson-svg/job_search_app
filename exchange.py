@@ -14,7 +14,7 @@ FORMAT = "wildthing-export"
 VERSION = 1
 # The settings a person sets for themselves; everything else in config.json stays the app's default.
 SETTING_KEYS = ("your_name", "target_titles", "search_keywords", "locations", "greenhouse_boards", "lever_companies",
-                "adzuna", "usajobs", "send_resume_in_requests", "resume_check_phrases")
+                "usajobs", "sources", "send_resume_in_requests", "resume_check_phrases")
 JOB_COLS = ("id", "source", "ext_id", "title", "company", "location", "url", "description", "posted", "pasted",
             "status", "score", "title_match", "added_at", "applied_on", "notes", "status_updated")
 

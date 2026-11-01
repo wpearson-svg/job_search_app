@@ -17,10 +17,6 @@ if not exist ".venv\Scripts\python.exe" (
 ".venv\Scripts\python.exe" -m pip install -q -r requirements.txt
 if errorlevel 1 goto failed
 
-where node >nul 2>nul
-if not errorlevel 1 if not exist "node_modules\linkedin-jobs-api" call npm install --silent
-if errorlevel 1 echo Node.js or the LinkedIn helper is missing; LinkedIn fetching will be skipped.
-
 echo Starting the job search app at http://127.0.0.1:5050
 echo Close this window to stop it.
 start "" cmd /c "timeout /t 3 /nobreak >nul & start http://127.0.0.1:5050"

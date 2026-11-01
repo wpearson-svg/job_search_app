@@ -1,4 +1,4 @@
-import json, os, shutil, tempfile, unittest
+import json, os, shutil, sys, tempfile, unittest
 
 import db, matcher, gaps, sources, writer, settings, resume as resumemod
 import app as appmod
@@ -43,16 +43,23 @@ SENIOR = """Senior Director of Engineering. Requirements: 10+ years of experienc
 
 
 def offline(test):
-    """Runs a test with every web request failing, as if there were no network."""
+    """Runs a test with every web request failing, as if there were no network (JobSpy included)."""
     def run(self):
-        import requests
+        import requests, types
         def fail(*a, **k):
             raise requests.ConnectionError("no network in tests")
+        jobspy = types.ModuleType("jobspy"); jobspy.scrape_jobs = fail
         orig, sources.requests.get = sources.requests.get, fail
+        saved = sys.modules.get("jobspy")
+        sys.modules["jobspy"] = jobspy
         try:
             return test(self)
         finally:
             sources.requests.get = orig
+            if saved is None:
+                del sys.modules["jobspy"]
+            else:
+                sys.modules["jobspy"] = saved
     return run
 
 
@@ -119,7 +126,7 @@ class SharedFixtureTests(unittest.TestCase):
         d = shared("sources.json")
         for c in d["strip_html"]:
             self.assertEqual(sources.strip_html(c["html"]), c["expect"])
-        for name in ("remoteok", "remotive", "adzuna", "usajobs"):
+        for name in ("remoteok", "remotive", "usajobs"):
             for c in d[name]:
                 self.assertEqual(getattr(sources, "parse_" + name)(c["data"]), c["expect"], name)
         for c in d["greenhouse"]:
@@ -320,10 +327,7 @@ class SourceParseTests(unittest.TestCase):
                                   "descriptionPlain": "Desc", "lists": [{"text": "Requirements", "content": "<li>SQL</li>"}]}], "co")
         self.assertIn("SQL", j[0]["description"])
 
-    def test_adzuna_and_usajobs(self):
-        a = sources.parse_adzuna({"results": [{"id": 3, "title": "T", "company": {"display_name": "X"},
-                                               "location": {"display_name": "KC"}, "redirect_url": "u", "description": "d"}]})
-        self.assertEqual(a[0]["company"], "X")
+    def test_usajobs(self):
         u = sources.parse_usajobs({"SearchResult": {"SearchResultItems": [{"MatchedObjectId": "7", "MatchedObjectDescriptor": {
             "PositionTitle": "IT Specialist", "OrganizationName": "Agency", "PositionLocationDisplay": "KC",
             "PositionURI": "u", "UserArea": {"Details": {"JobSummary": "Support users"}}, "QualificationSummary": "SQL"}}]}})
@@ -333,8 +337,20 @@ class SourceParseTests(unittest.TestCase):
     def test_missing_keys_reported_not_fatal(self):
         jobs, report = sources.fetch_all({**CFG, "greenhouse_boards": [], "lever_companies": []}, {})
         names = {n: err for n, _, err in report}
-        self.assertIn("no Adzuna key", names["Adzuna"])
         self.assertIn("no USAJOBS key", names["USAJOBS"])
+
+    def test_sources_follow_the_settings(self):
+        self.assertEqual(sources.enabled({}), ["remoteok", "remotive", "indeed", "linkedin", "usajobs", "greenhouse", "lever"])
+        on = sources.enabled({"sources": {"linkedin": False, "glassdoor": True, "remoteok": False}})
+        self.assertEqual(on, ["remotive", "indeed", "glassdoor", "usajobs", "greenhouse", "lever"])
+        orig = sources.fetch_remotive
+        sources.fetch_remotive = lambda cfg: [{"source": "remotive", "ext_id": "1"}]
+        try:
+            off = {k: False for k, _, _, _ in sources.SOURCES}
+            jobs, report = sources.fetch_all({"sources": {**off, "remotive": True}}, {})
+        finally:
+            sources.fetch_remotive = orig
+        self.assertEqual(report, [("Remotive", 1, "")])                  # sources that are off are not run or listed
 
 
 class AppTests(unittest.TestCase):
@@ -622,52 +638,6 @@ class TrackingTests(unittest.TestCase):
         for loc in ("Springfield, IL", "Remote", "USA", ""):
             self.assertTrue(matcher.location_ok(loc, "", allowed), loc)
 
-    def test_linkedin_parse_and_description(self):
-        items = [{"position": "IT Support Specialist", "company": "Acme", "location": "Springfield, IL", "date": "2026-10-29",
-                  "agoTime": "1 day ago", "jobUrl": "https://www.linkedin.com/jobs/view/it-support-specialist-at-acme-3987654321?trk=x"},
-                 {"position": "", "jobUrl": "https://www.linkedin.com/jobs/view/1"}]
-        j = sources.parse_linkedin(items)
-        self.assertEqual(len(j), 1)
-        self.assertEqual((j[0]["source"], j[0]["ext_id"], j[0]["company"]), ("linkedin", "3987654321", "Acme"))
-        page = '<div class="x"><div class="show-more-less-html__markup show-more-less-html__markup--clamp-after-5">' \
-               '<p>Reset passwords</p><ul><li>Active Directory</li></ul></div></div>'
-        text = sources.parse_linkedin_description(page)
-        self.assertIn("Reset passwords", text); self.assertIn("Active Directory", text)
-        self.assertEqual(sources.parse_linkedin_description("<html></html>"), "")
-
-    def test_linkedin_reports_missing_node(self):
-        from unittest import mock
-        with mock.patch("sources.shutil.which", return_value=None):
-            with self.assertRaises(RuntimeError) as cm:
-                sources._run_linkedin_query({"keyword": "x"})
-        self.assertIn("Node.js", str(cm.exception))
-        self.assertIn("off", self._off("linkedin"))
-
-    def test_linkedin_bridge_output_survives_package_log_lines(self):
-        from unittest import mock
-        def run(out, err="", code=0):
-            return mock.Mock(stdout=out, stderr=err, returncode=code)
-        noisy = 'https://www.linkedin.com/jobs-guest/x\nReturning cached results\n@@JSON@@[{"position":"A"}]@@END@@'
-        with mock.patch("sources.shutil.which", return_value="node"), mock.patch("sources.os.path.isdir", return_value=True):
-            with mock.patch("sources.subprocess.run", return_value=run(noisy)):
-                self.assertEqual(sources._run_linkedin_query({}), [{"position": "A"}])
-            blocked = run("@@JSON@@[]@@END@@", "Error fetching batch (attempt 3): Request failed with status code 403\n")
-            with mock.patch("sources.subprocess.run", return_value=blocked):
-                with self.assertRaises(RuntimeError) as cm:
-                    sources._run_linkedin_query({})
-            self.assertIn("403", str(cm.exception))
-            with mock.patch("sources.subprocess.run", return_value=run("garbage", "", 0)):
-                with self.assertRaises(RuntimeError):
-                    sources._run_linkedin_query({})
-
-    def _off(self, name):
-        try:
-            if name == "linkedin":
-                sources.fetch_linkedin({"linkedin": {"enabled": False}, "search_keywords": [], "target_titles": []})
-        except RuntimeError as e:
-            return str(e)
-        return ""
-
     def test_prep_message_and_import_keeps_resume_outputs(self):
         job = {"title": "Help Desk", "company": "Acme", "location": "KC", "description": "Do SQL", "gaps": [("itil", 2), ("sql", 1)]}
         m = writer.build_prep_message(job)
@@ -822,18 +792,24 @@ class TrackingTests(unittest.TestCase):
                 raise TypeError("scrape_jobs() got an unexpected keyword argument 'fetch_description'")
             return Frame([r for r in rows if r["site"] in kw["site_name"]])
         mod = types.ModuleType("jobspy"); mod.scrape_jobs = fake_scrape
-        cfg = {"jobspy": {"enabled": True, "sites": ["indeed", "linkedin"], "pause_seconds": 0, "max_keywords": 2},
+        cfg = {"jobspy": {"pause_seconds": 0, "max_keywords": 2, "location": "Springfield, IL"},
                "search_keywords": ["help desk", "analyst", "ignored"], "target_titles": ["help desk"]}
+        saved = sys.modules.get("jobspy")
         sys.modules["jobspy"] = mod
         try:
-            got = sources.fetch_jobspy(cfg)
+            got = sources.fetch_jobspy(cfg, "indeed")
+            self.assertEqual([g["ext_id"] for g in got], ["in-1"])             # duplicates across keywords collapse, titles filtered
+            self.assertEqual(len(calls), 2)                                      # one call per keyword
+            sources.fetch_jobspy(cfg, "linkedin")
+            self.assertEqual(len(calls), 6)                                      # plus a retry for each LinkedIn call (old option name)
+            self.assertTrue(any("linkedin_fetch_description" in k for k in calls))
+            sources.fetch_jobspy(cfg, "google")
+            self.assertEqual(calls[-1]["google_search_term"], "analyst jobs near Springfield, IL")
         finally:
-            del sys.modules["jobspy"]
-        self.assertEqual([g["ext_id"] for g in got], ["in-1"])                 # duplicates across keywords collapse, titles filtered
-        self.assertEqual(len(calls), 6)                                          # 2 keywords x 2 sites, plus a retry for each LinkedIn call (old option name)
-        self.assertTrue(any("linkedin_fetch_description" in k for k in calls))
-        self.assertEqual(sources.fetch_all({"jobspy": {"enabled": False}, "search_keywords": [], "target_titles": [],
-                                            "locations": []}, {})[1][-1][2][:12], "JobSpy is of")
+            if saved is None:
+                del sys.modules["jobspy"]
+            else:
+                sys.modules["jobspy"] = saved
 
     # ---- gap plan with your AI ----
     def test_gap_message_has_evidence_and_plan_roundtrip(self):
@@ -1028,7 +1004,8 @@ class SharedDetailsTests(unittest.TestCase):
         self.c.post("/settings", data={"target_titles": "x", "usajobs_key": "K"})
         saved = json.load(open(appmod.keys_path(), encoding="utf-8"))
         self.assertNotIn("anthropic_api_key", saved)
-        self.assertEqual(saved["adzuna_app_id"], "ID9")
+        self.assertNotIn("adzuna_app_id", saved)                    # Adzuna was dropped too
+        self.assertEqual(saved["usajobs_key"], "K")
 
 
 
@@ -1553,22 +1530,25 @@ class SettingsTests(unittest.TestCase):
     def test_save_settings_and_keys(self):
         r = self.c.post("/settings", data={"your_name": "Jane", "target_titles": "Nurse, Care Coordinator",
                                            "search_keywords": "nurse", "locations": "denver\nremote", "place": "Denver, CO",
-                                           "jobspy_enabled": "on", "instructions": "Be brief.", "adzuna_app_id": "ID1"},
+                                           "source_remoteok": "on", "source_glassdoor": "on", "greenhouse_boards": "Acme\nbeta",
+                                           "instructions": "Be brief.", "usajobs_key": "ID1"},
                         follow_redirects=True)
         self.assertIn(b"Settings saved", r.data)
         c = appmod.cfg()
         self.assertEqual(c["target_titles"], ["nurse", "care coordinator"])
         self.assertEqual(c["locations"], ["denver", "remote"])
-        self.assertEqual((c["jobspy"]["location"], c["adzuna"]["where"], c["linkedin"]["enabled"]), ("Denver, CO", "Denver, CO", False))
+        self.assertEqual((c["jobspy"]["location"], c["usajobs"]["location"]), ("Denver, CO", "Denver, CO"))
+        self.assertEqual(sources.enabled(c), ["remoteok", "glassdoor"])
+        self.assertEqual(c["greenhouse_boards"], ["acme", "beta"])
         self.assertTrue(c["send_resume_in_requests"])
         self.assertEqual(settings.instructions_text(c).strip(), "Be brief.")
-        self.assertEqual(json.load(open(appmod.keys_path()))["adzuna_app_id"], "ID1")
+        self.assertEqual(json.load(open(appmod.keys_path()))["usajobs_key"], "ID1")
         page = self.c.get("/settings").data
         self.assertNotIn(b"ID1", page)
         self.assertIn(b"(saved)", page)
         # blank key box keeps the saved key; reset restores the default instructions
         self.c.post("/settings", data={"target_titles": "nurse", "reset_instructions": "on"})
-        self.assertEqual(json.load(open(appmod.keys_path()))["adzuna_app_id"], "ID1")
+        self.assertEqual(json.load(open(appmod.keys_path()))["usajobs_key"], "ID1")
         self.assertIn("resume", settings.instructions_text(appmod.cfg()).lower())
         self.assertNotEqual(settings.instructions_text(appmod.cfg()).strip(), "Be brief.")
 

@@ -142,7 +142,6 @@ class SharedFixturesTest {
         val parsers = mapOf<String, (JsonObject) -> List<Posting>>(
             "remoteok" to { Sources.parseRemoteOk(it.getValue("data")) },
             "remotive" to { Sources.parseRemotive(it.getValue("data")) },
-            "adzuna" to { Sources.parseAdzuna(it.getValue("data")) },
             "usajobs" to { Sources.parseUsajobs(it.getValue("data")) },
             "greenhouse" to { Sources.parseGreenhouse(it.getValue("data"), it.getValue("board").str!!) },
             "lever" to { Sources.parseLever(it.getValue("data"), it.getValue("company").str!!) },

@@ -281,7 +281,7 @@ def profile_cfg(pr):
     if titles:
         c["target_titles"] = titles
     if pr["location"].strip():
-        for key, field in (("linkedin", "location"), ("jobspy", "location"), ("adzuna", "where"), ("usajobs", "location")):
+        for key, field in (("jobspy", "location"), ("usajobs", "location")):
             c.setdefault(key, {})[field] = pr["location"].strip()
     return c
 
@@ -1222,8 +1222,7 @@ def resume_page():
     return render_template("resume.html", found=found, extras=extras, source=scoring_source()[1], name=os.path.basename(settings.resume_path(cfg()) or "") or "none yet", chars=len(text))
 
 
-KEY_FIELDS = (("adzuna_app_id", "Adzuna app id"), ("adzuna_app_key", "Adzuna app key"),
-              ("usajobs_key", "USAJOBS key"), ("usajobs_email", "USAJOBS email"),
+KEY_FIELDS = (("usajobs_key", "USAJOBS key"), ("usajobs_email", "USAJOBS email"),
               ("google_client_id", "Google OAuth client id"), ("google_client_secret", "Google OAuth client secret"))
 
 
@@ -1423,7 +1422,8 @@ def settings_page():
                            has_custom=settings.has_custom_instructions(c),
                            instructions=settings.instructions_text(c), google=google,
                            data_folder=home.ROOT or HERE, default_folder=home.DEFAULT, avoided=db.avoided(get_conn()).values(),
-                           key_fields=KEY_FIELDS, key_set={k for k, _ in KEY_FIELDS if keys.get(k)})
+                           key_fields=KEY_FIELDS, key_set={k for k, _ in KEY_FIELDS if keys.get(k)},
+                           sources=sources.SOURCES, sources_on=set(sources.enabled(c)))
 
 
 @app.post("/settings")
@@ -1436,10 +1436,11 @@ def settings_save():
         "search_keywords": [t.lower() for t in _lines(f.get("search_keywords"))],
         "locations": [t.lower() for t in _lines(f.get("locations"))],
         "send_resume_in_requests": f.get("ai_has_resume") != "on",
-        "jobspy": {"enabled": f.get("jobspy_enabled") == "on", "location": place},
-        "linkedin": {"enabled": f.get("linkedin_enabled") == "on", "location": place},
-        "adzuna": {"where": place},
+        "jobspy": {"location": place},
         "usajobs": {"location": place},
+        "sources": {k: f.get("source_" + k) == "on" for k, _, _, _ in sources.SOURCES},
+        "greenhouse_boards": [t.lower() for t in _lines(f.get("greenhouse_boards"))],
+        "lever_companies": [t.lower() for t in _lines(f.get("lever_companies"))],
     }
     for k in ("queue_folder", "shared_folder"):        # this computer only
         if k in f:

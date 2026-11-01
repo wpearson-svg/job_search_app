@@ -23,9 +23,17 @@ Every posting is scored against it, and every AI request says to use only facts 
 <p><label>Main place to search (e.g. "Denver, CO")<br><input name="place" value="{{ c.jobspy.location }}" size="40"></label></p>
 
 <h2>3. Where to fetch postings</h2>
-<p><label><input type="checkbox" name="jobspy_enabled" {% if c.jobspy.enabled %}checked{% endif %}> Indeed and LinkedIn (JobSpy)</label></p>
-<p><label><input type="checkbox" name="linkedin_enabled" {% if c.linkedin.enabled %}checked{% endif %}> LinkedIn through the Node package (needs Node.js)</label></p>
-<p class="muted">RemoteOK and Remotive are always on. Adzuna and USAJOBS turn on when you add their keys below.</p>
+<p class="muted">Fetch runs the sources ticked here (this computer only). Each one reports its own result, so a site that blocks
+the request shows its error without stopping the others. The JobSpy sites' terms restrict automated collection; keep
+the volume small.</p>
+{% for k, label, about, _ in sources %}
+<p><label><input type="checkbox" name="source_{{ k }}" {% if k in sources_on %}checked{% endif %}> <strong>{{ label }}</strong></label>
+  <span class="muted">{{ about }}{% if k == "usajobs" and not ("usajobs_key" in key_set and "usajobs_email" in key_set) %} Not set up yet.{% endif %}</span></p>
+{% endfor %}
+<p><label>Greenhouse boards (one per line: the name in boards.greenhouse.io/<em>name</em>)<br>
+<textarea name="greenhouse_boards" rows="3" cols="50">{{ (c.greenhouse_boards or [])|join('\n') }}</textarea></label></p>
+<p><label>Lever companies (one per line: the name in jobs.lever.co/<em>name</em>)<br>
+<textarea name="lever_companies" rows="3" cols="50">{{ (c.lever_companies or [])|join('\n') }}</textarea></label></p>
 
 <h2>4. How the AI writes for you</h2>
 <p><label><input type="checkbox" name="ai_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>

@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -122,7 +123,7 @@ fun ProfilesScreen(state: AppState, back: () -> Unit) {
                     Field("Name", name, { name = it })
                     Field("Keywords, one per line", kw, { kw = it }, lines = 3)
                     Field("Titles to keep, one per line", titles, { titles = it }, lines = 3)
-                    Field("Place (for Adzuna and USAJOBS)", place, { place = it })
+                    Field("Place (for USAJOBS)", place, { place = it })
                     err?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }
             },
@@ -193,6 +194,7 @@ fun SettingsScreen(state: AppState, back: () -> Unit, help: () -> Unit) {
     var place by remember(v) { mutableStateOf(s.place) }
     var boards by remember(v) { mutableStateOf(s.greenhouseBoards.joinToString("\n")) }
     var lever by remember(v) { mutableStateOf(s.leverCompanies.joinToString("\n")) }
+    val sourcesOn = remember(v) { wildthing.core.Sources.enabled(s.sourceChoices).toMutableStateList() }
     var hasResume by remember(v) { mutableStateOf(!s.sendResumeInRequests) }
     var instructions by remember(v) { mutableStateOf(store.instructions()) }
     val keyInputs = remember(v) { SecretKeys.FIELDS.associate { it.first to mutableStateOf("") } }
@@ -248,10 +250,20 @@ fun SettingsScreen(state: AppState, back: () -> Unit, help: () -> Unit) {
             Field("Search keywords", keywords, { keywords = it }, lines = 3, help = "One per line. What Fetch searches for (profiles can override).")
             Field("Places that count as yours", places, { places = it }, lines = 3,
                 help = "One per line, e.g. your city, state, \"remote\". Postings elsewhere are skipped. \"Worldwide\" and \"anywhere\" never count.")
-            Field("Main search place", place, { place = it }, help = "Used by Adzuna and USAJOBS.")
+            Field("Main search place", place, { place = it }, help = "Used by USAJOBS.")
 
             SectionTitle("Sources")
-            Muted("RemoteOK and Remotive are always on. On the phone, LinkedIn and Indeed postings come in through the share menu: tap Share on a posting there and pick WildThing.")
+            Muted("Fetch runs the sources switched on here (this phone only). On the phone, LinkedIn and Indeed postings come in through the share menu: tap Share on a posting there and pick WildThing.")
+            wildthing.core.Sources.PHONE.forEach { src ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(src.label)
+                        val missing = src.key == "usajobs" && !(store.keys.has("usajobs_key") && store.keys.has("usajobs_email"))
+                        Muted(src.about + if (missing) " Not set up yet." else "")
+                    }
+                    Switch(src.key in sourcesOn, { on -> if (on) sourcesOn.add(src.key) else sourcesOn.remove(src.key) })
+                }
+            }
             Field("Greenhouse boards", boards, { boards = it }, lines = 2, help = "Company board names, one per line (from boards.greenhouse.io/<name>).")
             Field("Lever companies", lever, { lever = it }, lines = 2, help = "Company names, one per line (from jobs.lever.co/<name>).")
 
@@ -276,8 +288,8 @@ fun SettingsScreen(state: AppState, back: () -> Unit, help: () -> Unit) {
                     "greenhouse_boards" to UserSettings.strings(boards.lines().map { it.trim() }.filter { it.isNotEmpty() }),
                     "lever_companies" to UserSettings.strings(lever.lines().map { it.trim() }.filter { it.isNotEmpty() }),
                     "send_resume_in_requests" to JsonPrimitive(!hasResume),
-                    "adzuna" to JsonObject(mapOf("where" to JsonPrimitive(place.trim()))),
                     "usajobs" to JsonObject(mapOf("location" to JsonPrimitive(place.trim()))),
+                    "sources" to JsonObject(wildthing.core.Sources.PHONE.associate { it.key to JsonPrimitive(it.key in sourcesOn) }),
                 ))
                 if (instructions.trim() != store.instructions().trim()) store.saveInstructions(instructions)
                 store.rescoreAll()

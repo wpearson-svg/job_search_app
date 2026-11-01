@@ -192,9 +192,6 @@ def parsers():
         "lever": [{"data": d, "company": "co", "expect": sources.parse_lever(d, "co")} for d in (
             [{"id": "a", "text": "Support", "categories": {"location": "Remote"}, "hostedUrl": "u", "descriptionPlain": "Desc",
               "createdAt": 1730000000000, "lists": [{"text": "Requirements", "content": "<li>SQL</li>"}]}],)],
-        "adzuna": [{"data": d, "expect": sources.parse_adzuna(d)} for d in (
-            {"results": [{"id": 3, "title": "T", "company": {"display_name": "X"}, "location": {"display_name": "KC"},
-                          "redirect_url": "u", "description": "d", "created": "2026-10-03"}]},)],
         "usajobs": [{"data": d, "expect": sources.parse_usajobs(d)} for d in (
             {"SearchResult": {"SearchResultItems": [{"MatchedObjectId": "7", "MatchedObjectDescriptor": {
                 "PositionTitle": "IT Specialist", "OrganizationName": "Agency", "PositionLocationDisplay": "KC",

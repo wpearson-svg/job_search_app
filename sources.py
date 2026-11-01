@@ -1,23 +1,42 @@
 """Job sources that allow programmatic use: open APIs and the public boards companies publish themselves.
 
 Each fetch_* returns a list of dicts: source, ext_id, title, company, location, url, description (plain text), posted.
-LinkedIn (via the linkedin-jobs-api npm package) and Indeed/LinkedIn (via the python-jobspy library) are included too.
-Both services' own terms restrict automated collection; each has an `enabled` switch in config.json.
+Indeed, LinkedIn, ZipRecruiter, Glassdoor and Google Jobs come through the python-jobspy library; those sites' own
+terms restrict automated collection. Each source can be switched on or off in Settings (SOURCES below).
 The parsing below follows each service's documented response format; the functions named parse_* take the already
 downloaded data, so they can be tested without a network.
 """
 import html
-import json
-import os
 import re
-import shutil
-import subprocess
 import time
 
 import requests
 
 UA = {"User-Agent": "job-search-app/1.0 (personal use)"}
 TIMEOUT = 25
+
+# Every source: key, name, what it is, on by default. Settings saves {key: on} as "sources"; this computer only.
+# The phone runs the same keys less the JobSpy ones (wildthing.core.Sources.PHONE).
+JOBSPY_SITES = ("indeed", "linkedin", "zip_recruiter", "glassdoor", "google")
+SOURCES = (
+    ("remoteok", "RemoteOK", "Remote jobs. No key needed.", True),
+    ("remotive", "Remotive", "Remote jobs. No key needed.", True),
+    ("indeed", "Indeed", "Through JobSpy. Full descriptions.", True),
+    ("linkedin", "LinkedIn", "Through JobSpy. Slower, and LinkedIn may rate-limit it.", True),
+    ("zip_recruiter", "ZipRecruiter", "Through JobSpy. US and Canada; often blocked.", False),
+    ("glassdoor", "Glassdoor", "Through JobSpy. Often blocked.", False),
+    ("google", "Google Jobs", "Through JobSpy. Postings Google gathers from many boards.", False),
+    ("usajobs", "USAJOBS", "US federal jobs. Needs your free key and email (section 6).", True),
+    ("greenhouse", "Greenhouse boards", "The company boards listed below.", True),
+    ("lever", "Lever companies", "The companies listed below.", True),
+)
+LABEL = {k: label for k, label, _, _ in SOURCES}
+
+
+def enabled(cfg):
+    """The keys of the sources that are on, in SOURCES order: Settings' choices over each source's default."""
+    chosen = cfg.get("sources") or {}
+    return [k for k, _, _, default in SOURCES if chosen.get(k, default)]
 
 
 def strip_html(text):
@@ -117,34 +136,6 @@ def fetch_lever(cfg):
     return out
 
 
-# ---- Adzuna (free key). The API gives a short snippet, not the full description. ----
-def parse_adzuna(data):
-    out = []
-    for j in data.get("results", []):
-        out.append({"source": "adzuna", "ext_id": str(j.get("id")), "title": j.get("title", ""),
-                    "company": (j.get("company") or {}).get("display_name", ""),
-                    "location": (j.get("location") or {}).get("display_name", ""),
-                    "url": j.get("redirect_url", ""), "description": strip_html(j.get("description", "")),
-                    "posted": j.get("created", "")})
-    return out
-
-
-def fetch_adzuna(cfg, keys):
-    if not (keys.get("adzuna_app_id") and keys.get("adzuna_app_key")):
-        raise RuntimeError("no Adzuna key in keys.local.json (skipped)")
-    a = cfg.get("adzuna", {})
-    found = {}
-    for kw in cfg["search_keywords"]:
-        r = requests.get(f"https://api.adzuna.com/v1/api/jobs/{a.get('country', 'us')}/search/1",
-                         params={"app_id": keys["adzuna_app_id"], "app_key": keys["adzuna_app_key"], "what": kw,
-                                 "where": a.get("where", ""), "results_per_page": 30,
-                                 "content-type": "application/json"}, headers=UA, timeout=TIMEOUT)
-        r.raise_for_status()
-        for j in parse_adzuna(r.json()):
-            found[j["ext_id"]] = j
-    return list(found.values())
-
-
 # ---- USAJOBS (free key) ------------------------------------------------------
 def parse_usajobs(data):
     out = []
@@ -161,7 +152,7 @@ def parse_usajobs(data):
 
 def fetch_usajobs(cfg, keys):
     if not (keys.get("usajobs_key") and keys.get("usajobs_email")):
-        raise RuntimeError("no USAJOBS key in keys.local.json (skipped)")
+        raise RuntimeError("no USAJOBS key yet: add it in Settings, section 6 (skipped)")
     found = {}
     for kw in cfg["search_keywords"]:
         r = requests.get("https://data.usajobs.gov/api/search",
@@ -175,83 +166,7 @@ def fetch_usajobs(cfg, keys):
     return list(found.values())
 
 
-# ---- LinkedIn (npm package linkedin-jobs-api, run through Node) ---------------
-HERE = os.path.dirname(os.path.abspath(__file__))
-
-
-def _linkedin_id(url):
-    m = re.search(r"-(\d{6,})(?:[/?]|$)", url or "") or re.search(r"/view/(\d{6,})", url or "")
-    return m.group(1) if m else ""
-
-
-def parse_linkedin(items):
-    out = []
-    for j in items or []:
-        url = j.get("jobUrl", "")
-        ext = _linkedin_id(url) or url
-        if not (ext and j.get("position")):
-            continue
-        out.append({"source": "linkedin", "ext_id": ext, "title": j.get("position", ""), "company": j.get("company", ""),
-                    "location": j.get("location", ""), "url": url, "description": "",
-                    "posted": j.get("date") or j.get("agoTime", "")})
-    return out
-
-
-def parse_linkedin_description(page_html):
-    """The public job page keeps the description in div.show-more-less-html__markup."""
-    m = re.search(r'show-more-less-html__markup[^>]*>(.*?)</div>', page_html or "", re.S)
-    return strip_html(m.group(1)) if m else ""
-
-
-def _run_linkedin_query(options):
-    node = shutil.which("node")
-    if not node:
-        raise RuntimeError("Node.js is not installed (needed for LinkedIn). Install it from nodejs.org, then run again.")
-    if not os.path.isdir(os.path.join(HERE, "node_modules", "linkedin-jobs-api")):
-        raise RuntimeError("linkedin-jobs-api is not installed. Run `npm install` in the app folder (run.bat does this).")
-    p = subprocess.run([node, os.path.join(HERE, "linkedin_bridge.js"), json.dumps(options)],
-                       capture_output=True, text=True, timeout=120, cwd=HERE, encoding="utf-8", errors="replace")
-    m = re.search(r"@@JSON@@(.*?)@@END@@", p.stdout or "", re.S)
-    problems = [ln.strip() for ln in (p.stderr or "").splitlines() if "status code" in ln or "Rate limit" in ln or "Error" in ln]
-    if p.returncode != 0 or not m:
-        raise RuntimeError("LinkedIn query failed: " + (problems[-1] if problems else (p.stderr.strip() or "no message"))[:160])
-    jobs = json.loads(m.group(1))
-    if not jobs and problems:                    # the package swallows HTTP errors and returns an empty list
-        raise RuntimeError("LinkedIn did not return results: " + problems[-1][:140])
-    return jobs
-
-
-def fetch_linkedin(cfg):
-    c = cfg.get("linkedin", {})
-    if not c.get("enabled"):
-        raise RuntimeError("LinkedIn is off (set linkedin.enabled to true in config.json)")
-    found = {}
-    for kw in cfg["search_keywords"][: c.get("max_keywords", 3)]:
-        opts = {"keyword": kw, "location": c.get("location", ""), "dateSincePosted": c.get("dateSincePosted", "past week"),
-                "limit": str(c.get("limit", 25)), "sortBy": "recent"}
-        for key in ("jobType", "remoteFilter", "experienceLevel"):
-            if c.get(key):
-                opts[key] = c[key]
-        for j in parse_linkedin(_run_linkedin_query(opts)):
-            found.setdefault(j["ext_id"], j)
-        time.sleep(1.5)                                     # be gentle: one query at a time
-    jobs = [j for j in found.values() if title_wanted(j["title"], cfg["target_titles"])]
-    # The package returns the listing only. Fetch each posting's public page so it can be scored.
-    for j in jobs[: c.get("max_descriptions", 25)]:
-        try:
-            r = requests.get("https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/" + j["ext_id"], headers=UA, timeout=TIMEOUT)
-            if r.ok:
-                j["description"] = parse_linkedin_description(r.text)
-        except requests.RequestException:
-            pass
-        time.sleep(1.5)
-    for j in jobs:
-        if not j["description"]:
-            j["description"] = "(Description not retrieved. Open the posting and paste it here to score it.)"
-    return jobs
-
-
-# ---- JobSpy (python-jobspy: Indeed, LinkedIn, ZipRecruiter, Glassdoor; no key) ------------------------------
+# ---- JobSpy (python-jobspy: Indeed, LinkedIn, ZipRecruiter, Glassdoor, Google Jobs; no key) -----------------
 def _clean(v):
     """pandas leaves NaN/None in empty cells; treat both as blank."""
     if v is None or (isinstance(v, float) and v != v):
@@ -294,32 +209,33 @@ def _scrape(scrape_jobs, **kw):
     return df.to_dict("records"), errors
 
 
-def fetch_jobspy(cfg):
+def fetch_jobspy(cfg, site):
+    """One JobSpy site (a key in JOBSPY_SITES), searched for each keyword."""
     c = cfg.get("jobspy", {})
-    if not c.get("enabled"):
-        raise RuntimeError("JobSpy is off (set jobspy.enabled to true in config.json)")
     try:
         from jobspy import scrape_jobs
     except ImportError:
         raise RuntimeError("python-jobspy is not installed. Run `pip install python-jobspy` (run.bat does this).")
+    place = c.get("location", "")
     found, problems = {}, []
     for kw in cfg["search_keywords"][: c.get("max_keywords", 3)]:
-        for site in c.get("sites", ["indeed", "linkedin"]):
-            opts = dict(site_name=[site], search_term=kw, location=c.get("location", ""), distance=c.get("distance", 25),
-                        results_wanted=c.get("linkedin_results_wanted", 15) if site == "linkedin" else c.get("results_wanted", 25),
-                        hours_old=c.get("hours_old", 168), country_indeed=c.get("country_indeed", "USA"), verbose=0)
-            if site == "linkedin":
-                opts["fetch_description"] = c.get("linkedin_fetch_description", True)
-            try:
-                rows, errs = _scrape(scrape_jobs, **opts)
-            except Exception as e:                      # one site failing must not stop the others
-                problems.append(f"{site}: {str(e)[:100]}")
-                continue
-            if errs:
-                problems.append(f"{site}: {str(errs)[:100]}")
-            for j in parse_jobspy(rows):
-                found.setdefault((j["source"], j["ext_id"]), j)
-            time.sleep(c.get("pause_seconds", 3))
+        opts = dict(site_name=[site], search_term=kw, location=place, distance=c.get("distance", 25),
+                    results_wanted=c.get("linkedin_results_wanted", 15) if site == "linkedin" else c.get("results_wanted", 25),
+                    hours_old=c.get("hours_old", 168), country_indeed=c.get("country_indeed", "USA"), verbose=0)
+        if site == "linkedin":
+            opts["fetch_description"] = c.get("linkedin_fetch_description", True)
+        if site == "google":                            # Google Jobs reads its own wording, not search_term
+            opts["google_search_term"] = f"{kw} jobs near {place}" if place else f"{kw} jobs"
+        try:
+            rows, errs = _scrape(scrape_jobs, **opts)
+        except Exception as e:                          # one keyword failing must not stop the others
+            problems.append(str(e)[:100])
+            continue
+        if errs:
+            problems.append(str(errs)[:100])
+        for j in parse_jobspy(rows):
+            found.setdefault(j["ext_id"], j)
+        time.sleep(c.get("pause_seconds", 3))
     jobs = [j for j in found.values() if title_wanted(j["title"], cfg["target_titles"])]
     if not jobs and problems:
         raise RuntimeError("; ".join(problems[:3]))
@@ -327,18 +243,19 @@ def fetch_jobspy(cfg):
 
 
 def fetch_all(cfg, keys):
-    """Runs every source. Returns (jobs, report) where report lists each source's result or error."""
+    """Runs every source that is on. Returns (jobs, report) where report lists each source's result or error."""
     jobs, report = [], []
-    runners = [("RemoteOK", lambda: fetch_remoteok(cfg)), ("Remotive", lambda: fetch_remotive(cfg)),
-               ("Greenhouse boards", lambda: fetch_greenhouse(cfg)), ("Lever companies", lambda: fetch_lever(cfg)),
-               ("Adzuna", lambda: fetch_adzuna(cfg, keys)), ("USAJOBS", lambda: fetch_usajobs(cfg, keys)),
-               ("LinkedIn (npm package)", lambda: fetch_linkedin(cfg)), ("JobSpy (Indeed, LinkedIn)", lambda: fetch_jobspy(cfg))]
+    runners = {"remoteok": lambda: fetch_remoteok(cfg), "remotive": lambda: fetch_remotive(cfg),
+               "greenhouse": lambda: fetch_greenhouse(cfg), "lever": lambda: fetch_lever(cfg),
+               "usajobs": lambda: fetch_usajobs(cfg, keys)}
+    for site in JOBSPY_SITES:
+        runners[site] = lambda site=site: fetch_jobspy(cfg, site)
     cap = cfg.get("max_jobs_per_source", 60)
-    for name, run in runners:
+    for key in enabled(cfg):
         try:
-            got = run()[:cap]
+            got = runners[key]()[:cap]
             jobs += got
-            report.append((name, len(got), ""))
+            report.append((LABEL[key], len(got), ""))
         except Exception as e:  # one source failing must not stop the others
-            report.append((name, 0, str(e)[:160]))
+            report.append((LABEL[key], 0, str(e)[:160]))
     return jobs, report
