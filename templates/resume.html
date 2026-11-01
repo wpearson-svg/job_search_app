@@ -2,10 +2,11 @@
 {% block body %}
 <h1>My resume</h1>
 <p class="muted">Reading <strong>{{ name }}</strong> ({{ chars }} characters). To change the resume, edit that file and press Re-score all on the Postings page.</p>
+{% if source == "career" %}<p class="flash">Postings are scored against your <a href="{{ url_for('career_page') }}">career file</a>, not this resume. The resume is still the example of format and tone.</p>{% endif %}
 <h2>Skills found in your resume ({{ found|length }})</h2>
 <p>{% for t in found %}<span class="tag ok">{{ t }}</span> {% endfor %}</p>
 <h2>Marked as "I have this" ({{ extras|length }})</h2>
-<p class="muted">These count as matches in scoring but are not in the resume file. Add them to the resume only if they are true.</p>
+<p class="muted">These count as matches in scoring but are not in the resume file.{% if source == "career" %} They are kept in your career file as confirmed skills.{% endif %} Add them to the resume only if they are true.</p>
 {% for t in extras %}
 <form method="post" action="{{ url_for('unhave') }}" class="inline"><span class="tag">{{ t }}</span><input type="hidden" name="term" value="{{ t }}"><button class="plain small">remove</button></form>
 {% else %}<p class="muted">None.</p>{% endfor %}

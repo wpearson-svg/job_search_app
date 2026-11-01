@@ -83,6 +83,13 @@ input, select, textarea { font:inherit; padding:6px 8px; border:1px solid var(--
 .tag { display:inline-block; padding:0 8px; border:1px solid var(--line); border-radius:10px; font-size:.82rem; margin:2px 0; }
 .tag.ok { border-color:var(--good); color:var(--good); background:var(--good-bg); }
 .tag.gap { border-color:var(--warn); color:var(--warn); }
+.tag.mark { border-color:var(--gold2); }
+.tag.bad { border-color:var(--bad); color:var(--bad); }
+tr.job.avoided td { opacity:.55; }
+.tagform .chk { display:inline-block; margin:2px 10px 2px 0; color:var(--text); font-size:.88rem; }
+.tagform input[type=checkbox] { width:auto; margin:0 2px 0 0; vertical-align:middle; }
+.tagform .customtag, .tagform input[name=reason] { margin:6px 0; }
+details.marks { margin:10px 0; } details.marks summary { cursor:pointer; color:var(--muted); }
 .gaps { list-style:none; padding:0; } .gaps li { padding:4px 0; }
 .inline { display:inline; margin:0; }
 .posting { white-space:pre-wrap; background:transparent; border:1px solid var(--line); padding:12px; border-radius:8px; font:inherit; }
@@ -132,3 +139,4 @@ tr.job.sel td:first-child { box-shadow:inset 3px 0 0 var(--gold); }
   table.list td:nth-child(2) { padding-right:56px; font-weight:600; }
   table.list tr.job.sel td:first-child { box-shadow:none; }
 }
+h1 .help { display:inline-flex; align-items:center; justify-content:center; width:1.4rem; height:1.4rem; border-radius:50%; font-size:.9rem; vertical-align:middle; text-decoration:none; border:1px solid var(--line); color:var(--link); }

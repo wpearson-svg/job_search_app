@@ -1,0 +1,581 @@
+{
+ "build_plan": [
+  {
+   "jobs": [
+    {
+     "gaps": [
+      [
+       "itil",
+       2
+      ],
+      [
+       "salesforce",
+       1
+      ]
+     ]
+    },
+    {
+     "gaps": [
+      [
+       "itil",
+       1
+      ]
+     ]
+    },
+    {
+     "gaps": [
+      [
+       "docker",
+       1
+      ]
+     ]
+    }
+   ],
+   "expect": {
+    "rows": [
+     {
+      "term": "itil",
+      "kind": "cert",
+      "jobs": 2,
+      "required": 1,
+      "weight": 3,
+      "action": "Certification. Look up the exam objectives, book the exam, and add it to the resume only after you pass."
+     },
+     {
+      "term": "docker",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "salesforce",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     }
+    ],
+    "phases": [
+     {
+      "label": "Weeks 1-2",
+      "items": [
+       {
+        "term": "itil",
+        "kind": "cert",
+        "jobs": 2,
+        "required": 1,
+        "weight": 3,
+        "action": "Certification. Look up the exam objectives, book the exam, and add it to the resume only after you pass."
+       },
+       {
+        "term": "docker",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       }
+      ]
+     },
+     {
+      "label": "Weeks 3-4",
+      "items": [
+       {
+        "term": "salesforce",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "jobs": [
+    {
+     "gaps": [
+      [
+       "sql",
+       1
+      ],
+      [
+       "python",
+       2
+      ],
+      [
+       "itil",
+       1
+      ],
+      [
+       "aws",
+       2
+      ],
+      [
+       "tableau",
+       1
+      ],
+      [
+       "jira",
+       2
+      ],
+      [
+       "power bi",
+       1
+      ],
+      [
+       "salesforce",
+       2
+      ],
+      [
+       "docker",
+       1
+      ],
+      [
+       "kubernetes",
+       2
+      ],
+      [
+       "terraform",
+       1
+      ],
+      [
+       "linux",
+       2
+      ]
+     ]
+    }
+   ],
+   "expect": {
+    "rows": [
+     {
+      "term": "aws",
+      "kind": "skill",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+     },
+     {
+      "term": "jira",
+      "kind": "skill",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+     },
+     {
+      "term": "kubernetes",
+      "kind": "skill",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+     },
+     {
+      "term": "linux",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "python",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "salesforce",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 1,
+      "weight": 2,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "docker",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "itil",
+      "kind": "cert",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Certification. Look up the exam objectives, book the exam, and add it to the resume only after you pass."
+     },
+     {
+      "term": "power bi",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "sql",
+      "kind": "skill",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+     },
+     {
+      "term": "tableau",
+      "kind": "tool",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+     },
+     {
+      "term": "terraform",
+      "kind": "skill",
+      "jobs": 1,
+      "required": 0,
+      "weight": 1,
+      "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+     }
+    ],
+    "phases": [
+     {
+      "label": "Weeks 1-2",
+      "items": [
+       {
+        "term": "aws",
+        "kind": "skill",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+       },
+       {
+        "term": "jira",
+        "kind": "skill",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+       }
+      ]
+     },
+     {
+      "label": "Weeks 3-4",
+      "items": [
+       {
+        "term": "kubernetes",
+        "kind": "skill",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+       },
+       {
+        "term": "linux",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       }
+      ]
+     },
+     {
+      "label": "Weeks 5-6",
+      "items": [
+       {
+        "term": "python",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       },
+       {
+        "term": "salesforce",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 1,
+        "weight": 2,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       }
+      ]
+     },
+     {
+      "label": "Weeks 7-8",
+      "items": [
+       {
+        "term": "docker",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       },
+       {
+        "term": "itil",
+        "kind": "cert",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Certification. Look up the exam objectives, book the exam, and add it to the resume only after you pass."
+       }
+      ]
+     },
+     {
+      "label": "Weeks 9-10",
+      "items": [
+       {
+        "term": "power bi",
+        "kind": "tool",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built."
+       },
+       {
+        "term": "sql",
+        "kind": "skill",
+        "jobs": 1,
+        "required": 0,
+        "weight": 1,
+        "action": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role."
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "jobs": [],
+   "expect": {
+    "rows": [],
+    "phases": []
+   }
+  }
+ ],
+ "build_message": [
+  {
+   "jobs": [
+    {
+     "title": "Systems Analyst",
+     "company": "Beta",
+     "matched": [
+      "sql"
+     ],
+     "description": "Requirements:\nStrong SQL skills and Power BI dashboards.\nITIL certification required.",
+     "gaps": [
+      [
+       "power bi",
+       2
+      ],
+      [
+       "itil",
+       2
+      ]
+     ]
+    },
+    {
+     "title": "Service Desk Analyst",
+     "company": "",
+     "matched": [
+      "help desk",
+      "troubleshooting"
+     ],
+     "description": "About the role\nYou will join a busy service desk supporting 2,000 users across three offices. Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\n\nWhat you'll need\n- 5+ years of help desk or desktop support experience\n- Active Directory and Microsoft 365 administration\n- Strong customer service and clear written communication\n- Comfort with Windows 10/11 imaging and Intune\n\nNice to have\n- CompTIA A+ or Network+\n- ITIL Foundation\n- Some PowerShell scripting\n\nWe offer a hybrid schedule and a learning budget. You will excel in a fast-moving team and grow with us.",
+     "gaps": [
+      [
+       "active directory",
+       2
+      ],
+      [
+       "customer service",
+       2
+      ],
+      [
+       "microsoft 365",
+       2
+      ],
+      [
+       "comptia a+",
+       1
+      ],
+      [
+       "comptia network+",
+       1
+      ],
+      [
+       "documentation",
+       1
+      ],
+      [
+       "itil",
+       1
+      ],
+      [
+       "ticketing systems",
+       1
+      ]
+     ]
+    }
+   ],
+   "focus": "all postings",
+   "extras": [],
+   "hours": 5,
+   "weeks": 12,
+   "top": 15,
+   "expect": "Build me a realistic skills plan from the gaps below. Use only facts from my master resume when you talk about what I already have. Do not invent experience, and do not tell me to claim a skill I have not shown. If you are unsure whether I have something, ask me in <questions>.\n\nFocus: all postings. Based on 2 saved job postings.\nTime I can give: about 5 hours a week for 12 weeks.\n\nReply using exactly these tags:\n<priorities> the gaps in the order I should work on them, and why that order (what employers ask for most, what is required rather than preferred, and what builds on what) </priorities>\n<plan> a week-by-week plan that fits my hours, with specific free or low-cost resources and what to finish each week </plan>\n<proof> for each priority skill, a small project or result I can show an employer, ideally built on my real work from my resume </proof>\n<resume_changes> wording I could add to my resume now, only where it is already true, and what to add later once I finish each step </resume_changes>\n<skip> gaps that are not worth chasing for this focus, and why </skip>\n<questions> anything you need to ask me before the plan is right </questions>\n\nGaps, most wanted first (a gap is a skill the postings ask for that my resume does not show):\n1. itil (cert): in 2 postings, listed as required in 1\n   - Systems Analyst (Beta): \"ITIL certification required.\"\n   - Service Desk Analyst (company not listed): \"- ITIL Foundation\"\n2. active directory (tool): in 1 postings, listed as required in 1\n   - Service Desk Analyst (company not listed): \"- Active Directory and Microsoft 365 administration\"\n3. customer service (skill): in 1 postings, listed as required in 1\n   - Service Desk Analyst (company not listed): \"- Strong customer service and clear written communication\"\n4. microsoft 365 (tool): in 1 postings, listed as required in 1\n   - Service Desk Analyst (company not listed): \"- Active Directory and Microsoft 365 administration\"\n5. power bi (tool): in 1 postings, listed as required in 1\n   - Systems Analyst (Beta): \"Strong SQL skills and Power BI dashboards.\"\n6. comptia a+ (cert): in 1 postings, listed as required in 0\n   - Service Desk Analyst (company not listed): \"- CompTIA A+ or Network+\"\n7. comptia network+ (cert): in 1 postings, listed as required in 0\n   - Service Desk Analyst (company not listed): \"- CompTIA A+ or Network+\"\n8. documentation (skill): in 1 postings, listed as required in 0\n   - Service Desk Analyst (company not listed): \"Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\"\n9. ticketing systems (tool): in 1 postings, listed as required in 0\n   - Service Desk Analyst (company not listed): \"Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\"\n\nSkills those postings ask for that my resume already shows (with how many postings): sql (1), help desk (1), troubleshooting (1)"
+  },
+  {
+   "jobs": [
+    {
+     "title": "Systems Analyst",
+     "company": "Beta",
+     "matched": [
+      "sql"
+     ],
+     "description": "Requirements:\nStrong SQL skills and Power BI dashboards.\nITIL certification required.",
+     "gaps": [
+      [
+       "power bi",
+       2
+      ],
+      [
+       "itil",
+       2
+      ]
+     ]
+    },
+    {
+     "title": "Service Desk Analyst",
+     "company": "",
+     "matched": [
+      "help desk",
+      "troubleshooting"
+     ],
+     "description": "About the role\nYou will join a busy service desk supporting 2,000 users across three offices. Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\n\nWhat you'll need\n- 5+ years of help desk or desktop support experience\n- Active Directory and Microsoft 365 administration\n- Strong customer service and clear written communication\n- Comfort with Windows 10/11 imaging and Intune\n\nNice to have\n- CompTIA A+ or Network+\n- ITIL Foundation\n- Some PowerShell scripting\n\nWe offer a hybrid schedule and a learning budget. You will excel in a fast-moving team and grow with us.",
+     "gaps": [
+      [
+       "active directory",
+       2
+      ],
+      [
+       "customer service",
+       2
+      ],
+      [
+       "microsoft 365",
+       2
+      ],
+      [
+       "comptia a+",
+       1
+      ],
+      [
+       "comptia network+",
+       1
+      ],
+      [
+       "documentation",
+       1
+      ],
+      [
+       "itil",
+       1
+      ],
+      [
+       "ticketing systems",
+       1
+      ]
+     ]
+    }
+   ],
+   "focus": "the \"PM\" profile",
+   "extras": [
+    "jira",
+    "aws"
+   ],
+   "hours": 6,
+   "weeks": 8,
+   "top": 3,
+   "expect": "Build me a realistic skills plan from the gaps below. Use only facts from my master resume when you talk about what I already have. Do not invent experience, and do not tell me to claim a skill I have not shown. If you are unsure whether I have something, ask me in <questions>.\n\nFocus: the \"PM\" profile. Based on 2 saved job postings.\nTime I can give: about 6 hours a week for 8 weeks.\n\nReply using exactly these tags:\n<priorities> the gaps in the order I should work on them, and why that order (what employers ask for most, what is required rather than preferred, and what builds on what) </priorities>\n<plan> a week-by-week plan that fits my hours, with specific free or low-cost resources and what to finish each week </plan>\n<proof> for each priority skill, a small project or result I can show an employer, ideally built on my real work from my resume </proof>\n<resume_changes> wording I could add to my resume now, only where it is already true, and what to add later once I finish each step </resume_changes>\n<skip> gaps that are not worth chasing for this focus, and why </skip>\n<questions> anything you need to ask me before the plan is right </questions>\n\nGaps, most wanted first (a gap is a skill the postings ask for that my resume does not show):\n1. itil (cert): in 2 postings, listed as required in 1\n   - Systems Analyst (Beta): \"ITIL certification required.\"\n   - Service Desk Analyst (company not listed): \"- ITIL Foundation\"\n2. active directory (tool): in 1 postings, listed as required in 1\n   - Service Desk Analyst (company not listed): \"- Active Directory and Microsoft 365 administration\"\n3. customer service (skill): in 1 postings, listed as required in 1\n   - Service Desk Analyst (company not listed): \"- Strong customer service and clear written communication\"\n(6 smaller gaps left out.)\n\nSkills those postings ask for that my resume already shows (with how many postings): sql (1), help desk (1), troubleshooting (1)\n\nThings I told the app I have, which my resume does not yet say: aws, jira"
+  }
+ ],
+ "parse_plan": [
+  {
+   "text": "<priorities>Start with ITIL</priorities><plan>Week 1: read the guide</plan><skip>Tableau</skip>",
+   "expect": [
+    [
+     "What to work on first, and why",
+     "Start with ITIL"
+    ],
+    [
+     "Week-by-week plan",
+     "Week 1: read the guide"
+    ],
+    [
+     "What not to chase",
+     "Tableau"
+    ]
+   ]
+  },
+  {
+   "text": "No tags at all.",
+   "expect": []
+  },
+  {
+   "text": "<plan>\n\n</plan><questions> Do you have AWS? </questions>",
+   "expect": [
+    [
+     "Questions for you",
+     "Do you have AWS?"
+    ]
+   ]
+  }
+ ],
+ "actions": {
+  "cert": "Certification. Look up the exam objectives, book the exam, and add it to the resume only after you pass.",
+  "tool": "Tool. Use it for a small real project (a week or two), then add the project to the resume with what you built.",
+  "skill": "Skill. First check whether your past work already shows it and the resume just does not say so (use \"I have this\"). If not, practice it on a project or in a volunteer role.",
+  "method": "Method. Take a short course or read the standard guide, then apply it to your current project and write down the result."
+ },
+ "sections": [
+  [
+   "priorities",
+   "What to work on first, and why"
+  ],
+  [
+   "plan",
+   "Week-by-week plan"
+  ],
+  [
+   "proof",
+   "Projects that prove each skill"
+  ],
+  [
+   "resume_changes",
+   "Resume changes (only what is true)"
+  ],
+  [
+   "skip",
+   "What not to chase"
+  ],
+  [
+   "questions",
+   "Questions for you"
+  ]
+ ]
+}

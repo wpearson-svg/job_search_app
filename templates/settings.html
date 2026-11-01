@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Settings</h1>
-<p class="muted">Everything here is saved on this computer only, in the <code>data</code> folder (and <code>keys.local.json</code> for keys). None of it is uploaded to GitHub.</p>
+<p class="muted">Everything here is saved on this computer only, in your data folder (section 8), never in the app folder, so none of it is uploaded to GitHub.</p>
 
 <h2>1. Master resume</h2>
 <p>{% if resume_name %}Current file: <strong>{{ resume_name }}</strong>.{% else %}<strong>No resume yet.</strong>{% endif %}
-Every posting is scored against it, and Claude only uses facts from it.</p>
+Every posting is scored against it, and every AI request says to use only facts from it.</p>
 <form method="post" action="{{ url_for('settings_resume') }}" enctype="multipart/form-data">
   <input type="file" name="resume" accept=".docx,.md,.txt"> <button>Upload resume</button>
   <span class="muted">Word (.docx), Markdown or text. Uploading replaces the old one and re-scores everything.</span>
@@ -28,13 +28,42 @@ Every posting is scored against it, and Claude only uses facts from it.</p>
 <p class="muted">RemoteOK and Remotive are always on. Adzuna and USAJOBS turn on when you add their keys below.</p>
 
 <h2>4. How the AI writes for you</h2>
-<p><label><input type="checkbox" name="claude_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>
+<p><label><input type="checkbox" name="ai_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>
 My AI assistant (a project or saved chat) already holds my resume and instructions, so do not repeat them in each request.</label></p>
 <p><label>Resume-writing instructions {% if not has_custom %}(the app's general default is shown; edit to make it yours){% endif %}<br>
 <textarea name="instructions" rows="14" cols="90">{{ instructions }}</textarea></label></p>
 <p><label><input type="checkbox" name="reset_instructions"> Go back to the default instructions</label></p>
+<p><label>AI work folder (this computer only)<br><input type="text" name="queue_folder" size="70" value="{{ c.queue_folder or '' }}"
+  placeholder="blank: the app's own folder"></label><br>
+<span class="muted">Where "Send to folder" puts requests and looks for replies, when Google Drive (section 5) is not in use.
+<a href="{{ url_for('queue_help') }}">How the AI queue works</a></span></p>
+<p><label>Shared details folder (this computer only)<br><input type="text" name="shared_folder" size="70" value="{{ c.shared_folder or '' }}"
+  placeholder="blank: do not share"></label><br>
+<span class="muted">Keeps your master resume, search settings and profiles, AI instructions, career file and "I have this" skills in step with the phone, when Google Drive (section 5) is not in use.
+Keys and sources are never shared. With Google linked (section 5) your postings are shared too. <a href="{{ url_for('sync_page') }}">Sync page</a></span></p>
 
-<h2>5. Keys (optional)</h2>
+<h2>5. Google Drive (optional, this computer only)</h2>
+<input type="hidden" name="drive_section" value="1">
+<p class="muted">Lets this app use the <code>WildThing</code> folder in your Google Drive directly, the same folder the phone uses, without installing
+Drive for desktop. It needs your own Google OAuth client (the README's "Google Drive on the desktop" says how); put its id and secret in section 6.</p>
+<p>{% if google.linked %}<strong>Google is linked.</strong>
+  <button type="submit" form="google-check" class="plain">Check Drive access</button>
+  <button type="submit" form="google-unlink" class="plain">Unlink</button>
+{% elif google.client %}Not linked yet. <button type="submit" form="google-link">Link Google</button>
+{% else %}Not linked. Save the client id and secret in section 6 first, then come back here to link.{% endif %}</p>
+{% if google.relink %}<p class="flash">The Drive access chosen below is more than Google has allowed so far.
+  <button type="submit" form="google-link" class="plain">Link again</button> to allow it.</p>{% endif %}
+<p><label><input type="checkbox" name="use_drive" {% if c.use_drive %}checked{% endif %}> Use Google Drive for the AI queue and shared details
+  (instead of the two folders above)</label></p>
+<p>Drive access:<br>
+<label><input type="radio" name="drive_full" value="narrow" {% if not c.drive_full %}checked{% endif %}> Only files WildThing creates (<code>drive.file</code>).
+  The least access, but files your AI creates are probably invisible to the app.</label><br>
+<label><input type="radio" name="drive_full" value="full" {% if c.drive_full %}checked{% endif %}> All of my Drive (<code>drive</code>).
+  Needed if Check Drive access does not list what your AI made. Changing this needs Link again.</label></p>
+<p><label><input type="checkbox" name="drive_permanent_delete" {% if c.drive_permanent_delete %}checked{% endif %}> Delete imported files for good
+  (otherwise they go to the Drive trash)</label></p>
+
+<h2>6. Keys (optional)</h2>
 <p class="muted">Saved keys are never shown again. Leave a box empty to keep what is saved.</p>
 {% for k, label in key_fields %}
 <p><label>{{ label }} {% if k in key_set %}<strong>(saved)</strong>{% endif %}<br><input type="password" name="{{ k }}" size="50" autocomplete="off"></label></p>
@@ -42,5 +71,39 @@ My AI assistant (a project or saved chat) already holds my resume and instructio
 <p><label><input type="checkbox" name="clear_keys"> Delete all saved keys</label></p>
 
 <p><button>Save settings</button></p>
+</form>
+<form id="google-link" method="post" action="{{ url_for('google_link') }}"></form>
+<form id="google-unlink" method="post" action="{{ url_for('google_unlink') }}"
+      onsubmit="return confirm('Unlink Google from this computer? Files already in your Drive stay there.')"></form>
+<form id="google-check" method="post" action="{{ url_for('google_check') }}"></form>
+<h2>7. Move your data</h2>
+<p>Save everything (settings, resume, instructions, postings, applications, interviews, AI work, gap plans) as one file,
+to keep as a backup or to open in the WildThing Android app. Keys are never put in the file.</p>
+<form method="get" action="{{ url_for('export_file') }}"><button>Export data</button></form>
+<form method="post" action="{{ url_for('import_file') }}" enctype="multipart/form-data"
+      onsubmit="return confirm('Importing replaces everything in this copy with the file's contents. Continue?')">
+  <input type="file" name="data" accept=".json,application/json"> <button class="plain">Import data</button>
+  <span class="muted">Replaces what is here now. Your keys stay as they are.</span>
+</form>
+<h2>8. Where your data is kept</h2>
+<p>Your data folder on this computer: <code>{{ data_folder }}</code>. It holds your settings, resume, instructions, keys, postings database and the
+files the app writes. With Google linked, the shared copy is in the <code>WildThing</code> folder in your Drive; this is the working copy.</p>
+<form method="post" action="{{ url_for('move_data') }}"
+      onsubmit="return confirm('Move your data to this folder? The app keeps working from there.')">
+  <label>Move it to <input type="text" name="folder" size="60" placeholder="{{ default_folder }}"></label> <button class="plain">Move</button>
+  <br><span class="muted">Leave empty for the default (<code>{{ default_folder }}</code>). Choose a folder outside the app folder; it must not already hold WildThing data.</span>
+</form>
+<h2>9. Companies you avoid</h2>
+<p>Their postings are hidden from the list (tick "Show avoided" there to see them). Names match without Inc, LLC and the like.
+With Google linked, this list is shared with the phone.</p>
+{% for a in avoided %}
+<form method="post" action="{{ url_for('avoid') }}" class="rowline">
+  <input type="hidden" name="back" value="{{ url_for('settings_page') }}"><input type="hidden" name="company" value="{{ a.company }}"><input type="hidden" name="on" value="0">
+  <strong>{{ a.company }}</strong>{% if a.reason %} <span class="muted">{{ a.reason }}</span>{% endif %} <button class="plain small">Stop avoiding</button>
+</form>
+{% else %}<p class="muted">None yet. Use "Avoid" on a posting, or add one here.</p>{% endfor %}
+<form method="post" action="{{ url_for('avoid') }}" class="rowline">
+  <input type="hidden" name="back" value="{{ url_for('settings_page') }}"><input type="hidden" name="on" value="1">
+  <input name="company" placeholder="Company" required> <input name="reason" placeholder="Why (optional)" maxlength="200"> <button class="plain">Avoid</button>
 </form>
 {% endblock %}

@@ -1,0 +1,47 @@
+{# A career file (career.py), shown readably. Used by the Career page and the review. #}
+{% macro view(c) %}
+{% set p = c.person or {} %}{% set ct = p.contact or {} %}
+<p class="title" style="font-size:1.15rem;margin:0">{{ p.name }}</p>
+{% if p.headline %}<p class="muted" style="margin:0">{{ p.headline }}</p>{% endif %}
+<p class="muted" style="margin:4px 0">{{ [ct.email, ct.phone, ct.location]|select|join(' · ') }}
+  {% for l in ct.links or [] %}{% if l.url|safe_url %} · <a href="{{ l.url|safe_url }}" target="_blank" rel="noopener">{{ l.label or l.url }}</a>{% endif %}{% endfor %}</p>
+{% if c.summary %}<p>{{ c.summary }}</p>{% endif %}
+
+{% if c.flags %}
+<h3>To settle</h3>
+{% for f in c.flags %}<div class="warnbox">{{ f.text }}{% if f.sources %} <span class="muted">({{ f.sources|join(', ') }})</span>{% endif %}</div>{% endfor %}
+{% endif %}
+
+<h3>Work ({{ (c.roles or [])|length }})</h3>
+{% for r in c.roles or [] %}
+<div class="phase">
+  <p style="margin:6px 0 2px"><strong>{{ r.title }}</strong>, {{ r.employer }}
+    <span class="muted">· {{ r.start }} to {{ r.end or 'now' }}{% if r.location %} · {{ r.location }}{% endif %}{% if r.type %} · {{ r.type }}{% endif %}</span></p>
+  {% if r.show_as %}<p class="muted" style="margin:0">On documents: "{{ r.show_as }}"</p>{% endif %}
+  {% if r.scope %}<p style="margin:4px 0">{{ r.scope }}</p>{% endif %}
+  {% if r.achievements %}<ul>{% for a in r.achievements %}<li>{{ a.text }}</li>{% endfor %}</ul>{% endif %}
+  {% if r.details %}<details><summary class="muted">The full story</summary><p style="white-space:pre-wrap">{{ r.details }}</p></details>{% endif %}
+</div>
+{% else %}<p class="muted">No roles.</p>{% endfor %}
+
+<h3>Skills ({{ (c.skills or [])|length }})</h3>
+{% set ids = {} %}{% for r in c.roles or [] %}{% set _ = ids.update({r.id: r.title ~ ', ' ~ r.employer}) %}{% endfor %}
+{% for p2 in c.projects or [] %}{% set _ = ids.update({p2.id: p2.name}) %}{% endfor %}
+<p>{% for s in c.skills or [] if s.source != 'confirmed' %}<span class="tag ok" title="{% for e in s.evidence or [] %}{{ ids.get(e, e) }}{% if not loop.last %}; {% endif %}{% else %}{{ s.notes }}{% endfor %}">{{ s.name }}</span> {% endfor %}</p>
+{% set confirmed = (c.skills or [])|selectattr('source', 'equalto', 'confirmed')|list %}
+{% if confirmed %}<p><span class="muted">Confirmed here with "I have this":</span> {% for s in confirmed %}<span class="tag">{{ s.name }}</span> {% endfor %}</p>{% endif %}
+
+{% if c.certifications %}<h3>Certifications</h3><ul>{% for x in c.certifications %}<li>{{ x.name }}{% if x.issuer %}, {{ x.issuer }}{% endif %}{% if x.date %} ({{ x.date }}){% endif %}{% if x.status != 'earned' %} <span class="muted">{{ x.status|replace('_', ' ') }}</span>{% endif %}</li>{% endfor %}</ul>{% endif %}
+{% if c.education %}<h3>Education</h3><ul>{% for e in c.education %}<li>{{ [e.credential, e.field]|select|join(' ') }}{% if e.credential or e.field %}, {% endif %}{{ e.school }}{% if e.end %} ({{ e.end }}){% endif %}</li>{% endfor %}</ul>{% endif %}
+{% if c.projects %}<h3>Projects</h3><ul>{% for x in c.projects %}<li><strong>{{ x.name }}</strong>{% if x.date %} ({{ x.date }}){% endif %}{% if x.description %}: {{ x.description }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+
+{% set pv = c.privacy or {} %}{% set wd = c.wording or {} %}
+{% if pv.never_name or pv.never_mention or wd.avoid %}
+<h3>Rules for every document</h3>
+<ul>
+  {% if pv.never_name %}<li>Never name: {{ pv.never_name|join(', ') }}</li>{% endif %}
+  {% if pv.never_mention %}<li>Never mention: {{ pv.never_mention|join(', ') }}</li>{% endif %}
+  {% for w in wd.avoid or [] %}<li>Do not say "{{ w.phrase }}"{% if w.why %}: {{ w.why }}{% endif %}</li>{% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}

@@ -1,0 +1,165 @@
+{
+ "statuses": [
+  [
+   "new",
+   "New"
+  ],
+  [
+   "saved",
+   "Saved"
+  ],
+  [
+   "applied",
+   "Applied"
+  ],
+  [
+   "phone_screen",
+   "Phone screen"
+  ],
+  [
+   "interview",
+   "Interview"
+  ],
+  [
+   "offer",
+   "Offer"
+  ],
+  [
+   "rejected",
+   "Rejected"
+  ],
+  [
+   "no_response",
+   "No response"
+  ],
+  [
+   "withdrawn",
+   "Withdrawn"
+  ],
+  [
+   "dismissed",
+   "Dismissed"
+  ]
+ ],
+ "applied_stages": [
+  "applied",
+  "phone_screen",
+  "interview",
+  "offer",
+  "rejected",
+  "no_response",
+  "withdrawn"
+ ],
+ "follow_up_days": 14,
+ "needs_follow_up": [
+  {
+   "status": "applied",
+   "applied_on": "2026-10-17",
+   "today": "2026-10-31",
+   "expect": true
+  },
+  {
+   "status": "applied",
+   "applied_on": "2026-10-18",
+   "today": "2026-10-31",
+   "expect": false
+  },
+  {
+   "status": "applied",
+   "applied_on": null,
+   "today": "2026-10-31",
+   "expect": false
+  },
+  {
+   "status": "applied",
+   "applied_on": "bad",
+   "today": "2026-10-31",
+   "expect": false
+  },
+  {
+   "status": "interview",
+   "applied_on": "2026-01-01",
+   "today": "2026-10-31",
+   "expect": false
+  },
+  {
+   "status": "applied",
+   "applied_on": "2026-11-05",
+   "today": "2026-10-31",
+   "expect": false
+  }
+ ],
+ "days_since": [
+  {
+   "applied_on": "2026-10-17",
+   "today": "2026-10-31",
+   "expect": 14
+  },
+  {
+   "applied_on": "2026-10-31",
+   "today": "2026-10-31",
+   "expect": 0
+  },
+  {
+   "applied_on": "",
+   "today": "2026-10-31",
+   "expect": null
+  },
+  {
+   "applied_on": null,
+   "today": "2026-10-31",
+   "expect": null
+  },
+  {
+   "applied_on": "31/10/2026",
+   "today": "2026-10-31",
+   "expect": null
+  }
+ ],
+ "weekly_summary": [
+  {
+   "args": [
+    7,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "expect": "Job search, last 7 days:\n- 0 application(s) sent"
+  },
+  {
+   "args": [
+    14,
+    5,
+    2,
+    1,
+    3,
+    4
+   ],
+   "expect": "Job search, last 14 days:\n- 5 application(s) sent\n- 2 moved to a phone screen or interview\n- 1 closed out\n- 3 interview or follow-up coming up in the next 2 weeks\n- 4 application(s) waiting 14+ days with no word, due for a follow-up"
+  }
+ ],
+ "interview_rate": [
+  {
+   "applied": 0,
+   "interviews": 0,
+   "expect": "n/a"
+  },
+  {
+   "applied": 8,
+   "interviews": 3,
+   "expect": "38%"
+  },
+  {
+   "applied": 3,
+   "interviews": 1,
+   "expect": "33%"
+  },
+  {
+   "applied": 8,
+   "interviews": 1,
+   "expect": "12%"
+  }
+ ]
+}

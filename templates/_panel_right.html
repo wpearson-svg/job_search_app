@@ -6,7 +6,7 @@
   <p class="title">{{ j.title }}</p>
   <p class="muted" style="margin:0">{{ j.company }}{% if j.location %} &middot; {{ j.location }}{% endif %}</p>
   <p style="margin:6px 0 0"><a href="{{ url_for('job', job_id=j.id) }}">Open the full page</a>
-    &middot; <a href="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile) }}">Close</a></p>
+    &middot; <a href="{{ url_for('index', **keep) }}">Close</a></p>
 
   <h3>My progress</h3>
   {% if j.follow_up %}<div class="warnbox">Applied {{ j.applied_on }}. No change in 14 days, so time to follow up.</div>{% endif %}
@@ -24,6 +24,9 @@
     <label>Notes <textarea name="notes">{{ j.notes }}</textarea></label>
     <p><button class="plain small">Save notes</button></p>
   </form>
+
+  <h3>Tags</h3>
+  {% include "_tags.html" %}
 
   <h3>Interviews</h3>
   {% for e in j.events %}

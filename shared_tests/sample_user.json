@@ -1,0 +1,19 @@
+{
+ "_note": "A made-up user (Jane Doe, Springfield IL) for tests. Never put real personal data here.",
+ "target_titles": ["it support", "technical support", "service desk", "help desk", "desktop support", "implementation",
+  "project coordinator", "project manager", "program coordinator", "business analyst", "systems analyst", "analyst",
+  "change management", "technical project", "customer success", "solutions", "operations coordinator", "it coordinator"],
+ "search_keywords": ["it support", "implementation specialist", "project coordinator", "business analyst",
+  "change management", "service desk"],
+ "locations": ["springfield", "riverton", "illinois", "illinois", "remote", "united states", "usa"],
+ "adzuna": {"where": "Springfield", "country": "us"},
+ "usajobs": {"location": "Springfield, Illinois"},
+ "your_name": "Jane Doe",
+ "send_resume_in_requests": false,
+ "resume_check_phrases": [
+  ["managed a team", "Says \"managed a team\" (the prompt's rules say use led/implemented/trained)."],
+  ["2.5", "Mentions 2.5 (the rules say \"over 2 years\")."]
+ ],
+ "linkedin": {"location": "Springfield, Illinois"},
+ "jobspy": {"location": "Springfield, IL"}
+}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_career_view.html" import view %}
+{% block title %}Career file{% endblock %}
+{% block body %}
+<h1>Career file</h1>
+<p class="muted">Everything true about you in one file: your full history, skills, certifications and the rules for what
+goes on your documents. Your AI builds it from your own documents; after that only WildThing changes it ("I have this"
+adds a skill). For a big change, rebuild it below. Your master resume stays the example of format and tone.</p>
+{% if pending %}<div class="flash"><p>A new career file is waiting. <a href="{{ url_for('career_review') }}">Review it</a></p></div>{% endif %}
+
+{% if cur %}
+  {% if problems %}<div class="warnbox">This file has problems: {{ problems|join(' ') }} Rebuild it below.</div>{% endif %}
+  <p class="muted">Last changed {{ cur.updated_at or 'unknown' }}.</p>
+  {% if found %}
+  <h2>Skills scoring finds in it ({{ found|length }})</h2>
+  <p class="muted">Postings are scored against this file, not your master resume. Only skills on WildThing's skill list
+  count, and only certifications you have earned.</p>
+  <p>{% for t in found %}<span class="tag ok">{{ t }}</span> {% endfor %}</p>
+  {% endif %}
+  {{ view(cur) }}
+{% else %}
+  <p>No career file yet. Build one below.</p>
+{% endif %}
+
+<h2 id="build">{{ 'Rebuild it' if cur else 'Build it' }}</h2>
+<p class="muted">Choose your documents: old resumes, a career knowledge base, skills lists, reviews. WildThing reads their
+text and makes a request your AI can answer. Nothing is sent anywhere until you copy or send it.</p>
+<form method="post" action="{{ url_for('career_request') }}" enctype="multipart/form-data" class="paste">
+  <label>Your documents (Word, Markdown or text) <input type="file" name="sources" multiple accept="{{ exts }}"></label>
+  <label>Anything else to know (optional) <textarea name="typed" rows="4" placeholder="For example: I implemented the system the director chose; I did not manage anyone."></textarea></label>
+  {% if cur %}<label><input type="checkbox" name="include_current" value="1" checked style="width:auto"> Include the current file, so the skills you confirmed here are kept</label>{% endif %}
+  <p><button>Make the request</button></p>
+</form>
+
+{% if draft %}
+<h3 id="request">The request</h3>
+<div class="bar">
+  <button type="button" data-l="Copy for your AI" onclick="cp('career_req', this)">Copy for your AI</button>
+  <form method="post" action="{{ url_for('career_send') }}"><button class="plain">Send to the work folder</button></form>
+  <span class="muted">{{ '{:,}'.format(draft|length) }} characters</span>
+</div>
+<textarea id="career_req" readonly rows="8" style="width:100%">{{ draft }}</textarea>
+{% endif %}
+
+<h2 id="reply">Bring the reply in</h2>
+<p class="muted">WildThing checks the file and shows it to you before anything is kept.</p>
+<form method="post" action="{{ url_for('career_fetch') }}" class="bar"><button>Look in the work folder</button> <span class="muted">{{ folder }}</span></form>
+<form method="post" action="{{ url_for('career_reply') }}" class="paste">
+  <label>Or paste the whole reply <textarea name="reply" rows="6"></textarea></label>
+  <p><button class="plain">Check it</button></p>
+</form>
+<script>
+function cp(id, btn) {
+  var box = document.getElementById(id);
+  var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = btn.dataset.l; }, 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { box.select(); document.execCommand("copy"); done(); }); }
+  else { box.select(); document.execCommand("copy"); done(); }
+}
+</script>
+{% endblock %}

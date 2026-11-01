@@ -1,7 +1,8 @@
 {
-  "anthropic_api_key": "",
   "adzuna_app_id": "",
   "adzuna_app_key": "",
   "usajobs_key": "",
-  "usajobs_email": ""
+  "usajobs_email": "",
+  "google_client_id": "",
+  "google_client_secret": ""
 }

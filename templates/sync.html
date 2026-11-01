@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Sync{% endblock %}
+{% block body %}
+<h1>Shared details</h1>
+{% if not folder %}
+<p>Nothing to sync with yet. To keep your master resume, search settings and profiles, AI instructions, career file and "I have this" skills in step with
+the phone, link Google in <a href="{{ url_for('settings_page') }}">Settings</a> (section 5), or set <strong>Shared details folder</strong> there.</p>
+{% else %}
+<p class="muted">Shared with: <code>{{ folder }}</code>. The app syncs when it starts and after you change one of these; postings, applications,
+notes and keys stay on this computer.</p>
+{% if postings %}<p class="muted">Your postings (status, applied date, notes, interviews, saved AI work and gap plans) are shared too, through
+<code>wildthing.db</code> in the same folder. They sync when the app starts, after Fetch, and with Sync now.</p>{% endif %}
+<form method="post" action="{{ url_for('sync_page') }}" class="bar"><button>Sync now</button></form>
+{% if res and res.conflicts %}
+<h2>Changed in both places</h2>
+<p>These were changed here and on another device since the last sync. Choose which copy to keep; the other is replaced.</p>
+<table><thead><tr><th>What</th><th>This computer</th><th>Shared folder</th><th></th></tr></thead><tbody>
+{% for c in res.conflicts %}
+<tr><td>{{ labels[c.key] }}</td><td>{{ c.here }}</td><td>{{ c.folder }}</td>
+  <td><form method="post" action="{{ url_for('sync_resolve') }}" class="inline"><input type="hidden" name="key" value="{{ c.key }}">
+    <button name="keep" value="here">Keep this computer's</button> <button name="keep" value="folder" class="plain">Keep the shared one</button></form></td></tr>
+{% endfor %}</tbody></table>
+{% elif res %}
+<p>Everything is in step.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

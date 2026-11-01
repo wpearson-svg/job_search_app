@@ -1,0 +1,361 @@
+{
+ "strip_html": [
+  {
+   "html": "<p>Help &amp; fix</p>",
+   "expect": "Help & fix"
+  },
+  {
+   "html": "&lt;p&gt;Use Excel&lt;/p&gt;",
+   "expect": "Use Excel"
+  },
+  {
+   "html": "Line one<br>Line two<br/>Line three",
+   "expect": "Line one\nLine two\nLine three"
+  },
+  {
+   "html": "<ul><li>SQL</li><li>Excel</li></ul>\n\n\n<p>Done</p>",
+   "expect": "SQL\n Excel\n Done"
+  },
+  {
+   "html": "a\t\t b &nbsp; c &rsquo; &#39; &#x2014;",
+   "expect": "a b   c ’ ' —"
+  },
+  {
+   "html": "",
+   "expect": ""
+  },
+  {
+   "html": null,
+   "expect": ""
+  }
+ ],
+ "remoteok": [
+  {
+   "data": [
+    {
+     "legal": "notice"
+    },
+    {
+     "id": 5,
+     "position": "IT Support",
+     "company": "Acme",
+     "location": "",
+     "url": "https://r/5",
+     "description": "<p>Help &amp; fix</p>",
+     "date": "d"
+    }
+   ],
+   "expect": [
+    {
+     "source": "remoteok",
+     "ext_id": "5",
+     "title": "IT Support",
+     "company": "Acme",
+     "location": "Remote",
+     "url": "https://r/5",
+     "description": "Help & fix",
+     "posted": "d"
+    }
+   ]
+  }
+ ],
+ "remotive": [
+  {
+   "data": {
+    "jobs": [
+     {
+      "id": 1,
+      "title": "Analyst",
+      "company_name": "C",
+      "url": "u",
+      "candidate_required_location": "USA",
+      "description": "<b>SQL</b>",
+      "publication_date": "2026-10-01"
+     },
+     {
+      "id": 2,
+      "title": "Coordinator",
+      "company_name": "D",
+      "url": "v",
+      "candidate_required_location": "",
+      "description": ""
+     }
+    ]
+   },
+   "expect": [
+    {
+     "source": "remotive",
+     "ext_id": "1",
+     "title": "Analyst",
+     "company": "C",
+     "location": "USA",
+     "url": "u",
+     "description": "SQL",
+     "posted": "2026-10-01"
+    },
+    {
+     "source": "remotive",
+     "ext_id": "2",
+     "title": "Coordinator",
+     "company": "D",
+     "location": "Remote",
+     "url": "v",
+     "description": "",
+     "posted": ""
+    }
+   ]
+  }
+ ],
+ "greenhouse": [
+  {
+   "data": {
+    "jobs": [
+     {
+      "id": 9,
+      "title": "Coordinator",
+      "location": {
+       "name": "KC"
+      },
+      "absolute_url": "u",
+      "content": "&lt;p&gt;Use Excel&lt;/p&gt;",
+      "updated_at": "2026-10-02"
+     },
+     {
+      "id": 10,
+      "title": "Analyst",
+      "location": null,
+      "absolute_url": "w",
+      "content": ""
+     }
+    ]
+   },
+   "board": "acme",
+   "expect": [
+    {
+     "source": "greenhouse:acme",
+     "ext_id": "9",
+     "title": "Coordinator",
+     "company": "acme",
+     "location": "KC",
+     "url": "u",
+     "description": "Use Excel",
+     "posted": "2026-10-02"
+    },
+    {
+     "source": "greenhouse:acme",
+     "ext_id": "10",
+     "title": "Analyst",
+     "company": "acme",
+     "location": "",
+     "url": "w",
+     "description": "",
+     "posted": ""
+    }
+   ]
+  }
+ ],
+ "lever": [
+  {
+   "data": [
+    {
+     "id": "a",
+     "text": "Support",
+     "categories": {
+      "location": "Remote"
+     },
+     "hostedUrl": "u",
+     "descriptionPlain": "Desc",
+     "createdAt": 1730000000000,
+     "lists": [
+      {
+       "text": "Requirements",
+       "content": "<li>SQL</li>"
+      }
+     ]
+    }
+   ],
+   "company": "co",
+   "expect": [
+    {
+     "source": "lever:co",
+     "ext_id": "a",
+     "title": "Support",
+     "company": "co",
+     "location": "Remote",
+     "url": "u",
+     "description": "Desc\nRequirements\n SQL",
+     "posted": "1730000000000"
+    }
+   ]
+  }
+ ],
+ "adzuna": [
+  {
+   "data": {
+    "results": [
+     {
+      "id": 3,
+      "title": "T",
+      "company": {
+       "display_name": "X"
+      },
+      "location": {
+       "display_name": "KC"
+      },
+      "redirect_url": "u",
+      "description": "d",
+      "created": "2026-10-03"
+     }
+    ]
+   },
+   "expect": [
+    {
+     "source": "adzuna",
+     "ext_id": "3",
+     "title": "T",
+     "company": "X",
+     "location": "KC",
+     "url": "u",
+     "description": "d",
+     "posted": "2026-10-03"
+    }
+   ]
+  }
+ ],
+ "usajobs": [
+  {
+   "data": {
+    "SearchResult": {
+     "SearchResultItems": [
+      {
+       "MatchedObjectId": "7",
+       "MatchedObjectDescriptor": {
+        "PositionTitle": "IT Specialist",
+        "OrganizationName": "Agency",
+        "PositionLocationDisplay": "KC",
+        "PositionURI": "u",
+        "UserArea": {
+         "Details": {
+          "JobSummary": "Support users"
+         }
+        },
+        "QualificationSummary": "SQL",
+        "PublicationStartDate": "2026-10-04"
+       }
+      }
+     ]
+    }
+   },
+   "expect": [
+    {
+     "source": "usajobs",
+     "ext_id": "7",
+     "title": "IT Specialist",
+     "company": "Agency",
+     "location": "KC",
+     "url": "u",
+     "description": "Support users\nSQL",
+     "posted": "2026-10-04"
+    }
+   ]
+  }
+ ],
+ "title_wanted": [
+  {
+   "title": "IT Support Specialist",
+   "targets": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": true
+  },
+  {
+   "title": "Barista",
+   "targets": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": false
+  },
+  {
+   "title": "",
+   "targets": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": false
+  },
+  {
+   "title": "Senior Business Analyst",
+   "targets": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": true
+  }
+ ]
+}

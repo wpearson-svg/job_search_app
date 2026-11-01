@@ -18,8 +18,6 @@
   },
   "min_score_to_show": 0,
   "max_jobs_per_source": 60,
-  "anthropic_model": "claude-sonnet-5-5",
-  "max_tokens": 4000,
   "system_prompt_file": "",
   "output_dir": "output",
   "linkedin": {

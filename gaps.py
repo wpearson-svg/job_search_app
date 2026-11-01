@@ -33,7 +33,7 @@ def build_plan(jobs, lexicon, per_phase=2):
     return rows, phases
 
 
-# ---- Planning with Claude: the app gathers the evidence, Claude does the planning -----------------------
+# ---- Planning with your AI: the app gathers the evidence, the assistant does the planning ---------------
 PLAN_SECTIONS = [("priorities", "What to work on first, and why"), ("plan", "Week-by-week plan"),
                  ("proof", "Projects that prove each skill"), ("resume_changes", "Resume changes (only what is true)"),
                  ("skip", "What not to chase"), ("questions", "Questions for you")]

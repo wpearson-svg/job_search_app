@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The window before Compose draws: cream page, matching the app's light theme. -->
+    <style name="Theme.WildThing" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/page</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Android's own splash: plain forest green; the opening animation (OpeningAnimation.kt) starts on it. -->
+        <item name="android:windowSplashScreenBackground">@color/forest</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
+    </style>
+    <color name="page">#F6F1E3</color>
+    <color name="forest">#12291F</color>
+</resources>

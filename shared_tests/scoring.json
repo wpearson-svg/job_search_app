@@ -1,0 +1,711 @@
+{
+ "lexicon": "skills.json at the repo root",
+ "resume_file": "sample_resume.md",
+ "find_terms": [
+  {
+   "text": "Jane Doe\nSpringfield, IL\n\nSUMMARY\nProject coordinator and IT support specialist with 3 years of experience.\n\nEXPERIENCE\nAcme Services, Implementation Specialist, 2022 - 2025\n- Led the software implementation of new scheduling software for 40 customer sites; delivered user training and ongoing user training sessions.\n- Provided tier 1-3 support for a help desk, troubleshooting tickets and writing SQL queries and Excel reports.\n- Ran agile / scrum ceremonies for a 5-person team and handled vendor management and stakeholder communication.\n- Built internal tools with C# and Docker, and prototyped an AI / LLM assistant for the support team.\n",
+   "expect": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ]
+  },
+  {
+   "text": "You will excel in a fast team and love to excel at support.",
+   "expect": []
+  },
+  {
+   "text": "Advanced Excel and pivot tables",
+   "expect": [
+    "excel"
+   ]
+  },
+  {
+   "text": "Experience with C#, .NET and SQL Server; Python a plus.",
+   "expect": [
+    "c#",
+    "python",
+    "sql"
+   ]
+  },
+  {
+   "text": "Tier II support, break/fix, and O365 admin.",
+   "expect": [
+    "microsoft 365",
+    "tier 1-3 support",
+    "troubleshooting"
+   ]
+  },
+  {
+   "text": "",
+   "expect": []
+  }
+ ],
+ "score_job": [
+  {
+   "name": "good fit",
+   "title": "Implementation Specialist",
+   "text": "Implementation Specialist. We roll out our scheduling software to customers.\nRequirements: 2+ years of software implementation or IT support experience. Strong troubleshooting, end user training,\nSQL and Excel skills. Experience with vendor management and stakeholder communication. Preferred: ITIL, Salesforce.",
+   "have": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 91,
+    "matched": [
+     "excel",
+     "help desk",
+     "scheduling software",
+     "software implementation",
+     "sql",
+     "stakeholder management",
+     "troubleshooting",
+     "user training",
+     "vendor management"
+    ],
+    "gaps": [
+     [
+      "itil",
+      1
+     ],
+     [
+      "salesforce",
+      1
+     ]
+    ],
+    "flags": [
+     "Very short description (possibly only a snippet), so the score is a rough guide."
+    ],
+    "title_match": true
+   }
+  },
+  {
+   "name": "required weighs double",
+   "title": "x",
+   "text": "Implementation Specialist. We roll out our scheduling software to customers.\nRequirements: 2+ years of software implementation or IT support experience. Strong troubleshooting, end user training,\nSQL and Excel skills. Experience with vendor management and stakeholder communication. Preferred: ITIL, Salesforce.",
+   "have": [],
+   "target_titles": [],
+   "expect": {
+    "score": 0,
+    "matched": [],
+    "gaps": [
+     [
+      "excel",
+      2
+     ],
+     [
+      "help desk",
+      2
+     ],
+     [
+      "software implementation",
+      2
+     ],
+     [
+      "sql",
+      2
+     ],
+     [
+      "stakeholder management",
+      2
+     ],
+     [
+      "troubleshooting",
+      2
+     ],
+     [
+      "user training",
+      2
+     ],
+     [
+      "vendor management",
+      2
+     ],
+     [
+      "itil",
+      1
+     ],
+     [
+      "salesforce",
+      1
+     ],
+     [
+      "scheduling software",
+      1
+     ]
+    ],
+    "flags": [
+     "Very short description (possibly only a snippet), so the score is a rough guide."
+    ],
+    "title_match": false
+   }
+  },
+  {
+   "name": "senior and years",
+   "title": "Senior Director of Engineering",
+   "text": "Senior Director of Engineering. Requirements: 10+ years of experience. Kubernetes, AWS, Terraform, Go, Java.",
+   "have": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 0,
+    "matched": [],
+    "gaps": [
+     [
+      "cloud (aws/azure)",
+      2
+     ]
+    ],
+    "flags": [
+     "Senior-level title.",
+     "Asks for 10+ years of experience.",
+     "Very short description (possibly only a snippet), so the score is a rough guide."
+    ],
+    "title_match": false
+   }
+  },
+  {
+   "name": "no terms",
+   "title": "Barista",
+   "text": "Make coffee. Smile.",
+   "have": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 0,
+    "matched": [],
+    "gaps": [],
+    "flags": [
+     "No skills from your list found in this posting. It may be a short snippet or an unusual role.",
+     "Very short description (possibly only a snippet), so the score is a rough guide."
+    ],
+    "title_match": false
+   }
+  },
+  {
+   "name": "long posting with zones",
+   "title": "Service Desk Analyst II",
+   "text": "About the role\nYou will join a busy service desk supporting 2,000 users across three offices. Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\n\nWhat you'll need\n- 5+ years of help desk or desktop support experience\n- Active Directory and Microsoft 365 administration\n- Strong customer service and clear written communication\n- Comfort with Windows 10/11 imaging and Intune\n\nNice to have\n- CompTIA A+ or Network+\n- ITIL Foundation\n- Some PowerShell scripting\n\nWe offer a hybrid schedule and a learning budget. You will excel in a fast-moving team and grow with us.",
+   "have": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 28,
+    "matched": [
+     "help desk",
+     "troubleshooting"
+    ],
+    "gaps": [
+     [
+      "active directory",
+      2
+     ],
+     [
+      "customer service",
+      2
+     ],
+     [
+      "microsoft 365",
+      2
+     ],
+     [
+      "comptia a+",
+      1
+     ],
+     [
+      "comptia network+",
+      1
+     ],
+     [
+      "documentation",
+      1
+     ],
+     [
+      "itil",
+      1
+     ],
+     [
+      "ticketing systems",
+      1
+     ]
+    ],
+    "flags": [
+     "Asks for 5+ years of experience."
+    ],
+    "title_match": true
+   }
+  },
+  {
+   "name": "no title match",
+   "title": "Warehouse Associate",
+   "text": "About the role\nYou will join a busy service desk supporting 2,000 users across three offices. Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\n\nWhat you'll need\n- 5+ years of help desk or desktop support experience\n- Active Directory and Microsoft 365 administration\n- Strong customer service and clear written communication\n- Comfort with Windows 10/11 imaging and Intune\n\nNice to have\n- CompTIA A+ or Network+\n- ITIL Foundation\n- Some PowerShell scripting\n\nWe offer a hybrid schedule and a learning budget. You will excel in a fast-moving team and grow with us.",
+   "have": [
+    "agile / scrum",
+    "ai / llm",
+    "c#",
+    "docker",
+    "excel",
+    "help desk",
+    "scheduling software",
+    "software implementation",
+    "sql",
+    "stakeholder management",
+    "tier 1-3 support",
+    "troubleshooting",
+    "user training",
+    "vendor management"
+   ],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 13,
+    "matched": [
+     "help desk",
+     "troubleshooting"
+    ],
+    "gaps": [
+     [
+      "active directory",
+      2
+     ],
+     [
+      "customer service",
+      2
+     ],
+     [
+      "microsoft 365",
+      2
+     ],
+     [
+      "comptia a+",
+      1
+     ],
+     [
+      "comptia network+",
+      1
+     ],
+     [
+      "documentation",
+      1
+     ],
+     [
+      "itil",
+      1
+     ],
+     [
+      "ticketing systems",
+      1
+     ]
+    ],
+    "flags": [
+     "Asks for 5+ years of experience."
+    ],
+    "title_match": false
+   }
+  },
+  {
+   "name": "empty",
+   "title": "",
+   "text": "",
+   "have": [],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 0,
+    "matched": [],
+    "gaps": [],
+    "flags": [
+     "No skills from your list found in this posting. It may be a short snippet or an unusual role.",
+     "Very short description (possibly only a snippet), so the score is a rough guide."
+    ],
+    "title_match": false
+   }
+  },
+  {
+   "name": "blank have, title match",
+   "title": "IT Support Specialist",
+   "text": "About the role\nYou will join a busy service desk supporting 2,000 users across three offices. Day to day you will troubleshoot hardware and software issues, manage tickets in ServiceNow, and keep the knowledge base current.\n\nWhat you'll need\n- 5+ years of help desk or desktop support experience\n- Active Directory and Microsoft 365 administration\n- Strong customer service and clear written communication\n- Comfort with Windows 10/11 imaging and Intune\n\nNice to have\n- CompTIA A+ or Network+\n- ITIL Foundation\n- Some PowerShell scripting\n\nWe offer a hybrid schedule and a learning budget. You will excel in a fast-moving team and grow with us.",
+   "have": [],
+   "target_titles": [
+    "it support",
+    "technical support",
+    "service desk",
+    "help desk",
+    "desktop support",
+    "implementation",
+    "project coordinator",
+    "project manager",
+    "program coordinator",
+    "business analyst",
+    "systems analyst",
+    "analyst",
+    "change management",
+    "technical project",
+    "customer success",
+    "solutions",
+    "operations coordinator",
+    "it coordinator"
+   ],
+   "expect": {
+    "score": 10,
+    "matched": [],
+    "gaps": [
+     [
+      "active directory",
+      2
+     ],
+     [
+      "customer service",
+      2
+     ],
+     [
+      "help desk",
+      2
+     ],
+     [
+      "microsoft 365",
+      2
+     ],
+     [
+      "comptia a+",
+      1
+     ],
+     [
+      "comptia network+",
+      1
+     ],
+     [
+      "documentation",
+      1
+     ],
+     [
+      "itil",
+      1
+     ],
+     [
+      "ticketing systems",
+      1
+     ],
+     [
+      "troubleshooting",
+      1
+     ]
+    ],
+    "flags": [
+     "Asks for 5+ years of experience."
+    ],
+    "title_match": true
+   }
+  }
+ ],
+ "location_ok": [
+  {
+   "location": "Springfield, IL",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  },
+  {
+   "location": "Remote",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  },
+  {
+   "location": "Remote - Worldwide",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": false
+  },
+  {
+   "location": "Anywhere",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": false
+  },
+  {
+   "location": "",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  },
+  {
+   "location": "  ",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  },
+  {
+   "location": "Tulsa, OK",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": false
+  },
+  {
+   "location": "USA, Canada, USA timezones",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  },
+  {
+   "location": "Global (remote)",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": false
+  },
+  {
+   "location": "Riverton",
+   "allowed": [
+    "springfield",
+    "riverton",
+    "illinois",
+    "illinois",
+    "remote",
+    "united states",
+    "usa"
+   ],
+   "expect": true
+  }
+ ]
+}

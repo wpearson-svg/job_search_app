@@ -1,0 +1,25 @@
+{# Tags and the avoid flag for one posting (j), in the side panel and on the full page. back: where to return. #}
+<form method="post" action="{{ url_for('set_tags', job_id=j.id) }}" class="tagform">
+  <input type="hidden" name="back" value="{{ back }}">
+  {% for key, label, about in tag_defs %}
+  <label class="chk" title="{{ about }}"><input type="checkbox" name="tag" value="{{ key }}" {{ 'checked' if key in j.ptags }}> {{ label }}</label>
+  {% endfor %}
+  {% for t in j.ptags if t not in tag_label_map %}
+  <label class="chk"><input type="checkbox" name="tag" value="{{ t }}" checked> {{ tag_label(t) }}</label>
+  {% endfor %}
+  <input name="custom" placeholder="Your own tag" maxlength="40" class="customtag">
+  <button class="plain small">Save tags</button>
+</form>
+{% if j.company %}
+<form method="post" action="{{ url_for('avoid') }}" class="tagform">
+  <input type="hidden" name="back" value="{{ back }}"><input type="hidden" name="company" value="{{ j.company }}">
+  {% if j.avoid %}
+  <div class="warnbox">You avoid {{ j.avoid.company }}{% if j.avoid.reason %}: {{ j.avoid.reason }}{% endif %}.</div>
+  <input type="hidden" name="on" value="0"><button class="plain small">Stop avoiding {{ j.company }}</button>
+  {% else %}
+  <input type="hidden" name="on" value="1">
+  <input name="reason" placeholder="Why (optional, only you see it)" maxlength="200">
+  <button class="plain small" title="Hides this company's postings from the list">Avoid {{ j.company }}</button>
+  {% endif %}
+</form>
+{% endif %}

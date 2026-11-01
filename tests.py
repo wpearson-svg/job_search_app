@@ -9,19 +9,11 @@ LEX = matcher.load_lexicon()
 # Tests run against a private data folder holding a sample user (the resume and settings the app was built around),
 # never against the real data/ folder.
 settings.DATA_DIR = tempfile.mkdtemp()
-SAMPLE_RESUME = """Jane Doe
-Springfield, IL
-
-SUMMARY
-Project coordinator and IT support specialist with 3 years of experience.
-
-EXPERIENCE
-Acme Services, Implementation Specialist, 2022 - 2025
-- Led the software implementation of new scheduling software for 40 customer sites; delivered user training and ongoing user training sessions.
-- Provided tier 1-3 support for a help desk, troubleshooting tickets and writing SQL queries and Excel reports.
-- Ran agile / scrum ceremonies for a 5-person team and handled vendor management and stakeholder communication.
-- Built internal tools with C# and Docker, and prototyped an AI / LLM assistant for the support team.
-"""
+writer.BASE = tempfile.mkdtemp()                       # generated files never land in the app folder
+import home; home.ROOT = writer.BASE                       # nor the default work folder
+SHARED = os.path.join(HERE, "shared_tests")   # the same made-up user and cases the Android tests use
+with open(os.path.join(SHARED, "sample_resume.md"), encoding="utf-8") as _f:
+    SAMPLE_RESUME = _f.read()
 with open(os.path.join(settings.DATA_DIR, "master_resume.md"), "w", encoding="utf-8") as _f:
     _f.write(SAMPLE_RESUME)
 
@@ -36,70 +28,8 @@ def make_docx(text):
     return path
 
 
-SAMPLE_USER = json.loads(r"""{
- "target_titles": [
-  "it support",
-  "technical support",
-  "service desk",
-  "help desk",
-  "desktop support",
-  "implementation",
-  "project coordinator",
-  "project manager",
-  "program coordinator",
-  "business analyst",
-  "systems analyst",
-  "analyst",
-  "change management",
-  "technical project",
-  "customer success",
-  "solutions",
-  "operations coordinator",
-  "it coordinator"
- ],
- "search_keywords": [
-  "it support",
-  "implementation specialist",
-  "project coordinator",
-  "business analyst",
-  "change management",
-  "service desk"
- ],
- "locations": [
-  "springfield",
-  "riverton",
-  "illinois",
-  "illinois",
-  "remote",
-  "united states",
-  "usa"
- ],
- "adzuna": {
-  "where": "Springfield",
-  "country": "us"
- },
- "usajobs": {
-  "location": "Springfield, Illinois"
- },
- "your_name": "Jane Doe",
- "send_resume_in_requests": false,
- "resume_check_phrases": [
-  [
-   "managed a team",
-   "Says \"managed a team\" (the prompt's rules say use led/implemented/trained)."
-  ],
-  [
-   "2.5",
-   "Mentions 2.5 (the rules say \"over 2 years\")."
-  ]
- ],
- "linkedin": {
-  "location": "Springfield, Illinois"
- },
- "jobspy": {
-  "location": "Springfield, IL"
- }
-}""")
+with open(os.path.join(SHARED, "sample_user.json"), encoding="utf-8") as _f:
+    SAMPLE_USER = json.load(_f)
 with open(os.path.join(settings.DATA_DIR, "user_settings.json"), "w") as _f:
     json.dump(SAMPLE_USER, _f)
 appmod.app.config["KEYS_PATH"] = os.path.join(settings.DATA_DIR, "keys.local.json")
@@ -110,6 +40,203 @@ GOOD = """Implementation Specialist. We roll out our scheduling software to cust
 Requirements: 2+ years of software implementation or IT support experience. Strong troubleshooting, end user training,
 SQL and Excel skills. Experience with vendor management and stakeholder communication. Preferred: ITIL, Salesforce."""
 SENIOR = """Senior Director of Engineering. Requirements: 10+ years of experience. Kubernetes, AWS, Terraform, Go, Java."""
+
+
+def offline(test):
+    """Runs a test with every web request failing, as if there were no network."""
+    def run(self):
+        import requests
+        def fail(*a, **k):
+            raise requests.ConnectionError("no network in tests")
+        orig, sources.requests.get = sources.requests.get, fail
+        try:
+            return test(self)
+        finally:
+            sources.requests.get = orig
+    return run
+
+
+def shared(name):
+    with open(os.path.join(SHARED, name), encoding="utf-8") as f:
+        return json.load(f)
+
+
+class SharedFixtureTests(unittest.TestCase):
+    """The cases in shared_tests/, which the Android tests run too. Both versions must give these exact answers."""
+
+    def test_scoring(self):
+        d = shared("scoring.json")
+        for c in d["find_terms"]:
+            self.assertEqual(sorted(matcher.find_terms(c["text"], LEX)), c["expect"], c["text"][:40])
+        for c in d["score_job"]:
+            r = matcher.score_job(c["title"], c["text"], set(c["have"]), LEX, c["target_titles"])
+            got = {"score": r["score"], "matched": r["matched"], "gaps": [list(g) for g in r["gaps"]],
+                   "flags": r["flags"], "title_match": r["title_match"]}
+            self.assertEqual(got, c["expect"], c["name"])
+        for c in d["location_ok"]:
+            self.assertEqual(matcher.location_ok(c["location"], "", c["allowed"]), c["expect"], c["location"])
+
+    def test_dedupe(self):
+        d = shared("dedupe.json")
+        for c in d["norm"]:
+            self.assertEqual(db.norm(c["text"]), c["expect"])
+        for c in d["dup_key"]:
+            self.assertEqual(db.dup_key(c["title"], c["company"]), c["expect"])
+        for c in d["same_place"]:
+            self.assertEqual(db.same_place(c["a"], c["b"]), c["expect"], (c["a"], c["b"]))
+
+    def test_gaps(self):
+        d = shared("gaps.json")
+        for c in d["build_plan"]:
+            rows, phases = gaps.build_plan(c["jobs"], LEX)
+            self.assertEqual({"rows": rows, "phases": phases}, c["expect"])
+        for c in d["build_message"]:
+            rows, _ = gaps.build_plan(c["jobs"], LEX)
+            self.assertEqual(gaps.build_message(rows, c["jobs"], LEX, c["focus"], c["extras"], c["hours"], c["weeks"],
+                                                c["top"]), c["expect"])
+        for c in d["parse_plan"]:
+            self.assertEqual([list(x) for x in gaps.parse_plan(c["text"])], c["expect"])
+        self.assertEqual(gaps.ACTIONS, d["actions"])
+
+    def test_replies_and_requests(self):
+        d = shared("replies.json")
+        for c in d["parse_blocks"]:
+            self.assertEqual(writer.parse_blocks(c["text"]), c["expect"])
+        for c in d["check_resume"]:
+            self.assertEqual(writer.check_resume(c["text"], c["rules"]), c["expect"])
+        for c in d["build_user_message"]:
+            self.assertEqual(writer.build_user_message(c["job"], c["want_cover"]), c["expect"])
+        for c in d["build_prep_message"]:
+            self.assertEqual(writer.build_prep_message(c["job"]), c["expect"])
+        for c in d["parse_prep"]:
+            self.assertEqual([list(x) for x in writer.parse_prep(c["text"])], c["expect"])
+        for c in d["with_context"]:
+            self.assertEqual(writer.with_context(c["message"], c["instructions"], c["resume"]), c["expect"])
+        for c in d["slug"]:
+            self.assertEqual(writer.slug(c["text"]), c["expect"])
+
+    def test_source_parsers(self):
+        d = shared("sources.json")
+        for c in d["strip_html"]:
+            self.assertEqual(sources.strip_html(c["html"]), c["expect"])
+        for name in ("remoteok", "remotive", "adzuna", "usajobs"):
+            for c in d[name]:
+                self.assertEqual(getattr(sources, "parse_" + name)(c["data"]), c["expect"], name)
+        for c in d["greenhouse"]:
+            self.assertEqual(sources.parse_greenhouse(c["data"], c["board"]), c["expect"])
+        for c in d["lever"]:
+            self.assertEqual(sources.parse_lever(c["data"], c["company"]), c["expect"])
+        for c in d["title_wanted"]:
+            self.assertEqual(sources.title_wanted(c["title"], c["targets"]), c["expect"])
+
+    def test_tracking(self):
+        import tracking
+        from datetime import date
+        d = shared("tracking.json")
+        self.assertEqual([list(x) for x in db.STATUSES], d["statuses"])
+        self.assertEqual(db.APPLIED_STAGES, d["applied_stages"])
+        for c in d["needs_follow_up"]:
+            self.assertEqual(tracking.needs_follow_up(c["status"], c["applied_on"], date.fromisoformat(c["today"])), c["expect"])
+        for c in d["days_since"]:
+            self.assertEqual(tracking.days_since(c["applied_on"], date.fromisoformat(c["today"])), c["expect"])
+        for c in d["weekly_summary"]:
+            self.assertEqual(tracking.weekly_summary(*c["args"]), c["expect"])
+        for c in d["interview_rate"]:
+            self.assertEqual(tracking.interview_rate(c["applied"], c["interviews"]), c["expect"])
+
+    def test_queue_format(self):
+        import aiqueue
+        d = shared("queue.json")
+        self.assertEqual(aiqueue.KINDS, d["kinds"])
+        self.assertEqual(aiqueue.REPLY_TAGS, d["reply_tags"])
+        for c in d["render_todo"]:
+            self.assertEqual(aiqueue.render_todo(c["batch"], c["origin"], c["created"], c["items"], c["carries_context"]), c["expect"])
+        for c in d["render_request"]:
+            self.assertEqual(aiqueue.render_request(c["batch"], c["n"], c["kind"], c["label"], c["body"]), c["expect"])
+        for c in d["parse_item_name"]:
+            got = aiqueue.parse_item_name(c["name"])
+            self.assertEqual(list(got) if got else None, c["expect"], c["name"])
+        for c in d["todo_names"]:
+            self.assertEqual(aiqueue.batch_of_todo(c["name"]), c["todo"])
+            self.assertEqual(aiqueue.batch_of_reply_todo(c["name"]), c["reply_todo"])
+        for c in d["parse_reply_todo"]:
+            self.assertEqual({str(k): v for k, v in aiqueue.parse_reply_todo(c["text"]).items()}, c["expect"])
+        for c in d["plan_import"]:
+            self.assertEqual(aiqueue.plan_import(c["items"], set(c["requests_present"]), c["replies"], c["reply_todo"]),
+                             c["expect"], c["name"])
+
+    def test_shared_details(self):
+        import shared_details as sd
+        d = shared("shared_details.json")
+        self.assertEqual(list(sd.FILES), d["files"])
+        self.assertEqual({k: sd.meta_name(k) for k in sd.FILES}, d["meta_names"])
+        c = d["search_doc"]
+        self.assertEqual(sd.search_doc(c["settings"], c["profiles"]).decode("utf-8"), c["expect"])
+        self.assertEqual(sd.skills_doc(d["skills_doc"]["terms"]).decode("utf-8"), d["skills_doc"]["expect"])
+        for c in d["decide"]:
+            self.assertEqual(sd.decide(c["local"], c["remote"], c["base"]), c["expect"], c["name"])
+        for c in d["next_version"]:
+            self.assertEqual(sd.next_version(c["remote"], c["base"]), c["expect"])
+
+    def test_shared_postings_merge(self):
+        import shared_db
+        d = shared("shared_db.json")
+        self.assertEqual((d["file"], d["format"], d["version"], d["combine"]),
+                         (shared_db.FILE, shared_db.FORMAT, shared_db.VERSION, shared_db.COMBINE))
+        for c in d["merge"]:
+            self.assertEqual(shared_db.merge(c["here"], c["there"], c["base"]), c["expect"], c["name"])
+
+    def test_docx(self):
+        d = shared("resume.json")
+        self.assertEqual(resumemod.read_resume(os.path.join(SHARED, d["docx_file"])), d["expect"])
+
+
+class CareerTests(unittest.TestCase):
+    """The career file (career.py, docs/formats.md section 9), against the shared cases in shared_tests/career.json."""
+
+    def setUp(self):
+        import career
+        self.career = career
+        self.d = shared("career.json")
+        self.sample = shared(self.d["sample_file"])
+
+    def test_constants_and_sample(self):
+        c, d = self.career, self.d
+        self.assertEqual((d["format"], d["version"], d["file"], d["tag"]), (c.FORMAT, c.VERSION, c.FILE, c.TAG))
+        self.assertEqual(c.validate(self.sample), [])
+        self.assertEqual(c.skill_names(self.sample), d["sample_skills"])
+        self.assertEqual(c.text(self.sample), d["sample_text"])
+        self.assertEqual(c.validate(c.empty("Jane Doe")), [])
+
+    def test_invalid_files_say_why(self):
+        for case in self.d["invalid"]:
+            self.assertTrue(case["problems"], case["name"])
+            self.assertEqual(self.career.validate(case["data"]), case["problems"], case["name"])
+
+    def test_reading_replies(self):
+        for r in self.d["replies"]:
+            data, problems = self.career.read_reply(r["text"])
+            self.assertEqual((data is not None, [p.split(":")[0] for p in problems]), (r["ok"], r["problems"]), r["name"])
+        data, _ = self.career.read_reply(self.d["replies"][1]["text"])
+        self.assertEqual(data, self.sample)
+
+    def test_app_edits_and_rebuilds(self):
+        c, e, now = self.career, self.d["edits"], self.d["now"]
+        self.assertEqual(c.add_confirmed(self.sample, "  Salesforce ", now), e["add_new"])
+        self.assertEqual(c.add_confirmed(self.sample, "SQL", now), e["add_known"])
+        self.assertEqual(c.add_confirmed(self.sample, "SQL", now), self.sample)       # already there: unchanged
+        self.assertEqual(c.remove_confirmed(self.sample, "ITIL", now), e["remove_confirmed"])
+        self.assertEqual(c.remove_confirmed(self.sample, "sql", now), self.sample)    # from the documents: stays
+        rebuilt = c.replace(self.sample, dict(c.empty("Jane Doe"), skills=[{"name": "sql", "source": "documents", "evidence": [], "notes": "x"}]), now)
+        self.assertEqual(rebuilt, e["replace"])
+        self.assertEqual(c.skill_names(rebuilt), ["sql", "itil"])                     # the confirmed one carried over
+        self.assertEqual(e["add_new"]["skills"][-1], {"name": "Salesforce", "source": "confirmed", "evidence": [], "notes": ""})
+
+    def test_privacy_and_wording_check(self):
+        for case in self.d["check"]:
+            self.assertEqual(self.career.check_document(case["doc"], self.sample), case["warnings"])
+        self.assertEqual(self.d["check"][0]["warnings"], [])
+        self.assertEqual(len(self.d["check"][1]["warnings"]), 2)
 
 
 class ResumeTests(unittest.TestCase):
@@ -202,6 +329,7 @@ class SourceParseTests(unittest.TestCase):
             "PositionURI": "u", "UserArea": {"Details": {"JobSummary": "Support users"}}, "QualificationSummary": "SQL"}}]}})
         self.assertIn("SQL", u[0]["description"])
 
+    @offline
     def test_missing_keys_reported_not_fatal(self):
         jobs, report = sources.fetch_all({**CFG, "greenhouse_boards": [], "lever_companies": []}, {})
         names = {n: err for n, _, err in report}
@@ -256,6 +384,7 @@ class AppTests(unittest.TestCase):
         jid = db.connect().execute("SELECT id FROM jobs").fetchone()[0]
         self.assertNotIn(b"<script>alert(1)</script>", self.c.get(f"/job/{jid}").data)
 
+    @offline
     def test_fetch_with_no_network_does_not_crash(self):
         r = self.c.post("/fetch", follow_redirects=True)
         self.assertEqual(r.status_code, 200)
@@ -301,39 +430,19 @@ class WriterTests(unittest.TestCase):
         self.assertIn("<job_listing>", m)
         self.assertIn("Company: Acme", m)
 
-    def test_system_prompt_is_the_whole_file(self):
-        sp = writer.load_system_prompt(CFG)
-        self.assertIn("Hard rules", sp)
-        self.assertEqual(sp, open(os.path.join(HERE, "default_instructions.md"), encoding="utf-8").read())
+    def test_default_instructions_are_the_whole_file(self):
+        text = settings.instructions_text(CFG)
+        self.assertIn("Hard rules", text)
+        self.assertEqual(text, open(os.path.join(HERE, "default_instructions.md"), encoding="utf-8").read())
 
-    def test_generate_with_fake_model_and_files(self):
-        tmp = tempfile.mkdtemp()
-        seen = {}
-        def fake(system, user, key, model, max_tokens):
-            seen.update(system=system, user=user, key=key, model=model)
-            return FAKE_REPLY
-        job = {"id": 4, "title": "Analyst", "company": "Acme Co", "location": "", "description": GOOD}
-        res = writer.generate(job, True, {**CFG, "output_dir": tmp}, {"anthropic_api_key": "k"}, caller=fake)
-        self.assertEqual(seen["key"], "k")
-        self.assertEqual(seen["model"], "claude-sonnet-5-5")
-        self.assertIn("Hard rules", seen["system"])
-        names = [os.path.basename(f) for f in res["files"] if f.endswith(".md")]
-        self.assertTrue(any(n.endswith("_resume.md") for n in names))
-        self.assertTrue(any(n.endswith("_cover_letter.md") for n in names))
-        self.assertTrue(any(n.endswith("_review_notes.md") for n in names))
-        self.assertEqual(res["warnings"], [])
-
-    def test_no_key_and_no_resume_block(self):
-        os.environ.pop("ANTHROPIC_API_KEY", None)
-        with self.assertRaises(RuntimeError) as c:
-            writer.generate({"description": "x"}, False, CFG, {})
-        self.assertIn("No Anthropic API key", str(c.exception))
-        with self.assertRaises(RuntimeError) as c:
-            writer.generate({"id": 1, "description": "x"}, False, CFG, {"anthropic_api_key": "k"}, caller=lambda *a: "oops")
-        self.assertIn("no <resume> block", str(c.exception))
+    def test_no_api_path_left(self):
+        # The app never calls an AI itself; any assistant gets the request through copy, share or the folder.
+        for name in ("generate", "call_model", "system_with_resume"):
+            self.assertFalse(hasattr(writer, name), name)
+        self.assertNotIn("anthropic_api_key", dict(appmod.KEY_FIELDS))
 
 
-class BuildRouteTests(unittest.TestCase):
+class PostingPageTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         db.DB_PATH = os.path.join(self.tmp, "t.db")
@@ -341,37 +450,20 @@ class BuildRouteTests(unittest.TestCase):
         self.c = appmod.app.test_client()
         self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme", "text": GOOD})
         self.jid = db.connect().execute("SELECT id FROM jobs").fetchone()[0]
-        self._gen = writer.generate
 
-    def tearDown(self):
-        writer.generate = self._gen
-
-    def test_build_without_key_shows_message(self):
-        os.environ.pop("ANTHROPIC_API_KEY", None)
-        r = self.c.post(f"/job/{self.jid}/build", data={}, follow_redirects=True)
-        self.assertIn(b"No Anthropic API key", r.data)
-
-    def test_build_stores_and_shows_documents(self):
-        out = os.path.join(self.tmp, "out")
-        writer.generate = lambda job, cover, cfg, keys, caller=None: self._gen(
-            job, cover, {**cfg, "output_dir": out}, {"anthropic_api_key": "k"}, caller=lambda *a: FAKE_REPLY)
-        r = self.c.post(f"/job/{self.jid}/build", data={"cover_letter": "1"}, follow_redirects=True)
-        self.assertIn(b"Built.", r.data)
-        self.assertIn(b"Led a software rollout", r.data)
-        self.assertIn(b"Dear Hiring Team", r.data)
-        self.assertIn(b"Hard gaps", r.data)
-        self.assertTrue(os.listdir(out))
+    def test_build_route_is_gone(self):
+        self.assertEqual(self.c.post(f"/job/{self.jid}/build", data={}).status_code, 404)
 
 
-class PackageTests(BuildRouteTests):
-    def test_page_offers_copy_and_import_and_hides_api_without_key(self):
-        os.environ.pop("ANTHROPIC_API_KEY", None)
+class PackageTests(PostingPageTests):
+    def test_page_offers_copy_and_import_and_names_no_ai(self):
         r = self.c.get(f"/job/{self.jid}")
-        self.assertIn(b"Copy for Claude: resume", r.data)
+        self.assertIn(b"Copy for your AI: resume", r.data)
         self.assertIn(b"Build a resume and a cover letter for this listing.", r.data)
         self.assertIn(b"Build a resume for this listing.", r.data)
         self.assertIn(b"Company: Acme", r.data)
         self.assertNotIn(b"Build with the API instead", r.data)
+        self.assertNotIn(b"Claude", r.data)
 
     def test_import_tagged_reply(self):
         r = self.c.post(f"/job/{self.jid}/import", data={"reply": FAKE_REPLY}, follow_redirects=True)
@@ -386,7 +478,7 @@ class PackageTests(BuildRouteTests):
 
     def test_import_empty_rejected(self):
         r = self.c.post(f"/job/{self.jid}/import", data={"reply": " "}, follow_redirects=True)
-        self.assertIn(b"Paste Claude", r.data)
+        self.assertIn(b"Paste your AI", r.data)
 
 
 class TrackingTests(unittest.TestCase):
@@ -743,7 +835,7 @@ class TrackingTests(unittest.TestCase):
         self.assertEqual(sources.fetch_all({"jobspy": {"enabled": False}, "search_keywords": [], "target_titles": [],
                                             "locations": []}, {})[1][-1][2][:12], "JobSpy is of")
 
-    # ---- gap plan with Claude ----
+    # ---- gap plan with your AI ----
     def test_gap_message_has_evidence_and_plan_roundtrip(self):
         self.c.post("/add", data={"title": "Systems Analyst", "company": "Beta",
                                   "text": "Requirements:\nStrong SQL skills and Power BI dashboards.\nITIL certification required."})
@@ -770,34 +862,67 @@ class TrackingTests(unittest.TestCase):
         self.assertIn("Built from 0 postings", self.c.get(f"/gaps?profile={pid}").data.decode())
         self.assertNotIn("Built from 0 postings", self.c.get("/gaps").data.decode())
 
-    # ---- folder queue ----
-    def test_queue_request_files_todo_and_import(self):
+    # ---- AI work queue (batches) ----
+    def _items(self, root):
+        return sorted(n for n in os.listdir(os.path.join(root, "requests")) if not n.startswith("TODO_"))
+
+    def _write(self, path, text):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def _readf(self, path):
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+
+    def test_queue_batch_files_import_and_cleanup(self):
+        import aiqueue
         root = tempfile.mkdtemp()
         appmod.app.config["QUEUE_ROOT"] = root
         try:
             self.c.post(f"/job/{self.jid}/queue", data={"kind": "resume_cover"})
             self.c.post(f"/job/{self.jid}/queue", data={"kind": "prep"})
             self.assertEqual(self.c.post(f"/job/{self.jid}/queue", data={"kind": "nope"}).status_code, 400)
-            names = sorted(os.listdir(os.path.join(root, "requests")))
+            names = self._items(root)
             self.assertEqual(len(names), 2)
-            req = open(os.path.join(root, "requests", names[0]), encoding="utf-8").read()
-            self.assertIn("replies/" + names[0], req); self.assertIn("<job_listing>", req)
-            self.assertIn("cover letter", req)
-            todo = open(os.path.join(root, "TODO.md"), encoding="utf-8").read()
+            batch = aiqueue.parse_item_name(names[0])[0]
+            self.assertEqual(aiqueue.parse_item_name(names[1])[0], batch)          # both joined the open batch
+            self.assertTrue(os.path.exists(os.path.join(root, "AI_INSTRUCTIONS.md")))
+            req = self._readf(os.path.join(root, "requests", names[0]))
+            self.assertIn("replies/" + names[0], req); self.assertIn("<job_listing>", req); self.assertIn("cover letter", req)
+            todo = self._readf(os.path.join(root, "requests", aiqueue.todo_name(batch)))
             for n in names:
-                self.assertIn(f"`requests/{n}`", todo)
-            self.assertIn("Waiting for a reply", self.c.get("/queue").data.decode())
-            self.c.post("/queue/import")                                   # nothing written yet: nothing imported
+                self.assertIn(n, todo)
+            self.assertIn(settings.device_id(), todo)
             self.assertIn("Waiting for a reply", self.c.get("/queue").data.decode())
             rdir = os.path.join(root, "replies")
-            open(os.path.join(rdir, names[0]), "w", encoding="utf-8").write("<resume>Folder resume body</resume>")
-            open(os.path.join(rdir, names[1]), "w", encoding="utf-8").write("<questions_to_ask>Folder question?</questions_to_ask>")
-            self.assertIn("ready to import", self.c.get("/queue").data.decode())
+            self._write(os.path.join(rdir, names[0]), "<resume>Folder resume body</resume>")
+            self._write(os.path.join(rdir, aiqueue.reply_todo_name(batch)), aiqueue.render_reply_todo(
+                batch, [(1, "done", names[0], ""), (2, "skipped", "", "The posting text was too short.")]))
+            page = self.c.get("/queue").data.decode()                            # opening the page imports
+            self.assertIn("Imported 1 reply", page)
+            self.assertIn("The posting text was too short.", page)
+            self.assertIn("Folder resume body", self.c.get(f"/job/{self.jid}").data.decode())
+            self.assertFalse(os.path.exists(os.path.join(rdir, names[0])))        # imported: reply and request gone
+            self.assertFalse(os.path.exists(os.path.join(root, "requests", names[0])))
+            self.assertTrue(os.path.exists(os.path.join(root, "requests", names[1])))   # skipped: stays
+            self.assertTrue(os.path.exists(os.path.join(root, "requests", aiqueue.todo_name(batch))))
+            # the batch has reported, so a new request starts a new batch
+            self.c.post(f"/job/{self.jid}/queue", data={"kind": "resume"})
+            newer = [n for n in self._items(root) if aiqueue.parse_item_name(n)[0] != batch]
+            self.assertEqual(len(newer), 1)
+            # removing the skipped item finishes the first batch: its TODO files go too
+            conn = db.connect()
+            iid = conn.execute("SELECT id FROM queue_items WHERE name=?", (names[1],)).fetchone()[0]
+            conn.close()
+            self.c.post(f"/queue/{iid}/delete")
+            self.assertFalse(os.path.exists(os.path.join(root, "requests", aiqueue.todo_name(batch))))
+            self.assertFalse(os.path.exists(os.path.join(rdir, aiqueue.reply_todo_name(batch))))
+            # with no report, a reply is matched by its file name
+            self._write(os.path.join(rdir, newer[0]), "<resume>Second resume</resume>")
             self.c.post("/queue/import")
-            page = self.c.get(f"/job/{self.jid}").data.decode()
-            self.assertIn("Folder resume body", page); self.assertIn("Folder question?", page)
-            self.assertIn("Nothing waiting", open(os.path.join(root, "TODO.md"), encoding="utf-8").read())
-            self.assertIn("Imported", self.c.get("/queue").data.decode())
+            self.assertEqual(self._items(root), [])
+            self.assertEqual([n for n in os.listdir(rdir)], [])
+            self.assertEqual([n for n in os.listdir(os.path.join(root, "requests"))], [])
         finally:
             appmod.app.config.pop("QUEUE_ROOT", None)
 
@@ -806,13 +931,19 @@ class TrackingTests(unittest.TestCase):
         appmod.app.config["QUEUE_ROOT"] = root
         try:
             self.c.post("/gaps/queue", data={"profile": "", "min": "0", "hours": "7", "weeks": "10", "top": "10"})
-            name = os.listdir(os.path.join(root, "requests"))[0]
-            self.assertIn("about 7 hours a week for 10 weeks", open(os.path.join(root, "requests", name), encoding="utf-8").read())
-            open(os.path.join(root, "replies", name), "w", encoding="utf-8").write("<priorities>Queue priority one</priorities>")
+            name = self._items(root)[0]
+            self.assertIn("about 7 hours a week for 10 weeks", self._readf(os.path.join(root, "requests", name)))
+            self._write(os.path.join(root, "replies", name), "<priorities>Queue priority one</priorities>")
             self.c.post("/queue/import")
             self.assertIn("Queue priority one", self.c.get("/gaps").data.decode())
         finally:
             appmod.app.config.pop("QUEUE_ROOT", None)
+
+    def test_queue_help_page(self):
+        page = self.c.get("/queue/help").data.decode()
+        self.assertIn("AI_INSTRUCTIONS.md", page)
+        self.assertNotIn("Claude", page)
+        self.assertIn("How the AI queue works", self.c.get("/queue").data.decode())
 
     def test_filter_by_new_status(self):
         self.c.post(f"/job/{self.jid}/status", data={"status": "offer"})
@@ -820,9 +951,562 @@ class TrackingTests(unittest.TestCase):
         self.assertNotIn(b"Implementation Specialist", self.c.get("/?status=rejected").data)
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=1)
 
+class SharedDetailsTests(unittest.TestCase):
+    """Two computers sharing one WildThing/user folder, played by switching the data folder and database."""
+
+    def setUp(self):
+        self.saved_dir = settings.DATA_DIR
+        self.shared = tempfile.mkdtemp()
+        self.a, self.b = self._device(), self._device()
+        appmod.app.config["TESTING"] = True
+        self.c = appmod.app.test_client()
+
+    def tearDown(self):
+        settings.DATA_DIR = self.saved_dir
+
+    def _device(self):
+        d = {"data": tempfile.mkdtemp(), "db": os.path.join(tempfile.mkdtemp(), "t.db")}
+        settings.DATA_DIR = d["data"]
+        settings.save_user({"shared_folder": self.shared, "target_titles": ["help desk"]})
+        return d
+
+    def use(self, d):
+        settings.DATA_DIR, db.DB_PATH = d["data"], d["db"]
+
+    def test_sync_both_ways_and_conflict(self):
+        import usersync
+        self.use(self.a)
+        self.c.post("/settings/resume", data={"resume": (__import__("io").BytesIO(b"Jane Doe. SQL, help desk."), "r.txt")},
+                    content_type="multipart/form-data")
+        self.c.post("/profiles/save", data={"name": "Desk", "keywords": "help desk"})
+        self.assertTrue(os.path.exists(os.path.join(self.shared, "resume.txt")))
+        meta = json.load(open(os.path.join(self.shared, "search.json.meta.json"), encoding="utf-8"))
+        self.assertEqual(meta["device"], settings.device_id())
+        # the second computer has no resume yet, so it takes that; its own default search settings differ from
+        # the folder's, and on a first sync that is a question, not a silent overwrite
+        self.use(self.b)
+        res = usersync.sync(db.connect())
+        self.assertIn("resume", res["pulled"])
+        self.assertEqual([c["key"] for c in res["conflicts"]], ["search.json"])
+        self.c.post("/sync/resolve", data={"key": "search.json", "keep": "folder"})
+        self.assertIn("Jane Doe", open(settings.resume_path(), encoding="utf-8").read())
+        self.assertIn("Desk", [r[0] for r in db.connect().execute("SELECT name FROM profiles")])
+        # B marks a skill; A picks it up on its next sync
+        self.c.post("/have", data={"term": "itil"})
+        self.use(self.a)
+        usersync.sync(db.connect())
+        self.assertEqual([r[0] for r in db.connect().execute("SELECT term FROM extras")], ["itil"])
+        # both change the search settings: asked, not overwritten
+        settings.save_user({"target_titles": ["analyst"]})
+        self.use(self.b)
+        settings.save_user({"target_titles": ["nurse"]})
+        usersync.sync(db.connect())                                  # B pushes first
+        self.use(self.a)
+        res = usersync.sync(db.connect())
+        self.assertEqual([c["key"] for c in res["conflicts"]], ["search.json"])
+        self.assertEqual(settings.load()["target_titles"], ["analyst"])   # nothing changed yet
+        self.assertIn("Changed in both places", self.c.get("/sync").data.decode())
+        self.c.post("/sync/resolve", data={"key": "search.json", "keep": "folder"})
+        self.assertEqual(settings.load()["target_titles"], ["nurse"])
+        self.assertEqual(usersync.sync(db.connect())["conflicts"], [])
+
+    def test_old_settings_file_is_split(self):
+        settings.DATA_DIR = tempfile.mkdtemp()
+        with open(os.path.join(settings.DATA_DIR, "user_settings.json"), "w", encoding="utf-8") as f:
+            json.dump({"target_titles": ["x"], "your_name": "Jane"}, f)
+        self.assertEqual(settings.load()["target_titles"], ["x"])
+        self.assertEqual(json.load(open(os.path.join(settings.DATA_DIR, "shared_settings.json")))["target_titles"], ["x"])
+        self.assertNotIn("target_titles", json.load(open(os.path.join(settings.DATA_DIR, "user_settings.json"))))
+
+    def test_old_anthropic_key_is_ignored(self):
+        settings.DATA_DIR = tempfile.mkdtemp()
+        with open(appmod.keys_path(), "w", encoding="utf-8") as f:
+            json.dump({"anthropic_api_key": "old", "adzuna_app_id": "ID9"}, f)
+        db.DB_PATH = os.path.join(tempfile.mkdtemp(), "t.db")
+        self.assertEqual(self.c.get("/settings").status_code, 200)
+        self.c.post("/settings", data={"target_titles": "x", "usajobs_key": "K"})
+        saved = json.load(open(appmod.keys_path(), encoding="utf-8"))
+        self.assertNotIn("anthropic_api_key", saved)
+        self.assertEqual(saved["adzuna_app_id"], "ID9")
+
+
+
+class FakeGoogleDrive:
+    """Just enough of the Drive v3 REST API (the calls gdrive.Drive makes), kept in memory."""
+
+    def __init__(self):
+        self.files, self.calls, self._n = {}, [], 0
+
+    class Resp:
+        def __init__(self, status, body=None, content=b""):
+            self.status_code, self._body, self.content = status, body, content
+
+        def json(self):
+            if self._body is None:
+                raise ValueError("no json")
+            return self._body
+
+    def add(self, parent, name, data=b"", folder=False, modified=None):
+        self._n += 1
+        fid = f"f{self._n}"
+        self.files[fid] = {"name": name, "parent": parent, "folder": folder, "data": data, "trashed": False,
+                           "modified": modified or f"2030-01-01T00:00:{self._n:02d}Z"}
+        return fid
+
+    def find(self, path):
+        """Ids of live files at a path like 'WildThing/requests/x.md'."""
+        parent, ids = "root", []
+        for i, part in enumerate(path.split("/")):
+            ids = [k for k, f in self.files.items() if f["parent"] == parent and f["name"] == part and not f["trashed"]]
+            if i < len(path.split("/")) - 1:
+                if not ids:
+                    return []
+                parent = ids[0]
+        return ids
+
+    def names(self, path):
+        folder = self.find(path)[0]
+        return sorted(f["name"] for f in self.files.values() if f["parent"] == folder and not f["trashed"])
+
+    def request(self, method, url, headers=None, timeout=None, params=None, json=None, data=None):
+        import re
+        self.calls.append((method, url))
+        assert headers["Authorization"] == "Bearer test-token"
+        params = params or {}
+        if method == "GET" and url.endswith("/drive/v3/files"):
+            parent = re.match(r"'([^']+)' in parents and trashed=false$", params["q"]).group(1)
+            return self.Resp(200, {"files": [
+                {"id": k, "name": f["name"], "modifiedTime": f["modified"],
+                 "mimeType": "application/vnd.google-apps.folder" if f["folder"] else "text/markdown"}
+                for k, f in self.files.items() if f["parent"] == parent and not f["trashed"]]})
+        if method == "POST" and url.endswith("/drive/v3/files") and "/upload/" not in url:
+            return self.Resp(200, {"id": self.add(json["parents"][0], json["name"], folder=True)})
+        if method == "GET" and "/drive/v3/files/" in url:
+            f = self.files.get(url.rsplit("/", 1)[1])
+            return self.Resp(200, content=f["data"]) if f else self.Resp(404, {"error": {"message": "not found"}})
+        if method == "POST" and url.endswith("/upload/drive/v3/files"):
+            boundary = headers["Content-Type"].split("boundary=")[1].encode()
+            parts = data.split(b"--" + boundary)
+            meta = __import__("json").loads(parts[1].split(b"\r\n\r\n", 1)[1].rsplit(b"\r\n", 1)[0])
+            body = parts[2].split(b"\r\n\r\n", 1)[1].rsplit(b"\r\n", 1)[0]
+            return self.Resp(200, {"id": self.add(meta["parents"][0], meta["name"], body)})
+        if method == "PATCH" and "/upload/drive/v3/files/" in url:
+            self.files[url.rsplit("/", 1)[1]]["data"] = data
+            return self.Resp(200, {})
+        if method == "PATCH":
+            self.files[url.rsplit("/", 1)[1]]["trashed"] = json["trashed"]
+            return self.Resp(200, {})
+        if method == "DELETE":
+            del self.files[url.rsplit("/", 1)[1]]
+            return self.Resp(204, {})
+        raise AssertionError((method, url))
+
+
+class GoogleDriveTests(unittest.TestCase):
+    """The desktop app using the WildThing folder in Google Drive directly (gdrive.py), against a fake Drive."""
+
+    def setUp(self):
+        import gdrive
+        self.gdrive = gdrive
+        self.saved_dir = settings.DATA_DIR
+        settings.DATA_DIR = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(tempfile.mkdtemp(), "t.db")
+        settings.save_user({"use_drive": True, "target_titles": ["implementation specialist"]})
+        self.fake = FakeGoogleDrive()
+        appmod.app.config["DRIVE"] = gdrive.Drive(lambda: "test-token", http=self.fake)
+        appmod.app.config["TESTING"] = True
+        self.c = appmod.app.test_client()
+        self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme", "text": GOOD})
+        self.jid = db.connect().execute("SELECT id FROM jobs").fetchone()[0]
+
+    def tearDown(self):
+        appmod.app.config.pop("DRIVE", None)
+        settings.DATA_DIR = self.saved_dir
+
+    def test_queue_round_trip_in_drive(self):
+        import aiqueue
+        self.c.post(f"/job/{self.jid}/queue", data={"kind": "resume"})
+        names = self.fake.names("WildThing/requests")
+        self.assertEqual(len(names), 2)                                    # the request and its batch TODO
+        item = [n for n in names if not n.startswith("TODO_")][0]
+        batch = aiqueue.parse_item_name(item)[0]
+        self.assertIn("AI_INSTRUCTIONS.md", self.fake.names("WildThing"))
+        self.assertEqual(self.fake.names("WildThing/replies"), [])
+        self.assertIn(b"<job_listing>", self.fake.files[self.fake.find("WildThing/requests/" + item)[0]]["data"])
+        # the AI writes two copies with the same name (Drive allows that): the newest wins, both go
+        replies = self.fake.find("WildThing/replies")[0]
+        self.fake.add(replies, item, b"<resume>Older copy</resume>", modified="2030-01-01T00:00:00Z")
+        self.fake.add(replies, item, b"<resume>Drive resume body</resume>", modified="2030-06-01T00:00:00Z")
+        page = self.c.get("/queue").data.decode()
+        self.assertIn("Imported 1 reply", page)
+        self.assertIn("Google Drive: WildThing", page)
+        self.assertIn("Drive resume body", self.c.get(f"/job/{self.jid}").data.decode())
+        self.assertEqual(self.fake.names("WildThing/replies"), [])
+        self.assertEqual(self.fake.names("WildThing/requests"), [])        # batch done: its TODO went too
+        trashed = [f["name"] for f in self.fake.files.values() if f["trashed"]]
+        self.assertEqual(sorted(trashed), sorted([item, item, item, aiqueue.todo_name(batch)]))   # to the trash by default
+        self.assertEqual(len(self.fake.find("WildThing")), 1)             # one WildThing folder, found again each time
+
+    def test_permanent_delete_setting(self):
+        settings.save_user({"drive_permanent_delete": True})
+        self.c.post(f"/job/{self.jid}/queue", data={"kind": "prep"})
+        item = [n for n in self.fake.names("WildThing/requests") if not n.startswith("TODO_")][0]
+        self.fake.add(self.fake.find("WildThing/replies")[0], item, b"<likely_questions>Q</likely_questions>")
+        self.c.post("/queue/import")
+        self.assertFalse(any(f["trashed"] for f in self.fake.files.values()))
+        self.assertEqual(sum(1 for c in self.fake.calls if c[0] == "DELETE"), 3)    # reply, request, batch TODO
+        self.assertEqual(self.fake.names("WildThing/replies"), [])
+
+    def test_batches_in_another_folder_are_kept_not_dropped(self):
+        root = tempfile.mkdtemp()
+        settings.save_user({"use_drive": False, "queue_folder": root})
+        self.c.post(f"/job/{self.jid}/queue", data={"kind": "resume"})
+        settings.save_user({"use_drive": True})
+        page = self.c.get("/queue").data.decode()
+        self.assertIn("still wait in", page)
+        self.assertEqual(db.connect().execute("SELECT COUNT(*) FROM queue_items WHERE status='waiting'").fetchone()[0], 1)
+        settings.save_user({"use_drive": False})
+        self.assertIn("Waiting for a reply", self.c.get("/queue").data.decode())
+
+    def test_drive_trouble_is_a_message(self):
+        def down():
+            raise self.gdrive.DriveError("Google access has run out. Link Google again in Settings.")
+        appmod.app.config["DRIVE"] = self.gdrive.Drive(down, http=self.fake)
+        r = self.c.post(f"/job/{self.jid}/queue", data={"kind": "resume"}, follow_redirects=True)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("Link Google again", r.data.decode())
+        self.assertEqual(db.connect().execute("SELECT COUNT(*) FROM queue_items").fetchone()[0], 0)
+        self.assertIn("Link Google again", self.c.get("/queue").data.decode())
+
+    def test_shared_details_sync_through_drive(self):
+        res = appmod.usersync.sync(db.connect(), None, None)              # no folder setting: nothing to do
+        self.assertIsNone(res)
+        self.c.post("/settings/resume", data={"resume": (__import__("io").BytesIO(b"Jane Doe. SQL, help desk."), "r.txt")},
+                    content_type="multipart/form-data")
+        names = self.fake.names("WildThing/user")
+        for n in ("resume.txt", "resume.meta.json", "search.json", "search.json.meta.json"):
+            self.assertIn(n, names)
+        # the phone changes the search settings (a newer version in Drive); this computer takes them
+        user = self.fake.find("WildThing/user")[0]
+        doc = json.loads(self.fake.files[self.fake.find("WildThing/user/search.json")[0]]["data"])
+        doc["target_titles"] = ["analyst"]
+        data = json.dumps(doc).encode()
+        meta_id = self.fake.find("WildThing/user/search.json.meta.json")[0]
+        meta = json.loads(self.fake.files[meta_id]["data"])
+        self.fake.files[self.fake.find("WildThing/user/search.json")[0]]["data"] = data
+        meta.update({"version": meta["version"] + 1, "device": "android-test", "sha256": __import__("shared_details").sha256(data)})
+        self.fake.files[meta_id]["data"] = json.dumps(meta).encode()
+        self.assertIn("1 received", self.c.post("/sync", follow_redirects=True).data.decode())
+        self.assertEqual(settings.load()["target_titles"], ["analyst"])
+        self.assertIn("Google Drive: WildThing/user", self.c.get("/sync").data.decode())
+
+    def test_check_drive_access_lists_what_the_app_sees(self):
+        self.fake.add(self.fake.add("root", "WildThing", folder=True), "from-my-ai.md", b"x")
+        page = self.c.post("/google/check", follow_redirects=True).data.decode()
+        self.assertIn("from-my-ai.md", page)
+        self.assertIn("AI_INSTRUCTIONS.md", page)
+
+
+class GoogleSignInTests(unittest.TestCase):
+    """Linking Google on the desktop: the browser goes to Google and comes back to the home page with a code."""
+
+    def setUp(self):
+        import gdrive
+        self.gdrive = gdrive
+        self.saved_dir = settings.DATA_DIR
+        settings.DATA_DIR = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(tempfile.mkdtemp(), "t.db")
+        self.keys = os.path.join(tempfile.mkdtemp(), "keys.json")
+        appmod.app.config["KEYS_PATH"] = self.keys
+        appmod.app.config["TESTING"] = True
+        self.c = appmod.app.test_client()
+        self.saved_post = gdrive.requests.post
+        self.posts = []
+
+    def tearDown(self):
+        self.gdrive.requests.post = self.saved_post
+        settings.DATA_DIR = self.saved_dir
+        appmod.app.config["KEYS_PATH"] = os.path.join(self.saved_dir, "keys.local.json")
+
+    def fake_post(self, *answers):
+        answers = list(answers)
+
+        class R:
+            def __init__(self, status, body):
+                self.status_code, self._b = status, body
+
+            def json(self):
+                return self._b
+
+        def post(url, data=None, timeout=None):
+            self.posts.append((url, data))
+            return R(*answers.pop(0))
+        self.gdrive.requests.post = post
+
+    def test_link_needs_the_client_first(self):
+        r = self.c.post("/google/link", follow_redirects=True)
+        self.assertIn("client id and secret", r.data.decode())
+
+    def test_link_round_trip_and_refresh(self):
+        from urllib.parse import parse_qs, urlparse
+        self.c.post("/settings", data={"google_client_id": "cid.apps.googleusercontent.com", "google_client_secret": "csecret"})
+        self.assertIn("(saved)", self.c.get("/settings").data.decode())
+        self.assertNotIn("csecret", self.c.get("/settings").data.decode())
+        r = self.c.post("/google/link")
+        q = parse_qs(urlparse(r.headers["Location"]).query)
+        self.assertTrue(r.headers["Location"].startswith("https://accounts.google.com/"))
+        self.assertEqual(q["client_id"], ["cid.apps.googleusercontent.com"])
+        self.assertEqual(q["scope"], [self.gdrive.SCOPE_NARROW])
+        self.assertEqual(q["code_challenge_method"], ["S256"])
+        self.assertEqual(q["redirect_uri"], ["http://localhost/"])
+        self.assertNotIn("csecret", r.headers["Location"])
+        # a reply with the wrong state is refused
+        self.assertIn("did not come from this page", self.c.get("/?state=nope&code=x", follow_redirects=True).data.decode())
+        r = self.c.post("/google/link")
+        state = parse_qs(urlparse(r.headers["Location"]).query)["state"][0]
+        self.fake_post((200, {"access_token": "a1", "expires_in": 3600, "refresh_token": "r1", "scope": self.gdrive.SCOPE_NARROW}))
+        page = self.c.get(f"/?state={state}&code=thecode", follow_redirects=True).data.decode()
+        self.assertIn("Google is linked", page)
+        self.assertEqual(self.posts[0][1]["code"], "thecode")
+        self.assertEqual(self.posts[0][1]["client_secret"], "csecret")
+        self.assertTrue(self.posts[0][1]["code_verifier"])
+        self.assertTrue(settings.load()["use_drive"])
+        self.assertTrue(os.path.exists(os.path.join(settings.DATA_DIR, "google_token.json")))
+        # asking for full access afterwards says to link again
+        self.c.post("/settings", data={"drive_section": "1", "use_drive": "on", "drive_full": "full"})
+        self.assertIn("Link again", self.c.get("/settings").data.decode())
+        # an expired access token is refreshed; a refused refresh unlinks with a clear message
+        auth = self.gdrive.Auth("cid", "csecret")
+        t = self.gdrive.load_token(); t["expires_at"] = 0; self.gdrive._save_token(t)
+        self.fake_post((200, {"access_token": "a2", "expires_in": 3600}))
+        self.assertEqual(auth(), "a2")
+        self.assertEqual(self.gdrive.load_token()["refresh_token"], "r1")
+        t = self.gdrive.load_token(); t["expires_at"] = 0; self.gdrive._save_token(t)
+        self.fake_post((400, {"error": "invalid_grant", "error_description": "Token has been expired or revoked."}))
+        with self.assertRaises(self.gdrive.DriveError) as e:
+            auth()
+        self.assertIn("Link Google again", str(e.exception))
+        self.assertFalse(self.gdrive.linked())
+
+    def test_unlink_revokes_and_forgets(self):
+        self.gdrive._save_token({"access_token": "a", "expires_at": 9e9, "refresh_token": "r9", "scope": ""})
+        self.fake_post((200, {}))
+        self.c.post("/google/unlink")
+        self.assertEqual(self.posts[0], (self.gdrive.REVOKE_URL, {"token": "r9"}))
+        self.assertFalse(self.gdrive.linked())
+
+    def test_google_token_and_client_are_never_exported(self):
+        self.gdrive._save_token({"access_token": "a", "expires_at": 9e9, "refresh_token": "r-secret", "scope": ""})
+        self.c.post("/settings", data={"google_client_secret": "c-secret"})
+        body = self.c.get("/export").data.decode()
+        self.assertNotIn("r-secret", body)
+        self.assertNotIn("c-secret", body)
+
+
+class DataFolderTests(unittest.TestCase):
+    """home.py: personal data lives outside the app folder, and moves when a new folder is chosen."""
+
+    def setUp(self):
+        import home, writer as writermod
+        self.home, self.writer = home, writermod
+        self.saved = (home.DEFAULT, home.APP_FOLDER, home.ROOT, settings.DATA_DIR, db.DB_PATH, writermod.BASE)
+        self.app_folder, self.default = tempfile.mkdtemp(), os.path.join(tempfile.mkdtemp(), "WildThing")
+        home.DEFAULT, home.APP_FOLDER, home.ROOT = self.default, self.app_folder, None
+
+    def tearDown(self):
+        (self.home.DEFAULT, self.home.APP_FOLDER, self.home.ROOT, settings.DATA_DIR, db.DB_PATH, self.writer.BASE) = self.saved
+
+    def _put(self, folder, name, text="x"):
+        p = os.path.join(folder, name)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def test_old_copy_in_the_app_folder_moves_out_at_start(self):
+        self._put(self.app_folder, os.path.join("data", "user_settings.json"), "{}")
+        self._put(self.app_folder, "keys.local.json", "{}")
+        self._put(self.app_folder, "app.py", "code stays")
+        root, moved = self.home.start()
+        self.assertEqual(root, self.default)
+        self.assertEqual(sorted(moved), ["data", "keys.local.json"])
+        self.assertFalse(os.path.exists(os.path.join(self.app_folder, "data")))
+        self.assertTrue(os.path.exists(os.path.join(self.app_folder, "app.py")))
+        self.assertEqual(settings.DATA_DIR, os.path.join(self.default, "data"))
+        self.assertEqual(db.DB_PATH, os.path.join(self.default, "jobs.db"))
+        self.assertEqual(self.writer.BASE, self.default)
+
+    def test_move_to_another_folder_and_back(self):
+        self.home.start()
+        self._put(self.default, os.path.join("data", "master_resume.md"), "Jane")
+        db.connect().close()
+        new = os.path.join(tempfile.mkdtemp(), "Mine")
+        self.assertIn("Moved 2 item(s)", self.home.move_to(new))
+        self.assertTrue(os.path.exists(os.path.join(new, "data", "master_resume.md")))
+        self.assertTrue(os.path.exists(os.path.join(new, "jobs.db")))
+        self.assertEqual(self.home.chosen(), new)                      # remembered for the next start
+        self.assertEqual(settings.DATA_DIR, os.path.join(new, "data"))
+        with self.assertRaises(ValueError):
+            self.home.move_to(os.path.join(self.app_folder, "inside"))   # never into the app folder
+        self.home.move_to("")                                              # empty: back to the default
+        self.assertEqual(self.home.chosen(), self.default)
+        self.assertTrue(os.path.exists(os.path.join(self.default, "data", "master_resume.md")))
+
+    def test_move_refuses_a_folder_that_already_has_data(self):
+        self.home.start()
+        db.connect().close()
+        other = tempfile.mkdtemp()
+        self._put(other, "jobs.db", "someone else's")
+        with self.assertRaises(ValueError):
+            self.home.move_to(other)
+        self.assertTrue(os.path.exists(os.path.join(self.default, "jobs.db")))
+
+
+class SharedPostingsTests(unittest.TestCase):
+    """Two devices sharing WildThing/user/wildthing.db in (a fake) Google Drive, played by switching data folders."""
+
+    def setUp(self):
+        import gdrive, workfolder, shared_db
+        self.sdb, self.wf = shared_db, workfolder
+        self.saved = (settings.DATA_DIR, db.DB_PATH)
+        self.fake = FakeGoogleDrive()
+        self.drive = gdrive.Drive(lambda: "test-token", http=self.fake)
+        self.a, self.b = self._device(), self._device()
+
+    def tearDown(self):
+        settings.DATA_DIR, db.DB_PATH = self.saved
+
+    def _device(self):
+        return {"data": tempfile.mkdtemp(), "db": os.path.join(tempfile.mkdtemp(), "t.db")}
+
+    def sync(self, d):
+        settings.DATA_DIR, db.DB_PATH = d["data"], d["db"]
+        conn = db.connect()
+        user = self.wf.DriveDir(self.drive, "WildThing").sub("user")
+        res = self.sdb.sync(conn, user, settings.device_id())
+        conn.close()
+        return res
+
+    def q(self, d, sql, args=()):
+        conn = db.connect(d["db"])
+        rows = [dict(r) for r in conn.execute(sql, args)]
+        conn.commit(); conn.close()
+        return rows
+
+    def add_job(self, d, ext_id="1", url="https://example.com/1", **kw):
+        conn = db.connect(d["db"])
+        cur = conn.execute("INSERT INTO jobs(source, ext_id, title, company, location, url, description, added_at, status, status_updated, notes) "
+                           "VALUES ('remoteok',?,?,?,?,?,?,?,?,?,?)", (ext_id, kw.get("title", "Help Desk Analyst"), "Acme", "Remote", url,
+                           "Help desk and SQL.", db.now(), kw.get("status", "new"), kw.get("status_updated"), kw.get("notes", "")))
+        conn.commit(); jid = cur.lastrowid; conn.close()
+        return jid
+
+    def test_tags_and_avoided_companies_travel_both_ways(self):
+        ja = self.add_job(self.a)
+        conn = db.connect(self.a["db"])
+        db.set_tag(conn, ja, "scam", True)
+        db.set_avoided(conn, "Acme, Inc.", "ghosted", True)
+        conn.commit(); conn.close()
+        self.sync(self.a)
+        jb = self.add_job(self.b)                              # the same posting, fetched on B too
+        self.sync(self.b)
+        self.assertEqual(self.q(self.b, "SELECT job_id, tag, active FROM job_tags"), [{"job_id": jb, "tag": "scam", "active": 1}])
+        self.assertEqual([(r["key"], r["reason"]) for r in self.q(self.b, "SELECT * FROM avoided WHERE active=1")], [("acme", "ghosted")])
+        # B removes both, later than A's changes: the removals reach A
+        self.q(self.b, "UPDATE job_tags SET active=0, changed_at='2099-01-01T00:00:00+00:00'")
+        self.q(self.b, "UPDATE avoided SET active=0, changed_at='2099-01-01T00:00:00+00:00'")
+        self.sync(self.b); self.sync(self.a)
+        self.assertEqual(self.q(self.a, "SELECT * FROM job_tags WHERE active=1"), [])
+        self.assertEqual(self.q(self.a, "SELECT * FROM avoided WHERE active=1"), [])
+
+    def test_a_version_1_file_reads_as_no_tags_or_avoided(self):
+        import sqlite3
+        snap = self.sdb.empty()
+        snap["avoided"] = {"acme": {"company": "Acme", "reason": "", "active": 1, "changed_at": "2026-10-01T00:00:00+00:00"}}
+        p = os.path.join(tempfile.mkdtemp(), "old.db")
+        with open(p, "wb") as f:
+            f.write(self.sdb.write_file(snap, "dev"))
+        c = sqlite3.connect(p)
+        c.executescript("DROP TABLE avoided; DROP TABLE tags; UPDATE info SET value='1' WHERE key='version';")
+        c.commit(); c.close()
+        with open(p, "rb") as f:
+            old = self.sdb.read_file(f.read())
+        self.assertEqual((old["avoided"], old["tags"]), ({}, {}))
+        bad = self.sdb.write_file(self.sdb.empty(), "dev")
+        p2 = os.path.join(tempfile.mkdtemp(), "new.db")
+        with open(p2, "wb") as f:
+            f.write(bad)
+        c = sqlite3.connect(p2)
+        c.execute("UPDATE info SET value='3' WHERE key='version'"); c.commit(); c.close()
+        with open(p2, "rb") as f:
+            with self.assertRaises(ValueError):
+                self.sdb.read_file(f.read())
+
+    def test_two_devices_share_status_notes_interviews_and_deletions(self):
+        ja = self.add_job(self.a, status="applied", status_updated="2026-10-20T09:00:00+00:00", notes="sent")
+        self.q(self.a, "INSERT INTO events(job_id, kind, starts_at) VALUES (?, 'Interview', '2026-11-05T10:00')", (ja,))
+        self.assertEqual(self.sync(self.a)["arrived"], [])
+        self.assertEqual(self.fake.names("WildThing/user"), ["wildthing.db"])
+        # B already had the same posting (fetched there too): matched, not doubled; A's newer status and notes arrive
+        self.add_job(self.b)
+        res = self.sync(self.b)
+        self.assertEqual(res["arrived"], [])
+        jobs = self.q(self.b, "SELECT * FROM jobs")
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual((jobs[0]["status"], jobs[0]["notes"]), ("applied", "sent"))
+        self.assertEqual(self.q(self.b, "SELECT uid FROM jobs")[0]["uid"], self.q(self.a, "SELECT uid FROM jobs")[0]["uid"])
+        self.assertEqual(len(self.q(self.b, "SELECT * FROM events")), 1)
+        # both write notes before syncing: both kept; B moves the status on; A sees it all
+        self.q(self.a, "UPDATE jobs SET notes='sent; thank-you note too'")
+        self.q(self.b, "UPDATE jobs SET notes='recruiter is Sam', status='interview', status_updated='2026-10-28T09:00:00+00:00'")
+        self.sync(self.b); self.sync(self.a); self.sync(self.b)
+        for d in (self.a, self.b):
+            j = self.q(d, "SELECT status, notes FROM jobs")[0]
+            self.assertEqual(j["status"], "interview")
+            self.assertIn("thank-you note too", j["notes"]); self.assertIn("recruiter is Sam", j["notes"])
+        # a posting only B has arrives on A, to be scored there
+        self.add_job(self.b, ext_id="2", url="https://example.com/2", title="Project Coordinator")
+        self.sync(self.b)
+        self.assertEqual(len(self.sync(self.a)["arrived"]), 1)
+        # A deletes the first posting: B loses it, with its interview
+        self.q(self.a, "DELETE FROM jobs WHERE ext_id='1'")
+        self.sync(self.a); self.sync(self.b)
+        self.assertEqual([j["ext_id"] for j in self.q(self.b, "SELECT ext_id FROM jobs")], ["2"])
+        self.assertEqual(self.q(self.b, "SELECT * FROM events"), [])
+
+    def test_two_copies_in_drive_are_merged_into_one(self):
+        self.add_job(self.a)
+        self.sync(self.a)
+        first = self.fake.files[self.fake.find("WildThing/user/wildthing.db")[0]]["data"]
+        self.add_job(self.b, ext_id="2", url="https://example.com/2", title="Business Analyst")
+        self.sync(self.b)
+        # an upload that crossed: an older copy with the same name appears beside the current one
+        self.fake.add(self.fake.find("WildThing/user")[0], "wildthing.db", first, modified="2000-01-01T00:00:00Z")
+        self.add_job(self.a, ext_id="3", url="https://example.com/3", title="Project Coordinator")
+        self.sync(self.a)
+        self.assertEqual(self.fake.names("WildThing/user"), ["wildthing.db"])
+        self.assertEqual(sorted(j["ext_id"] for j in self.q(self.a, "SELECT ext_id FROM jobs")), ["1", "2", "3"])
+
+    def test_a_file_from_a_newer_version_is_refused(self):
+        self.add_job(self.a)
+        self.sync(self.a)
+        import sqlite3
+        f = self.fake.files[self.fake.find("WildThing/user/wildthing.db")[0]]
+        p = os.path.join(tempfile.mkdtemp(), "x.db")
+        open(p, "wb").write(f["data"])
+        c = sqlite3.connect(p); c.execute("UPDATE info SET value='99' WHERE key='version'"); c.commit(); c.close()
+        f["data"] = open(p, "rb").read()
+        with self.assertRaises(ValueError):
+            self.sync(self.b)
+
+    def test_import_does_not_delete_elsewhere(self):
+        import exchange
+        self.add_job(self.a)
+        conn = db.connect(self.a["db"])
+        data = exchange.export_data(conn)
+        exchange.import_data(conn, data)
+        self.assertEqual(conn.execute("SELECT COUNT(*) FROM tombstones").fetchone()[0], 0)
+        conn.close()
 
 class SettingsTests(unittest.TestCase):
     def setUp(self):
@@ -888,14 +1572,14 @@ class SettingsTests(unittest.TestCase):
         self.assertIn("resume", settings.instructions_text(appmod.cfg()).lower())
         self.assertNotEqual(settings.instructions_text(appmod.cfg()).strip(), "Be brief.")
 
-    def test_requests_carry_resume_unless_claude_project_has_it(self):
+    def test_requests_carry_resume_unless_the_ai_already_has_it(self):
         self.c.post("/settings/resume", data={"resume": (__import__("io").BytesIO(b"Jane Doe. SQL, help desk."), "r.txt")},
                     content_type="multipart/form-data")
         msg = appmod.with_context("DO THE THING")
         self.assertIn("<master_resume>", msg)
         self.assertIn("Jane Doe", msg)
         self.assertTrue(msg.endswith("DO THE THING"))
-        self.c.post("/settings", data={"target_titles": "x", "claude_has_resume": "on"})
+        self.c.post("/settings", data={"target_titles": "x", "ai_has_resume": "on"})
         self.assertEqual(appmod.with_context("DO THE THING"), "DO THE THING")
 
 
@@ -953,3 +1637,284 @@ class PanelTests(unittest.TestCase):
         conn.execute("UPDATE jobs SET status='applied', applied_on='2020-01-01' WHERE id=?", (self.jid,)); conn.commit()
         self.assertIn(b"applied", self.c.get("/").data)
         self.assertIn(b"time to follow up", self.c.get(f"/?sel={self.jid}").data)
+
+
+class MarksTests(unittest.TestCase):
+    """Tags on postings and the companies you avoid, on the desktop's pages."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(self.tmp, "t.db")
+        appmod.app.config["TESTING"] = True
+        self.c = appmod.app.test_client()
+        self.c.post("/add", data={"title": "Implementation Specialist", "company": "Acme Inc", "text": GOOD})
+        self.c.post("/add", data={"title": "Support Analyst", "company": "Beta", "text": GOOD})
+        ids = [r[0] for r in db.connect().execute("SELECT id FROM jobs ORDER BY id")]
+        self.acme, self.beta = ids
+
+    def tags(self, jid):
+        return db.job_tags(db.connect(), jid).get(jid, [])
+
+    def test_tags_are_saved_shown_filtered_and_removed(self):
+        self.c.post(f"/job/{self.acme}/tags", data={"tag": ["scam", "bogus"], "custom": "  Slow   to reply "})
+        self.assertEqual(self.tags(self.acme), ["c:Slow to reply", "scam"])          # an unknown key is ignored
+        page = self.c.get("/").data.decode()
+        self.assertIn("Possible scam", page); self.assertIn("Slow to reply", page)
+        filtered = self.c.get("/?tag=scam").data.decode()
+        self.assertIn("Implementation Specialist", filtered); self.assertNotIn("Support Analyst", filtered)
+        self.c.post(f"/job/{self.acme}/tags", data={"custom": "possible SCAM"})       # the built-in name ticks the box
+        self.assertEqual(self.tags(self.acme), ["scam"])
+        rows = db.connect().execute("SELECT tag, active FROM job_tags WHERE job_id=? ORDER BY tag", (self.acme,)).fetchall()
+        self.assertEqual([tuple(r) for r in rows], [("c:Slow to reply", 0), ("scam", 1)])   # the removal is kept, to sync
+        self.assertEqual(self.c.post("/job/99999/tags", data={}).status_code, 404)
+
+    def test_tagged_postings_are_never_purged(self):
+        self.c.post(f"/job/{self.acme}/tags", data={"tag": "ghost"})
+        db.connect().execute("UPDATE jobs SET pasted=0").connection.commit()
+        self.c.post("/purge", data={"scope": "untouched"})
+        self.assertEqual([r[0] for r in db.connect().execute("SELECT id FROM jobs")], [self.acme])
+
+    def test_avoided_company_is_hidden_until_shown_and_can_be_undone(self):
+        r = self.c.post("/avoid", data={"company": "ACME", "reason": "lowball", "on": "1", "back": "/settings"}, follow_redirects=True)
+        self.assertIn(b"lowball", r.data)                                           # listed in Settings
+        page = self.c.get("/").data.decode()
+        self.assertNotIn("Implementation Specialist", page); self.assertIn("Support Analyst", page)
+        self.assertIn("1 hidden", page)
+        shown = self.c.get("/?avoided=1").data.decode()
+        self.assertIn("Implementation Specialist", shown); self.assertIn("avoided", shown)
+        self.assertIn("You avoid ACME", self.c.get(f"/?sel={self.acme}&avoided=1").data.decode())
+        self.c.post("/avoid", data={"company": "Acme Inc", "on": "0"})
+        self.assertIn("Implementation Specialist", self.c.get("/").data.decode())
+        r = self.c.post("/avoid", data={"company": " , ", "on": "1"}, follow_redirects=True)
+        self.assertIn(b"no company name", r.data)
+        r = self.c.post("/avoid", data={"company": "Acme", "on": "1", "back": "https://evil.example/"})
+        self.assertNotIn("evil", r.headers["Location"])
+
+    def test_merging_duplicates_keeps_the_tags(self):
+        conn = db.connect()
+        conn.execute("UPDATE jobs SET pasted=0, title='Analyst', company='Acme', source='remoteok'")
+        conn.execute("UPDATE jobs SET ext_id='x' || id")
+        conn.commit()
+        db.set_tag(conn, self.beta, "agency", True); conn.commit()
+        self.c.post("/dedupe")
+        left = [r[0] for r in db.connect().execute("SELECT id FROM jobs")]
+        self.assertEqual(len(left), 1)
+        self.assertEqual(self.tags(left[0]), ["agency"])
+
+
+class CareerPageTests(unittest.TestCase):
+    """Building the career file on the desktop: the request, the work folder, the review, and the shared copy."""
+
+    def setUp(self):
+        import io
+        self.io = io
+        self.saved_dir = settings.DATA_DIR
+        settings.DATA_DIR = tempfile.mkdtemp()
+        self.folder = tempfile.mkdtemp()
+        self.tmp = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(self.tmp, "t.db")
+        appmod.app.config["TESTING"] = True
+        appmod.app.config["QUEUE_ROOT"] = self.folder
+        self.c = appmod.app.test_client()
+        self.sample = shared("career_sample.json")
+
+    def tearDown(self):
+        settings.DATA_DIR = self.saved_dir
+        appmod.app.config.pop("QUEUE_ROOT", None)
+
+    def reply(self, data):
+        return "<career_file>\n" + json.dumps(data) + "\n</career_file>"
+
+    def test_scoring_reads_the_career_file_once_accepted(self):
+        conn = db.connect()
+        conn.execute("INSERT INTO jobs(source, ext_id, title, description, added_at) VALUES ('x','1','Analyst',?,'t')",
+                     ("Requirements: SQL, Excel, ITIL and CompTIA A+ certification.",))
+        conn.commit()
+        jid = conn.execute("SELECT id FROM jobs").fetchone()["id"]
+        appmod.rescore_all(conn)
+        row = lambda: conn.execute("SELECT matched_json, gaps_json FROM jobs WHERE id=?", (jid,)).fetchone()
+        self.assertEqual(json.loads(row()["matched_json"]), [])      # no resume and no career file yet
+        self.assertEqual(appmod.scoring_source()[1], "resume")
+        data = json.loads(json.dumps(self.sample))
+        data["skills"] = [s for s in data["skills"] if s["name"] != "itil"]   # leaves only the in-progress certification
+        self.c.post("/career/reply", data={"reply": self.reply(data)})
+        self.assertIn(b"re-scored", self.c.post("/career/accept", follow_redirects=True).data)
+        self.assertEqual(appmod.scoring_source()[1], "career")
+        matched, gaps = json.loads(row()["matched_json"]), [g[0] for g in json.loads(row()["gaps_json"])]
+        self.assertTrue({"sql", "excel", "comptia a+"} <= set(matched), matched)
+        self.assertIn("itil", gaps)                                  # still in progress, so not counted
+        page = self.c.get("/career").data.decode()
+        self.assertIn("Skills scoring finds in it", page)
+        self.assertIn("scored against your", self.c.get("/resume").data.decode())
+
+    def test_i_have_this_lives_in_the_career_file(self):
+        self.c.post("/have", data={"term": "python"})                 # no career file yet: kept in the list
+        conn = db.connect()
+        self.assertEqual([r["term"] for r in conn.execute("SELECT term FROM extras")], ["python"])
+        self.c.post("/career/reply", data={"reply": self.reply(self.sample)})
+        self.c.post("/career/accept")                                # the list moves into the file
+        self.assertEqual(conn.execute("SELECT COUNT(*) FROM extras").fetchone()[0], 0)
+        skills = {s["name"]: s["source"] for s in settings.load_career()["skills"]}
+        self.assertEqual(skills["python"], "confirmed")
+        self.assertIn(b"to your career file", self.c.post("/have", data={"term": "linux"}, follow_redirects=True).data)
+        self.assertEqual({s["name"]: s["source"] for s in settings.load_career()["skills"]}.get("linux"), "confirmed")
+        self.assertEqual(conn.execute("SELECT COUNT(*) FROM extras").fetchone()[0], 0)
+        self.assertIn("python", appmod.have_terms(conn))
+        self.c.post("/unhave", data={"term": "python"})
+        self.c.post("/unhave", data={"term": "sql"})                 # from the documents: stays
+        names = career_mod().skill_names(settings.load_career())
+        self.assertNotIn("python", names)
+        self.assertIn("sql", names)
+        self.assertNotIn("python", appmod.have_terms(conn))
+        self.assertTrue(career_mod().validate(settings.load_career()) == [])
+
+    def test_request_from_documents_then_folder_reply_then_accept(self):
+        self.assertIn(b"No career file yet", self.c.get("/career").data)
+        with open(make_docx("Systems Analyst at Northside Clinics, 2022 to now."), "rb") as f:
+            docx = f.read()
+        r = self.c.post("/career/request", data={
+            "sources": [(self.io.BytesIO(docx), "kb_v3.docx"), (self.io.BytesIO(b"# Skills\n- SQL"), "skills.md"),
+                        (self.io.BytesIO(b"%PDF"), "old.pdf")],
+            "typed": "I did not manage anyone."}, content_type="multipart/form-data", follow_redirects=True)
+        page = r.data.decode()
+        self.assertIn("old.pdf was left out", page)
+        self.assertIn("from 3 sources", page)
+        draft = open(os.path.join(settings.DATA_DIR, "career_request.md"), encoding="utf-8").read()
+        for want in ('<source_document name="kb_v3.docx">', "Northside Clinics", '<source_document name="skills.md">',
+                     "I did not manage anyone.", "<career_file_instructions>", "A job posting is never a source"):
+            self.assertIn(want, draft)
+        self.assertNotIn("<current_career_file>", draft)
+
+        r = self.c.post("/career/fetch", follow_redirects=True)
+        self.assertIn(b"No career file reply", r.data)
+        r = self.c.post("/career/send", follow_redirects=True)
+        sent = os.listdir(os.path.join(self.folder, "requests"))
+        self.assertEqual(len(sent), 1)
+        self.assertRegex(sent[0], r"^career_\d{8}-\d{4}\.md$")
+        self.assertTrue(os.path.exists(os.path.join(self.folder, "AI_INSTRUCTIONS.md")))
+        os.makedirs(os.path.join(self.folder, "replies"), exist_ok=True)
+        reply = sent[0][:-3] + ".reply.md"
+        with open(os.path.join(self.folder, "replies", reply), "w", encoding="utf-8") as f:
+            f.write(self.reply(self.sample))
+
+        r = self.c.post("/career/fetch", follow_redirects=True)
+        page = r.data.decode()
+        self.assertIn("Review your new career file", page)
+        self.assertIn("agile backlogs", page)                     # the AI's flag is shown
+        self.assertIsNone(settings.load_career())                  # nothing kept before accepting
+        r = self.c.post("/career/accept", follow_redirects=True)
+        self.assertIn(b"Career file saved", r.data)
+        saved = settings.load_career()
+        self.assertEqual(saved["person"]["name"], "Jane Doe")
+        self.assertEqual(career_mod().validate(saved), [])
+        self.assertEqual(os.listdir(os.path.join(self.folder, "replies")), [])
+        self.assertEqual(os.listdir(os.path.join(self.folder, "requests")), [])
+        self.assertFalse(os.path.exists(os.path.join(settings.DATA_DIR, "career_request.md")))
+        page = self.c.get("/career").data.decode()
+        self.assertIn("Systems Analyst", page); self.assertIn("Never name: Northside Clinics", page)
+
+    def test_a_bad_reply_is_refused_with_the_reasons(self):
+        bad = dict(self.sample, roles=[dict(self.sample["roles"][0], start="April 2022")])
+        r = self.c.post("/career/reply", data={"reply": self.reply(bad)}, follow_redirects=True)
+        self.assertIn(b"was not used", r.data)
+        self.assertIn(b"should be YYYY or YYYY-MM", r.data)
+        r = self.c.post("/career/reply", data={"reply": "Sorry, I cannot."}, follow_redirects=True)
+        self.assertIn(b"no &lt;career_file&gt; block", r.data)
+        self.assertIsNone(appmod.career_pending())
+        self.assertEqual(self.c.get("/career/review").status_code, 302)
+
+    def test_rebuild_keeps_confirmed_skills_and_discard_changes_nothing(self):
+        settings.save_career(self.sample)                          # has "itil", confirmed in the app
+        r = self.c.post("/career/request", data={"typed": "New job since.", "include_current": "1"},
+                        content_type="multipart/form-data", follow_redirects=True)
+        self.assertIn("<current_career_file>", open(os.path.join(settings.DATA_DIR, "career_request.md"), encoding="utf-8").read())
+        new = json.loads(json.dumps(self.sample))
+        new["skills"] = [s for s in new["skills"] if s["source"] == "documents"] + [{"name": "python", "source": "documents", "evidence": ["p1"]}]
+        new["roles"].insert(0, dict(new["roles"][0], id="r0", title="IT Manager", employer="Delta", start="2025-01", end=""))
+        page = self.c.post("/career/reply", data={"reply": self.reply(new)}, follow_redirects=True).data.decode()
+        self.assertIn("Review your rebuilt career file", page)
+        self.assertIn("+ python", page)
+        self.assertIn("IT Manager at Delta", page)
+        self.assertIn("because you confirmed them here: itil", page)
+        self.c.post("/career/discard")
+        self.assertEqual(settings.load_career(), self.sample)
+        self.c.post("/career/reply", data={"reply": self.reply(new)})
+        self.c.post("/career/accept")
+        names = [s["name"] for s in settings.load_career()["skills"]]
+        self.assertIn("python", names); self.assertIn("itil", names)
+
+    def test_shared_with_the_other_device_and_a_bad_copy_is_refused(self):
+        import usersync, workfolder
+        user = tempfile.mkdtemp()
+        settings.save_career(self.sample)
+        conn = db.connect()
+        res = usersync.sync(conn, target=workfolder.LocalDir(user))
+        self.assertIn("career.json", res["pushed"])
+        other = tempfile.mkdtemp()
+        settings.DATA_DIR = other
+        res = usersync.sync(db.connect(os.path.join(tempfile.mkdtemp(), "b.db")), target=workfolder.LocalDir(user))
+        self.assertIn("career.json", res["pulled"])
+        self.assertEqual(settings.load_career(), self.sample)
+        # a copy someone broke in the folder (with a matching meta) is not used; the good one stays
+        broken = b'{"format": "wildthing-career", "version": 1, "person": {"name": ""}}'
+        with open(os.path.join(user, "career.json"), "wb") as f:
+            f.write(broken)
+        meta = json.load(open(os.path.join(user, "career.json.meta.json"), encoding="utf-8"))
+        meta.update(sha256=__import__("shared_details").sha256(broken), version=meta["version"] + 1)
+        with open(os.path.join(user, "career.json.meta.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+        res = usersync.sync(db.connect(os.path.join(tempfile.mkdtemp(), "c.db")), target=workfolder.LocalDir(user))
+        self.assertTrue(any("career file was not used" in e for e in res["errors"]), res)
+        self.assertEqual(settings.load_career(), self.sample)
+
+
+def career_mod():
+    import career
+    return career
+
+
+class ExchangeTests(unittest.TestCase):
+    """Export and import (docs/formats.md), using the same sample file the Android tests read."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        db.DB_PATH = os.path.join(self.tmp, "t.db")
+        self.saved_dir = settings.DATA_DIR
+        settings.DATA_DIR = tempfile.mkdtemp()
+        self.c = appmod.app.test_client()
+
+    def tearDown(self):
+        settings.DATA_DIR = self.saved_dir
+
+    def test_sample_imports_and_exports_the_same(self):
+        import io
+        with open(os.path.join(SHARED, "export_sample.json"), "rb") as f:
+            raw = f.read()
+        r = self.c.post("/import", data={"data": (io.BytesIO(raw), "x.json")}, follow_redirects=True)
+        self.assertIn(b"Imported", r.data)
+        sample = json.loads(raw)
+        out = json.loads(self.c.get("/export").data)
+        self.assertEqual(out["format"], "wildthing-export")
+        self.assertEqual(out["resume"]["base64"], sample["resume"]["base64"])
+        self.assertEqual(out["instructions"].strip(), sample["instructions"].strip())
+        self.assertEqual(out["profiles"], sample["profiles"])
+        self.assertEqual([x["term"] for x in out["extras"]], ["itil"])
+        for got, want in zip(out["jobs"], sample["jobs"]):
+            for k in ("id", "title", "status", "applied_on", "notes", "profile_ids", "links", "pasted", "tags"):
+                self.assertEqual(got[k], want[k], k)
+        self.assertEqual(out["avoided"], sample["avoided"])
+        self.assertEqual(out["events"][0]["starts_at"], "2030-05-06T14:30")
+        self.assertEqual([(o["job_id"], o["kind"]) for o in out["outputs"]], [(2, "prep"), (2, "resume")])
+        self.assertEqual(out["gap_plans"][0]["scope"], "all postings")
+        self.assertEqual(out["settings"]["your_name"], "Jane Doe")
+        self.assertNotIn("api_key", json.dumps(out))
+
+    def test_rejects_other_files(self):
+        import io
+        for body in (b"not json", b'{"format": "other"}', b'{"format": "wildthing-export", "version": 99}'):
+            r = self.c.post("/import", data={"data": (io.BytesIO(body), "x.json")}, follow_redirects=True)
+            self.assertIn(b"Could not import", r.data)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=1)

@@ -1,0 +1,226 @@
+{
+ "files": [
+  "resume",
+  "search.json",
+  "instructions.md",
+  "confirmed_skills.json",
+  "career.json"
+ ],
+ "meta_names": {
+  "resume": "resume.meta.json",
+  "search.json": "search.json.meta.json",
+  "instructions.md": "instructions.md.meta.json",
+  "confirmed_skills.json": "confirmed_skills.json.meta.json",
+  "career.json": "career.json.meta.json"
+ },
+ "search_doc": {
+  "settings": {
+   "target_titles": [
+    "help desk",
+    "analyst"
+   ],
+   "search_keywords": [
+    "help desk"
+   ],
+   "locations": [
+    "springfield",
+    "remote"
+   ],
+   "your_name": "not shared"
+  },
+  "profiles": [
+   {
+    "id": 3,
+    "name": "PM",
+    "keywords": "project coordinator",
+    "titles": "",
+    "location": "Springfield, IL"
+   },
+   {
+    "id": 1,
+    "name": "General",
+    "keywords": "help desk",
+    "titles": "help desk\nanalyst",
+    "location": ""
+   }
+  ],
+  "expect": "{\n \"format\": \"wildthing-search\",\n \"locations\": [\n  \"springfield\",\n  \"remote\"\n ],\n \"profiles\": [\n  {\n   \"keywords\": \"help desk\",\n   \"location\": \"\",\n   \"name\": \"General\",\n   \"titles\": \"help desk\\nanalyst\"\n  },\n  {\n   \"keywords\": \"project coordinator\",\n   \"location\": \"Springfield, IL\",\n   \"name\": \"PM\",\n   \"titles\": \"\"\n  }\n ],\n \"search_keywords\": [\n  \"help desk\"\n ],\n \"target_titles\": [\n  \"help desk\",\n  \"analyst\"\n ],\n \"version\": 1\n}\n",
+  "sha256": "24e20ef397af19cd6da22f97dc80fb9f85f1a9f1625c2ed8e0e8ba5d5c184f9d"
+ },
+ "skills_doc": {
+  "terms": [
+   "sql",
+   "itil",
+   "itil"
+  ],
+  "expect": "{\n \"format\": \"wildthing-confirmed-skills\",\n \"skills\": [\n  \"itil\",\n  \"sql\"\n ],\n \"version\": 1\n}\n"
+ },
+ "decide": [
+  {
+   "name": "neither side has it",
+   "local": null,
+   "remote": null,
+   "base": null,
+   "expect": "none"
+  },
+  {
+   "name": "only here",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": null,
+   "base": null,
+   "expect": "push"
+  },
+  {
+   "name": "only in the folder",
+   "local": null,
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "base": null,
+   "expect": "pull"
+  },
+  {
+   "name": "first sync, same",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   },
+   "base": null,
+   "expect": "same"
+  },
+  {
+   "name": "first sync, different",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "base": null,
+   "expect": "conflict"
+  },
+  {
+   "name": "nothing changed",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "same"
+  },
+  {
+   "name": "changed here",
+   "local": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "push"
+  },
+  {
+   "name": "changed in the folder",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+   },
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "pull"
+  },
+  {
+   "name": "changed on both",
+   "local": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccx"
+   },
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "conflict"
+  },
+  {
+   "name": "both changed to the same",
+   "local": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+   "remote": {
+    "file": "search.json",
+    "version": 3,
+    "changed_at": "2026-10-31T18:00:00+00:00",
+    "device": "desktop-ab12",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+   },
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "same"
+  },
+  {
+   "name": "deleted from the folder",
+   "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "remote": null,
+   "base": {
+    "local": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remote": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   "expect": "push"
+  }
+ ],
+ "next_version": [
+  {
+   "remote": null,
+   "base": null,
+   "expect": 1
+  },
+  {
+   "remote": {
+    "version": 4
+   },
+   "base": null,
+   "expect": 5
+  },
+  {
+   "remote": {
+    "version": 2
+   },
+   "base": {
+    "version": 5
+   },
+   "expect": 6
+  }
+ ]
+}

@@ -5,18 +5,30 @@ master resume, and turns the gaps into one plan. It never edits your resume and 
 """
 import json
 import os
+import secrets
 import sqlite3
+import tempfile
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import quote
 
-from flask import Flask, Response, flash, g, redirect, render_template, request, url_for
+from flask import Flask, Response, flash, g, redirect, render_template, request, session, url_for
 
+import aiqueue
+import career
 import db
+import exchange
 import gaps as gapmod
+import gdrive
+import home
 import matcher
 import resume as resumemod
 import settings
+import shared_db
+import shared_details
 import sources
+import tracking
+import usersync
+import workfolder
 import writer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -53,15 +65,18 @@ def close_conn(_exc):
 
 
 def keys_path():
-    return app.config.get("KEYS_PATH") or os.path.join(HERE, "keys.local.json")
+    return app.config.get("KEYS_PATH") or os.path.join(home.ROOT or HERE, "keys.local.json")
 
 
 def load_keys():
+    """The keys this app uses. Anything else in the file (such as an old Anthropic key) is ignored and dropped on save."""
     try:
         with open(keys_path(), encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
     except (OSError, ValueError):
         return {}
+    known = {k for k, _ in KEY_FIELDS}
+    return {k: v for k, v in data.items() if k in known} if isinstance(data, dict) else {}
 
 
 def load_json(name, default):
@@ -84,6 +99,7 @@ LEX = matcher.load_lexicon()
 def inject_statuses():
     c = cfg()
     return {"statuses": db.STATUSES, "status_label": db.STATUS_LABEL, "applied_stages": db.APPLIED_STAGES,
+            "tag_defs": db.TAGS, "tag_label": db.tag_label, "tag_label_map": db.TAG_LABEL,
             "setup_missing": [m for m, bad in (("a master resume", not settings.resume_path(c)),
                                                ("the job titles you want", not c.get("target_titles"))) if bad]}
 
@@ -102,18 +118,24 @@ def resume_text():
 
 def with_context(message):
     """When settings say so, puts the instructions and master resume in front of a request, so it works in any
-    Claude chat. If your Claude project already holds them, switch that off in Settings."""
+    AI chat. If your assistant already holds them (a project or saved chat), switch that off in Settings."""
     c = cfg()
     if not c.get("send_resume_in_requests", True):
         return message
-    r = resume_text().strip()
-    return ("<instructions>\n" + settings.instructions_text(c).strip() + "\n</instructions>\n\n"
-            + ("<master_resume>\n" + r + "\n</master_resume>\n\n" if r else "") + message)
+    return writer.with_context(message, settings.instructions_text(c), resume_text())
+
+
+def scoring_source():
+    """What postings are scored against: the career file when there is a usable one, else the master resume.
+    Returns (text, "career" or "resume")."""
+    data = settings.load_career()
+    if data and not career.validate(data):
+        return career.text(data), "career"
+    return resume_text(), "resume"
 
 
 def have_terms(conn):
-    extras = {r["term"] for r in conn.execute("SELECT term FROM extras")}
-    return matcher.find_terms(resume_text(), LEX) | extras
+    return matcher.find_terms(scoring_source()[0], LEX) | usersync.confirmed_skills(conn)
 
 
 def score_into(conn, job_id, title, text, have):
@@ -132,6 +154,8 @@ def rescore_all(conn):
 
 @app.route("/")
 def index():
+    if "state" in request.args and ("code" in request.args or "error" in request.args):
+        return google_finish()
     conn = get_conn()
     status = request.args.get("status", "active")
     min_score = int(request.args.get("min", cfg().get("min_score_to_show", 0)) or 0)
@@ -152,9 +176,22 @@ def index():
              "newest": "id DESC"}.get(sort, "score DESC, id DESC")
     sql += " ORDER BY " + order
     jobs = [db.row_to_job(r) for r in conn.execute(sql, args)]
+    ptags = db.job_tags(conn)
+    tag_f = request.args.get("tag", "")
+    if tag_f:
+        jobs = [j for j in jobs if tag_f in ptags.get(j["id"], [])]
+    avoid = db.avoided(conn)
+    show_avoided = request.args.get("avoided") == "1"
+    for j in jobs:
+        j["avoided"] = db.norm(j["company"]) in avoid
+    hidden = sum(1 for j in jobs if j["avoided"])
+    if not show_avoided:
+        jobs = [j for j in jobs if not j["avoided"]]
     allowed = cfg().get("locations", [])
     for j in jobs:
         j["location_ok"] = matcher.location_ok(j["location"], j["description"], allowed)
+        j["ptags"] = ptags.get(j["id"], [])
+    tags_in_use = sorted({t for ts in ptags.values() for t in ts}, key=lambda t: (t not in db.TAG_LABEL, db.tag_label(t).lower()))
     profs = ensure_profiles(conn)
     tags = {}
     for r in conn.execute("SELECT jp.job_id, p.name FROM job_profiles jp JOIN profiles p ON p.id=jp.profile_id ORDER BY p.name"):
@@ -162,9 +199,11 @@ def index():
     purge_counts = {"outside": len(purge_candidates(conn, "outside")), "untouched": len(purge_candidates(conn, "untouched"))}
     sel = request.args.get("sel", "")
     selected = panel_data(conn, int(sel), tags) if sel.isdigit() else None
-    keep = {"status": status, "min": min_score, "sort": sort, "profile": profile}
+    keep = {"status": status, "min": min_score, "sort": sort, "profile": profile, "tag": tag_f,
+            "avoided": "1" if show_avoided else ""}
     return render_template("index.html", jobs=jobs, status=status, min_score=min_score, sort=sort, purge_counts=purge_counts,
-                           profiles=profs, profile=profile, tags=tags, sel=selected, keep=keep,
+                           profiles=profs, profile=profile, tags=tags, sel=selected, keep=keep, tag_f=tag_f,
+                           tags_in_use=tags_in_use, show_avoided=show_avoided, hidden=hidden,
                            dash=None if selected else dashboard_data(conn), event_kinds=EVENT_KINDS,
                            now_local=datetime.now().strftime("%Y-%m-%dT%H:%M"))
 
@@ -183,13 +222,15 @@ def panel_data(conn, job_id, tags):
     j["waiting"] = {"resume": bool(waiting & {"resume", "resume_cover"}), "cover_letter": "resume_cover" in waiting, "prep": "prep" in waiting}
     j["required"] = [t for t, w in j["gaps"] if w >= 2]
     j["preferred"] = [t for t, w in j["gaps"] if w < 2]
-    j["follow_up"] = False
-    if j["status"] == "applied" and j.get("applied_on"):
-        try:
-            j["follow_up"] = (date.today() - date.fromisoformat(j["applied_on"])).days >= 14
-        except ValueError:
-            pass
+    j["follow_up"] = tracking.needs_follow_up(j["status"], j.get("applied_on"), date.today())
+    add_marks(conn, j)
     return j
+
+
+def add_marks(conn, j):
+    """This posting's tags and, when you avoid its company, that record."""
+    j["ptags"] = db.job_tags(conn, j["id"]).get(j["id"], [])
+    j["avoid"] = db.avoided(conn).get(db.norm(j["company"]))
 
 
 def dashboard_data(conn):
@@ -197,11 +238,8 @@ def dashboard_data(conn):
     today = date.today()
     follow = []
     for r in conn.execute("SELECT id, title, company, applied_on FROM jobs WHERE status='applied' AND applied_on IS NOT NULL ORDER BY applied_on"):
-        try:
-            days = (today - date.fromisoformat(r["applied_on"])).days
-        except ValueError:
-            continue
-        if days >= 14:
+        days = tracking.days_since(r["applied_on"], today)
+        if days is not None and days >= tracking.FOLLOW_UP_DAYS:
             follow.append({"id": r["id"], "title": r["title"], "company": r["company"], "days": days})
     weight = {}
     for r in conn.execute("SELECT gaps_json FROM jobs WHERE status != 'dismissed'"):
@@ -310,6 +348,7 @@ def fetch():
     flash(f"{who}: fetched {total} postings, {new} new, {skipped} skipped for being outside your areas, {merged} already listed from another source.")
     for prof, name, n, err in reports:
         flash((f"{prof} / " if prof else "") + f"{name}: {n} postings" + (f" ({err})" if err else ""))
+    sync_postings(conn)
     return redirect(url_for("index"))
 
 
@@ -340,6 +379,7 @@ def save_profile():
             conn.execute("INSERT INTO profiles(name, keywords, titles, location) VALUES (?,?,?,?)", vals)
         conn.commit()
         flash(f"Saved profile: {name}.")
+        sync_shared(conn)
     except sqlite3.IntegrityError:
         flash("A profile with that name already exists.")
     return redirect(url_for("profiles_page"))
@@ -352,15 +392,17 @@ def delete_profile(pid):
     conn.execute("DELETE FROM profiles WHERE id=?", (pid,))
     conn.commit()
     flash("Profile removed. Its postings are still in the list.")
+    sync_shared(conn)
     return redirect(url_for("profiles_page"))
 
 
 def purge_candidates(conn, scope):
-    """Ids of fetched postings you have not touched (status New, not pasted or logged by you).
+    """Ids of fetched postings you have not touched (status New, not pasted or logged by you, no tags).
     scope 'outside' narrows that to the ones outside your locations. Saved, applied, dismissed ones are never included."""
     allowed = cfg().get("locations", [])
     ids = []
-    for r in conn.execute("SELECT id, location, description FROM jobs WHERE pasted=0 AND status='new'"):
+    for r in conn.execute("SELECT id, location, description FROM jobs WHERE pasted=0 AND status='new' "
+                          "AND id NOT IN (SELECT job_id FROM job_tags WHERE active=1)"):
         if scope == "outside" and matcher.location_ok(r["location"], r["description"], allowed):
             continue
         ids.append(r["id"])
@@ -416,34 +458,16 @@ def job(job_id):
                         "files": json.loads(o["files_json"]), "created_at": o["created_at"]}
             for o in conn.execute("SELECT * FROM outputs WHERE job_id=?", (job_id,))}
     job_d = db.row_to_job(r)
-    keys = load_keys()
-    has_key = bool(keys.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY"))
+    add_marks(conn, job_d)
     links = [dict(x) for x in conn.execute("SELECT source, url FROM job_links WHERE job_id=?", (job_id,))]
     events = [event_view(e, job_d) for e in conn.execute("SELECT * FROM events WHERE job_id=? ORDER BY starts_at", (job_id,))]
     prep = outs.get("prep")
-    return render_template("job.html", j=job_d, lex=LEX, outs=outs, has_key=has_key, links=links, events=events,
+    return render_template("job.html", j=job_d, lex=LEX, outs=outs, links=links, events=events,
                            prep=prep, prep_sections=writer.parse_prep(prep["content"]) if prep else [],
                            pkg_prep=with_context(writer.build_prep_message(job_d)), event_kinds=EVENT_KINDS,
                            now_local=datetime.now().strftime("%Y-%m-%dT%H:%M"),
                            pkg_resume=with_context(writer.build_user_message(job_d, False)),
                            pkg_cover=with_context(writer.build_user_message(job_d, True)))
-
-
-@app.post("/job/<int:job_id>/build")
-def build(job_id):
-    conn = get_conn()
-    r = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
-    if not r:
-        return "No such posting", 404
-    want_cover = bool(request.form.get("cover_letter"))
-    try:
-        res = writer.generate(db.row_to_job(r), want_cover, cfg(), load_keys())
-    except Exception as e:  # show the reason on the page instead of a crash
-        flash(f"Could not build: {e}")
-        return redirect(url_for("job", job_id=job_id))
-    store_outputs(conn, job_id, res["parts"], res["warnings"], res["files"])
-    flash("Built. Files are in the output folder next to the app.")
-    return redirect(url_for("job", job_id=job_id) + "#documents")
 
 
 def store_outputs(conn, job_id, parts, warnings, files):
@@ -487,13 +511,13 @@ def apply_gap_reply(conn, scope, text):
 
 @app.post("/job/<int:job_id>/import")
 def import_reply(job_id):
-    """Takes the reply pasted back from the Claude project, keeps it with the posting and saves it as files."""
+    """Takes the reply pasted back from your AI, keeps it with the posting and saves it as files."""
     conn = get_conn()
     if not conn.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
         return "No such posting", 404
     text = request.form.get("reply", "").strip()
     if not text:
-        flash("Paste Claude's reply first.")
+        flash("Paste your AI's reply first.")
         return redirect(url_for("job", job_id=job_id) + "#documents")
     note = apply_resume_reply(conn, job_id, text)
     if note:
@@ -504,13 +528,13 @@ def import_reply(job_id):
 
 @app.post("/job/<int:job_id>/prep")
 def import_prep(job_id):
-    """Keeps the interview-prep reply pasted back from the Claude project, and saves it as a markdown file."""
+    """Keeps the interview-prep reply pasted back from your AI, and saves it as a markdown file."""
     conn = get_conn()
     if not conn.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
         return "No such posting", 404
     text = request.form.get("reply", "").strip()
     if not text:
-        flash("Paste Claude's reply first.")
+        flash("Paste your AI's reply first.")
         return redirect(url_for("job", job_id=job_id) + "#prep")
     apply_prep_reply(conn, job_id, text)
     flash("Interview prep saved. The file is in the output folder next to the app.")
@@ -657,20 +681,10 @@ def weekly():
     interviews = [j for j in moved if j["status"] in ("phone_screen", "interview", "offer")]
     rejected = [j for j in moved if j["status"] == "rejected"]
     today = date.today()
-    waiting = [j for j in jobs if j["status"] == "applied" and j.get("applied_on")
-               and (today - date.fromisoformat(j["applied_on"])).days >= 14]
+    waiting = [j for j in jobs if tracking.needs_follow_up(j["status"], j.get("applied_on"), today)]
     upcoming = upcoming_events(conn, 14)
-    lines = [f"Job search, last {days} days:", f"- {len(applied)} application(s) sent"]
-    if interviews:
-        lines.append(f"- {len(interviews)} moved to a phone screen or interview")
-    if rejected:
-        lines.append(f"- {len(rejected)} closed out")
-    if upcoming:
-        lines.append(f"- {len(upcoming)} interview or follow-up coming up in the next 2 weeks")
-    if waiting:
-        lines.append(f"- {len(waiting)} application(s) waiting 14+ days with no word, due for a follow-up")
-    summary = "\n".join(lines)
-    rate = f"{round(100 * len(interviews) / len(applied))}%" if applied else "n/a"
+    summary = tracking.weekly_summary(days, len(applied), len(interviews), len(rejected), len(upcoming), len(waiting))
+    rate = tracking.interview_rate(len(applied), len(interviews))
     return render_template("weekly.html", days=days, applied=applied, interviews=interviews, rejected=rejected,
                            waiting=waiting, upcoming=upcoming, summary=summary, rate=rate)
 
@@ -703,6 +717,8 @@ def merge_duplicates(conn):
                 conn.execute("INSERT OR IGNORE INTO job_profiles(job_id, profile_id) SELECT ?, profile_id FROM job_profiles WHERE job_id=?",
                              (keeper["id"], dup["id"]))
                 conn.execute("DELETE FROM job_profiles WHERE job_id=?", (dup["id"],))
+                conn.execute("INSERT OR IGNORE INTO job_tags(job_id, tag, active, changed_at) "
+                             "SELECT ?, tag, active, changed_at FROM job_tags WHERE job_id=?", (keeper["id"], dup["id"]))
                 conn.execute("DELETE FROM outputs WHERE job_id=?", (dup["id"],))
                 conn.execute("DELETE FROM jobs WHERE id=?", (dup["id"],))
                 removed += 1
@@ -760,6 +776,41 @@ def set_application(job_id):
     return redirect(request.referrer or url_for("applications"))
 
 
+@app.post("/job/<int:job_id>/tags")
+def set_tags(job_id):
+    """Saves the posting's tags: the boxes ticked, plus one you typed."""
+    conn = get_conn()
+    if not conn.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
+        return "No such posting", 404
+    want = {t for t in request.form.getlist("tag") if t in db.TAG_LABEL or t.startswith(db.CUSTOM)}
+    custom = db.custom_tag(request.form.get("custom", ""))
+    if custom:
+        same = [t for t in db.TAG_LABEL if db.TAG_LABEL[t].lower() == custom[len(db.CUSTOM):].lower()]
+        want.add(same[0] if same else custom)          # typing "Possible scam" ticks the box rather than adding a copy
+    have = set(db.job_tags(conn, job_id).get(job_id, []))
+    for t in have - want:
+        db.set_tag(conn, job_id, t, False)
+    for t in want - have:
+        db.set_tag(conn, job_id, t, True)
+    conn.commit()
+    return redirect(back_to(url_for("index", sel=job_id)))
+
+
+@app.post("/avoid")
+def avoid():
+    """Avoids a company (on=1) or stops avoiding it (on=0)."""
+    conn = get_conn()
+    company = request.form.get("company", "")
+    on = request.form.get("on") == "1"
+    if not db.set_avoided(conn, company, request.form.get("reason", ""), on):
+        flash("That posting has no company name to avoid.")
+    else:
+        conn.commit()
+        flash(f"Avoiding {company.strip()}. Its postings are hidden; tick \"Show avoided\" to see them." if on
+              else f"No longer avoiding {company.strip()}.")
+    return redirect(back_to(url_for("index")))
+
+
 STAGE_ORDER = ["offer", "interview", "phone_screen", "applied", "no_response", "rejected", "withdrawn"]
 
 
@@ -770,13 +821,8 @@ def applications():
     rows = [db.row_to_job(r) for r in conn.execute(f"SELECT * FROM jobs WHERE status IN ({qs})", db.APPLIED_STAGES)]
     today = date.today()
     for j in rows:
-        j["days"] = None
-        if j.get("applied_on"):
-            try:
-                j["days"] = (today - date.fromisoformat(j["applied_on"])).days
-            except ValueError:
-                pass
-        j["follow_up"] = j["status"] == "applied" and j["days"] is not None and j["days"] >= 14
+        j["days"] = tracking.days_since(j.get("applied_on"), today)
+        j["follow_up"] = tracking.needs_follow_up(j["status"], j.get("applied_on"), today)
     rows.sort(key=lambda j: (STAGE_ORDER.index(j["status"]), -(j["days"] or 0) if j["status"] == "applied" else (j["days"] or 0)))
     counts = {k: sum(1 for j in rows if j["status"] == k) for k in db.APPLIED_STAGES}
     return render_template("applications.html", jobs=rows, counts=counts, today=today.isoformat(),
@@ -826,121 +872,240 @@ def gap_scope(conn):
     return jobs, focus, profile
 
 
-# ---- Folder queue: request files out, reply files in ---------------------------------------------------------
-QUEUE_KINDS = {"resume": "Resume", "resume_cover": "Resume and cover letter", "prep": "Interview prep", "gap": "Gap plan"}
+# ---- AI work queue: request files out, reply files in (format in aiqueue.py and docs/formats.md) ---------------
+QUEUE_KINDS = aiqueue.KINDS
+INSTRUCTIONS_SRC = os.path.join(HERE, "docs", "AI_INSTRUCTIONS.md")
+_SUFFIX_CHARS = "abcdefghijkmnpqrstuvwxyz23456789"
+
+
+def drive_on(c=None):
+    """True when this computer uses Google Drive directly for the queue and the shared details."""
+    return bool((c or cfg()).get("use_drive")) and (app.config.get("DRIVE") is not None or gdrive.linked())
+
+
+def drive_home():
+    """The WildThing folder in Google Drive (one per request, so folder lookups are not repeated)."""
+    if "drive_home" not in g:
+        keys = load_keys()
+        drive = app.config.get("DRIVE") or gdrive.Drive(gdrive.Auth(keys.get("google_client_id", ""),
+                                                                    keys.get("google_client_secret", "")))
+        g.drive_home = workfolder.DriveDir(drive, "WildThing", permanent=bool(cfg().get("drive_permanent_delete")))
+    return g.drive_home
+
+
+def queue_dir():
+    """The work folder: the WildThing folder in Google Drive when it is linked and switched on, else this computer's
+    folder setting, else the data folder (home.py)."""
+    if app.config.get("QUEUE_ROOT"):
+        return workfolder.LocalDir(app.config["QUEUE_ROOT"])
+    if drive_on():
+        return drive_home()
+    return workfolder.LocalDir(cfg().get("queue_folder") or home.ROOT or HERE)
 
 
 def queue_root():
-    return app.config.get("QUEUE_ROOT", HERE)
+    """Where the queue is, as words for the page."""
+    return queue_dir().label
 
 
-def _queue_path(folder, name=""):
-    d = os.path.join(queue_root(), folder)
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, name) if name else d
+def write_instructions():
+    """Puts AI_INSTRUCTIONS.md in the work folder, and refreshes it when the app's copy has changed."""
+    with open(INSTRUCTIONS_SRC, encoding="utf-8") as f:
+        text = f.read()
+    qd = queue_dir()
+    if qd.text(aiqueue.INSTRUCTIONS_FILE) != text:
+        qd.write(aiqueue.INSTRUCTIONS_FILE, text.encode("utf-8"))
 
 
-def write_todo(conn):
-    waiting = conn.execute("SELECT * FROM queue_items WHERE status='waiting' ORDER BY id").fetchall()
-    c = cfg()
-    lines = ["# Work to do", "",
-             "Each request below is a file in `requests/`. Open it, follow it, and write your answer to the matching file in "
-             "`replies/` (same file name). Skip any request whose reply file already exists.", ""]
-    if c.get("send_resume_in_requests", True):
-        lines += ["Each request file already contains my instructions and my master resume. Use only facts from my master "
-                  "resume. Do not invent experience.", ""]
-    else:
-        lines += ["Use the instructions and master resume you already hold for me. Use only facts from my master resume. "
-                  "Do not invent experience.", ""]
-    if not waiting:
-        lines.append("Nothing waiting.")
-    for it in waiting:
-        lines.append(f"- [ ] `requests/{it['name']}`  ->  `replies/{it['name']}`   ({QUEUE_KINDS.get(it['kind'], it['kind'])})")
-    with open(os.path.join(queue_root(), "TODO.md"), "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+def _open_batch(conn):
+    """New requests join the newest batch until a reply report for it has been seen."""
+    place = queue_root()
+    r = conn.execute("SELECT batch FROM queue_batches WHERE report_seen=0 AND done=0 AND place IN (?, '') "
+                     "ORDER BY created_at DESC, batch DESC LIMIT 1", (place,)).fetchone()
+    if r:
+        return r["batch"]
+    batch = aiqueue.batch_id(datetime.now(), "".join(secrets.choice(_SUFFIX_CHARS) for _ in range(4)))
+    conn.execute("INSERT INTO queue_batches(batch, created_at, place) VALUES (?,?,?)", (batch, db.now(), place))
+    return batch
+
+
+def write_batch_todo(conn, batch):
+    """requests/TODO_<batch>.md, listing the items still waiting."""
+    items = [{"n": r["n"], "kind": r["kind"], "label": r["label"]}
+             for r in conn.execute("SELECT * FROM queue_items WHERE batch=? AND status='waiting' ORDER BY n", (batch,))]
+    created = conn.execute("SELECT created_at FROM queue_batches WHERE batch=?", (batch,)).fetchone()[0]
+    text = aiqueue.render_todo(batch, settings.device_id(), created, items, cfg().get("send_resume_in_requests", True))
+    queue_dir().sub("requests").write(aiqueue.todo_name(batch), text.encode("utf-8"))
 
 
 def queue_add(conn, kind, job_id, scope, label, message):
-    """Writes the request file and adds it to the queue. Returns the file name."""
-    cur = conn.execute("INSERT INTO queue_items(kind, job_id, scope, created_at) VALUES (?,?,?,?)", (kind, job_id, scope, db.now()))
-    name = f"{cur.lastrowid:03d}_{kind}_{writer.slug(label)}.md"
-    conn.execute("UPDATE queue_items SET name=? WHERE id=?", (name, cur.lastrowid))
-    c = cfg()
-    if c.get("send_resume_in_requests", True):
-        context = "My instructions and my master resume are included below. Use only facts from them."
-    else:
-        context = "Use the instructions and master resume you already hold for me, and only facts from the master resume."
-    body = (f"# Request: {QUEUE_KINDS[kind]}, {label}\n\n"
-            f"Write your answer to `replies/{name}` in this folder. {context} Follow the reply format described below. "
-            "The reply file should contain the tagged parts and nothing else.\n\n---\n\n" + with_context(message) + "\n")
-    with open(_queue_path("requests", name), "w", encoding="utf-8") as f:
-        f.write(body)
-    _queue_path("replies")
-    conn.commit()
-    write_todo(conn)
+    """Writes the request file, adds it to the open batch and rewrites that batch's TODO. Returns the file name."""
+    batch = _open_batch(conn)
+    n = (conn.execute("SELECT MAX(n) FROM queue_items WHERE batch=?", (batch,)).fetchone()[0] or 0) + 1
+    name = aiqueue.item_name(batch, n, kind, label)
+    conn.execute("INSERT INTO queue_items(kind, job_id, scope, name, status, created_at, batch, n, label) "
+                 "VALUES (?,?,?,?, 'waiting', ?,?,?,?)", (kind, job_id, scope, name, db.now(), batch, n, label))
+    try:
+        queue_dir().sub("requests").write(name, aiqueue.render_request(batch, n, kind, label, with_context(message)).encode("utf-8"))
+        queue_dir().sub("replies").ensure()
+        write_instructions()
+        conn.commit()
+        write_batch_todo(conn, batch)
+    except OSError:
+        conn.rollback()                                  # nothing half-sent stays in the record
+        raise
     return name
 
 
-def import_replies(conn):
-    """Reads every waiting item whose reply file exists and files it where a pasted reply would go."""
-    got = skipped = 0
-    for it in conn.execute("SELECT * FROM queue_items WHERE status='waiting' ORDER BY id").fetchall():
-        path = _queue_path("replies", it["name"])
-        if not os.path.exists(path):
-            continue
-        with open(path, encoding="utf-8", errors="replace") as f:
-            text = f.read().strip()
-        if not text:
-            continue
-        try:
-            if it["kind"] == "gap":
-                apply_gap_reply(conn, it["scope"] or "all postings", text)
-            elif not conn.execute("SELECT 1 FROM jobs WHERE id=?", (it["job_id"],)).fetchone():
-                conn.execute("UPDATE queue_items SET status='skipped' WHERE id=?", (it["id"],))
-                skipped += 1
-                continue
-            elif it["kind"] == "prep":
-                apply_prep_reply(conn, it["job_id"], text)
-            else:
-                apply_resume_reply(conn, it["job_id"], text)
-        except Exception as e:                       # leave it waiting so nothing is lost
-            flash(f"Could not import {it['name']}: {e}")
-            continue
-        conn.execute("UPDATE queue_items SET status='imported', imported_at=? WHERE id=?", (db.now(), it["id"]))
-        got += 1
+def _other_places(conn):
+    """Batches still waiting in a different work folder (made before the folder or Drive setting changed)."""
+    return conn.execute("SELECT place, COUNT(*) AS n FROM queue_batches WHERE done=0 AND place NOT IN (?, '') "
+                        "GROUP BY place", (queue_root(),)).fetchall()
+
+
+def queue_state(conn):
+    """For each unfinished batch this copy made in this work folder: its row, its waiting items by number, and the
+    plan from the files."""
+    qd = queue_dir()
+    present = {f["name"] for f in qd.sub("requests").files()}
+    rdir = qd.sub("replies")
+    replies = rdir.files()
+    out = []
+    for b in conn.execute("SELECT * FROM queue_batches WHERE done=0 AND place IN (?, '') ORDER BY created_at, batch",
+                          (qd.label,)).fetchall():
+        items = {r["n"]: r for r in conn.execute(
+            "SELECT * FROM queue_items WHERE batch=? AND status='waiting' ORDER BY n", (b["batch"],))}
+        report = rdir.text(aiqueue.reply_todo_name(b["batch"]))
+        plan = aiqueue.plan_import([{"n": n, "name": r["name"]} for n, r in items.items()], present, replies, report)
+        out.append({"batch": b, "items": items, "plan": plan, "replies": replies, "report": report is not None})
+    return out
+
+
+def _finish_batch(conn, batch):
+    """Once nothing in a batch is waiting, its two TODO files go too. Otherwise its TODO lists what is left."""
+    if conn.execute("SELECT 1 FROM queue_items WHERE batch=? AND status='waiting'", (batch,)).fetchone():
+        write_batch_todo(conn, batch)
+        return False
+    queue_dir().sub("requests").remove(aiqueue.todo_name(batch))
+    queue_dir().sub("replies").remove(aiqueue.reply_todo_name(batch))
+    conn.execute("UPDATE queue_batches SET done=1 WHERE batch=?", (batch,))
     conn.commit()
-    write_todo(conn)
-    return got, skipped
+    return True
+
+
+def import_replies(conn):
+    """Files every reply that is back, then cleans up in an order that loses nothing if it stops half way: save the
+    reply, confirm, delete its reply and request files; when the batch is all done, delete its TODO files.
+    Returns (imported, problems): problems are lines to show (skipped, failed, missing, could not import)."""
+    got, problems = 0, []
+    rdir, reqdir = queue_dir().sub("replies"), queue_dir().sub("requests")
+    for st in queue_state(conn):
+        batch = st["batch"]["batch"]
+        for x in st["plan"]["items"]:
+            it = st["items"][x["n"]]
+            if x["action"] == "gone":
+                conn.execute("UPDATE queue_items SET status='removed' WHERE id=?", (it["id"],))
+                continue
+            if x["action"] in ("skipped", "failed", "missing"):
+                conn.execute("UPDATE queue_items SET note=? WHERE id=?", (f"{x['action']}: {x['reason']}", it["id"]))
+                problems.append(f"{QUEUE_KINDS[it['kind']]}, {it['label']}: {x['action']}. {x['reason']}")
+                continue
+            if x["action"] != "import":
+                continue
+            reply_name = st["replies"][x["reply"]]["name"]
+            text = (rdir.text(reply_name) or "").strip()
+            if not text:
+                continue
+            try:
+                if it["kind"] == "gap":
+                    apply_gap_reply(conn, it["scope"] or "all postings", text)
+                elif not conn.execute("SELECT 1 FROM jobs WHERE id=?", (it["job_id"],)).fetchone():
+                    problems.append(f"{QUEUE_KINDS[it['kind']]}, {it['label']}: the posting was removed, so the reply was not kept.")
+                elif it["kind"] == "prep":
+                    apply_prep_reply(conn, it["job_id"], text)
+                else:
+                    apply_resume_reply(conn, it["job_id"], text)
+            except Exception as e:                       # leave its files in place so nothing is lost
+                problems.append(f"Could not import {reply_name}: {e}")
+                continue
+            conn.execute("UPDATE queue_items SET status='imported', imported_at=?, note='' WHERE id=?", (db.now(), it["id"]))
+            conn.commit()                                # saved: now its files can go
+            for name in {st["replies"][i]["name"] for i in x["delete"]}:
+                rdir.remove(name)
+            reqdir.remove(it["name"])
+            got += 1
+        if st["report"]:
+            conn.execute("UPDATE queue_batches SET report_seen=1 WHERE batch=?", (batch,))
+        conn.commit()
+        _finish_batch(conn, batch)
+    return got, problems
 
 
 @app.route("/queue")
 def queue_page():
+    """Opening the page imports whatever has come back, then shows each batch as the files say."""
     conn = get_conn()
-    items = []
-    for r in conn.execute("SELECT q.*, j.title, j.company FROM queue_items q LEFT JOIN jobs j ON j.id=q.job_id ORDER BY q.id DESC"):
-        d = dict(r)
-        d["label"] = QUEUE_KINDS.get(d["kind"], d["kind"])
-        d["what"] = (d["title"] + (" at " + d["company"] if d["company"] else "")) if d["title"] else d["scope"]
-        d["reply_ready"] = os.path.exists(_queue_path("replies", d["name"])) if d["status"] == "waiting" else False
-        items.append(d)
-    return render_template("queue.html", items=items, folder=queue_root(), waiting=sum(1 for i in items if i["status"] == "waiting"))
+    try:
+        got, problems = import_replies(conn)
+        states = queue_state(conn)
+    except OSError as e:
+        flash(f"Could not reach the work folder: {e}")
+        got, problems, states = 0, [], []
+    if got:
+        flash(f"Imported {got} reply file(s).")
+    labels = {"waiting": "Waiting for a reply", "import": "Reply found", "missing": "Reported done, reply file not there yet",
+              "skipped": "Skipped", "failed": "Failed"}
+    batches = []
+    for st in states:
+        rows = []
+        for x in st["plan"]["items"]:
+            it = dict(st["items"][x["n"]])
+            job = conn.execute("SELECT title, company FROM jobs WHERE id=?", (it["job_id"],)).fetchone() if it["job_id"] else None
+            it["what"] = (job["title"] + (" at " + job["company"] if job["company"] else "")) if job else it["scope"]
+            it["state"], it["reason"], it["type"] = labels.get(x["action"], x["action"]), x["reason"], QUEUE_KINDS[it["kind"]]
+            rows.append(it)
+        if rows:
+            batches.append({"id": st["batch"]["batch"], "report": st["report"], "rows": rows})
+    done = [dict(r) | {"type": QUEUE_KINDS.get(r["kind"], r["kind"])} for r in
+            conn.execute("SELECT * FROM queue_items WHERE status='imported' ORDER BY imported_at DESC LIMIT 15")]
+    unused = not conn.execute("SELECT 1 FROM queue_batches LIMIT 1").fetchone()
+    return render_template("queue.html", batches=batches, done=done, problems=problems, folder=queue_root(),
+                           unused=unused, waiting=sum(len(b["rows"]) for b in batches), elsewhere=_other_places(conn))
+
+
+@app.route("/queue/help")
+def queue_help():
+    return render_template("queue_help.html", folder=queue_root())
 
 
 @app.post("/queue/import")
 def queue_import():
-    got, skipped = import_replies(get_conn())
-    flash(f"Imported {got} reply file(s)." if got else "No new reply files found in the replies folder.")
-    if skipped:
-        flash(f"{skipped} skipped because the posting was removed.")
+    try:
+        got, problems = import_replies(get_conn())
+    except OSError as e:
+        flash(f"Could not reach the work folder: {e}")
+        return redirect(url_for("queue_page"))
+    flash(f"Imported {got} reply file(s)." if got else "No new replies in the replies folder.")
+    for p in problems:
+        flash(p)
     return redirect(url_for("queue_page"))
 
 
 @app.post("/queue/<int:item_id>/delete")
 def queue_delete(item_id):
+    """Takes one item out of the queue: its request and any reply go; the batch finishes if nothing else waits."""
     conn = get_conn()
-    conn.execute("DELETE FROM queue_items WHERE id=?", (item_id,))
-    conn.commit()
-    write_todo(conn)
+    it = conn.execute("SELECT * FROM queue_items WHERE id=?", (item_id,)).fetchone()
+    if it:
+        try:
+            queue_dir().sub("requests").remove(it["name"])
+            queue_dir().sub("replies").remove(it["name"])
+            conn.execute("UPDATE queue_items SET status='removed' WHERE id=?", (item_id,))
+            conn.commit()
+            if it["batch"]:
+                _finish_batch(conn, it["batch"])
+        except OSError as e:
+            flash(f"Could not reach the work folder: {e}")
     return redirect(url_for("queue_page"))
 
 
@@ -955,8 +1120,11 @@ def queue_job(job_id):
         return "bad kind", 400
     job_d = db.row_to_job(r)
     msg = writer.build_prep_message(job_d) if kind == "prep" else writer.build_user_message(job_d, kind == "resume_cover")
-    queue_add(conn, kind, job_id, "", job_d.get("company") or job_d["title"], msg)
-    flash(f"{QUEUE_KINDS[kind]} request written to the requests folder and added to TODO.md.")
+    try:
+        queue_add(conn, kind, job_id, "", job_d.get("company") or job_d["title"], msg)
+        flash(f"{QUEUE_KINDS[kind]} request added to the work folder. Tell your AI: read AI_INSTRUCTIONS.md and process the pending batch.")
+    except OSError as e:
+        flash(f"Could not add the request to the work folder: {e}")
     return redirect(request.referrer or url_for("job", job_id=job_id))
 
 
@@ -965,11 +1133,14 @@ def queue_gaps():
     conn = get_conn()
     jobs, focus, _profile = gap_scope(conn)
     rows, _phases = gapmod.build_plan(jobs, LEX)
-    extras = [r["term"] for r in conn.execute("SELECT term FROM extras")]
+    extras = sorted(usersync.confirmed_skills(conn))
     msg = gapmod.build_message(rows, jobs, LEX, focus, extras, _int_arg("hours", 5, 1, 40), _int_arg("weeks", 12, 1, 52),
                                _int_arg("top", 15, 3, 40))
-    queue_add(conn, "gap", None, focus, focus, msg)
-    flash("Gap plan request written to the requests folder and added to TODO.md.")
+    try:
+        queue_add(conn, "gap", None, focus, focus, msg)
+    except OSError as e:
+        flash(f"Could not add the request to the work folder: {e}")
+    flash("Gap plan request added to the work folder. Tell your AI: read AI_INSTRUCTIONS.md and process the pending batch.")
     return redirect(url_for("queue_page"))
 
 
@@ -980,7 +1151,7 @@ def gaps_page():
     jobs, focus, profile = gap_scope(conn)
     rows, phases = gapmod.build_plan(jobs, LEX)
     hours, weeks, top = _int_arg("hours", 5, 1, 40), _int_arg("weeks", 12, 1, 52), _int_arg("top", 15, 3, 40)
-    extras = [r["term"] for r in conn.execute("SELECT term FROM extras")]
+    extras = sorted(usersync.confirmed_skills(conn))
     message = with_context(gapmod.build_message(rows, jobs, LEX, focus, extras, hours, weeks, top))
     plans = []
     for r in conn.execute("SELECT * FROM gap_plans ORDER BY id DESC"):
@@ -998,7 +1169,7 @@ def save_gap_plan():
     scope = request.form.get("scope", "").strip() or "all postings"
     back = request.form.get("back", "")
     if not text:
-        flash("Paste Claude's reply first.")
+        flash("Paste your AI's reply first.")
         return redirect(url_for("gaps_page") + back)
     apply_gap_reply(get_conn(), scope, text)
     flash("Plan saved. The file is in the output folder next to the app.")
@@ -1020,17 +1191,25 @@ def have():
     if term in LEX:
         conn.execute("INSERT OR IGNORE INTO extras(term, added_at) VALUES (?,?)", (term, db.now()))
         conn.commit()
+        where = "your career file" if usersync.fold_extras(conn) else "your list"
         rescore_all(conn)
-        flash(f'Marked "{term}" as something you have. Postings re-scored. Add it to your resume only if it is true.')
+        flash(f'Added "{term}" to {where} as something you have. Postings re-scored. '
+              'Add it to your resume only if it is true.')
+        sync_shared(conn)
     return redirect(request.referrer or url_for("gaps_page"))
 
 
 @app.post("/unhave")
 def unhave():
     conn = get_conn()
-    conn.execute("DELETE FROM extras WHERE term=?", (request.form.get("term", ""),))
+    term = request.form.get("term", "")
+    conn.execute("DELETE FROM extras WHERE term=?", (term,))
     conn.commit()
+    data = settings.load_career()
+    if data:                                    # only a confirmed skill goes; one from your documents stays
+        settings.save_career(career.remove_confirmed(data, term, db.now()))
     rescore_all(conn)
+    sync_shared(conn)
     return redirect(url_for("resume_page"))
 
 
@@ -1039,17 +1218,198 @@ def resume_page():
     conn = get_conn()
     text = resume_text()
     found = sorted(matcher.find_terms(text, LEX))
-    extras = sorted(r["term"] for r in conn.execute("SELECT term FROM extras"))
-    return render_template("resume.html", found=found, extras=extras, name=os.path.basename(settings.resume_path(cfg()) or "") or "none yet", chars=len(text))
+    extras = sorted(usersync.confirmed_skills(conn))
+    return render_template("resume.html", found=found, extras=extras, source=scoring_source()[1], name=os.path.basename(settings.resume_path(cfg()) or "") or "none yet", chars=len(text))
 
 
-KEY_FIELDS = (("anthropic_api_key", "Anthropic API key (only for writing resumes straight from the app; not needed for the copy-and-paste way)"),
-              ("adzuna_app_id", "Adzuna app id"), ("adzuna_app_key", "Adzuna app key"),
-              ("usajobs_key", "USAJOBS key"), ("usajobs_email", "USAJOBS email"))
+KEY_FIELDS = (("adzuna_app_id", "Adzuna app id"), ("adzuna_app_key", "Adzuna app key"),
+              ("usajobs_key", "USAJOBS key"), ("usajobs_email", "USAJOBS email"),
+              ("google_client_id", "Google OAuth client id"), ("google_client_secret", "Google OAuth client secret"))
 
 
 def _lines(text):
     return [l.strip() for l in (text or "").replace(",", "\n").splitlines() if l.strip()]
+
+
+# ---- The career file (career.py, docs/formats.md section 9) --------------------------------------------------
+CAREER_SOURCE_EXTS = (".docx", ".md", ".txt")
+
+
+def _career_extra(name):
+    """The request being prepared (career_request.md) and a new file waiting for review (career_pending.json)."""
+    return os.path.join(settings.DATA_DIR, name)
+
+
+def _read_text(path):
+    if not os.path.isfile(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+def career_pending():
+    raw = _read_text(_career_extra("career_pending.json"))
+    try:
+        return json.loads(raw) if raw else None
+    except ValueError:
+        return None
+
+
+def _drop(name):
+    try:
+        os.remove(_career_extra(name))
+    except OSError:
+        pass
+
+
+@app.route("/career")
+def career_page():
+    cur = settings.load_career()
+    text, source = scoring_source()
+    return render_template("career.html", cur=cur, problems=career.validate(cur) if cur else [],
+                           found=sorted(matcher.find_terms(text, LEX)) if source == "career" else [],
+                           draft=_read_text(_career_extra("career_request.md")), pending=career_pending() is not None,
+                           folder=queue_root(), exts=",".join(CAREER_SOURCE_EXTS))
+
+
+@app.post("/career/request")
+def career_request():
+    """Makes the build request from the documents you chose (and what you typed). It is kept until a new file is
+    accepted, so it can be copied or sent to the work folder."""
+    sources = []
+    for f in request.files.getlist("sources"):
+        if not f or not f.filename:
+            continue
+        name, ext = os.path.basename(f.filename), os.path.splitext(f.filename)[1].lower()
+        data = f.read()
+        if ext not in CAREER_SOURCE_EXTS:
+            flash(f"{name} was left out: use Word (.docx), Markdown (.md) or text (.txt) files.")
+            continue
+        if len(data) > 3 * 1024 * 1024:
+            flash(f"{name} was left out: it is over 3 MB.")
+            continue
+        fd, path = tempfile.mkstemp(suffix=ext)
+        with os.fdopen(fd, "wb") as out:
+            out.write(data)
+        try:
+            body = resumemod.read_resume(path)
+        except Exception:
+            body = ""
+        finally:
+            os.remove(path)
+        if body.strip():
+            sources.append((name, body))
+        else:
+            flash(f"{name} was left out: no text could be read from it.")
+    typed = request.form.get("typed", "").strip()
+    if typed:
+        sources.append(("typed in WildThing", typed))
+    if not sources:
+        flash("Add at least one document, or type something about your work.")
+        return redirect(url_for("career_page") + "#build")
+    with open(INSTRUCTIONS_SRC, encoding="utf-8") as f:
+        section = career.instructions_section(f.read())
+    current = settings.load_career() if request.form.get("include_current") else None
+    with open(settings._data("career_request.md"), "w", encoding="utf-8") as f:
+        f.write(career.build_request(section, sources, current))
+    flash(f"Request ready, from {len(sources)} source{'' if len(sources) == 1 else 's'}. Copy it into your AI, or send it to the work folder.")
+    return redirect(url_for("career_page") + "#request")
+
+
+@app.post("/career/send")
+def career_send():
+    draft = _read_text(_career_extra("career_request.md"))
+    if not draft:
+        flash("Make the request first.")
+        return redirect(url_for("career_page") + "#build")
+    name = career.request_name(datetime.now())
+    try:
+        write_instructions()
+        queue_dir().sub("requests").write(name, draft.encode("utf-8"))
+    except OSError as e:
+        flash(f"Could not write to the work folder: {e}")
+        return redirect(url_for("career_page") + "#request")
+    flash(f"Sent as requests/{name}. Tell your AI: read AI_INSTRUCTIONS.md in the WildThing folder and build the career "
+          f"file requested in requests/{name}. Then come back and press Look in the work folder.")
+    return redirect(url_for("career_page") + "#reply")
+
+
+def _career_take(text, reply):
+    """Checks a reply; a good file waits for your review, a bad one is refused with the reasons."""
+    data, problems = career.read_reply(text)
+    if problems:
+        more = f" (and {len(problems) - 5} more)" if len(problems) > 5 else ""
+        flash("That career file was not used. " + " ".join(problems[:5]) + more)
+        return redirect(url_for("career_page") + "#reply")
+    with open(settings._data("career_pending.json"), "w", encoding="utf-8") as f:
+        json.dump({"file": data, "reply": reply, "at": db.now()}, f, ensure_ascii=False)
+    return redirect(url_for("career_review"))
+
+
+@app.post("/career/reply")
+def career_reply():
+    return _career_take(request.form.get("reply", ""), None)
+
+
+@app.post("/career/fetch")
+def career_fetch():
+    try:
+        replies = queue_dir().sub("replies")
+        name = career.newest_reply([f["name"] for f in replies.files()])
+        text = replies.text(name) if name else None
+    except OSError as e:
+        flash(f"Could not read the work folder: {e}")
+        return redirect(url_for("career_page") + "#reply")
+    if not name:
+        flash(f"No career file reply in {queue_root()} yet (it would be replies/career_<time>.reply.md).")
+        return redirect(url_for("career_page") + "#reply")
+    return _career_take(text or "", name)
+
+
+@app.route("/career/review")
+def career_review():
+    p = career_pending()
+    if not p:
+        return redirect(url_for("career_page"))
+    cur = settings.load_career()
+    new = career.replace(cur, p["file"], p["at"])
+    return render_template("career_review.html", new=new, cur=cur, changes=career.changes(cur, new), reply=p.get("reply"),
+                           kept=[s["name"] for s in new["skills"] if s.get("source") == "confirmed"
+                                 and s["name"].lower() not in {x["name"].lower() for x in p["file"].get("skills", [])}])
+
+
+@app.post("/career/accept")
+def career_accept():
+    p = career_pending()
+    if not p:
+        return redirect(url_for("career_page"))
+    data = career.replace(settings.load_career(), p["file"], db.now())
+    problems = career.validate(data)
+    if problems:
+        flash("That career file was not used. " + " ".join(problems[:5]))
+        return redirect(url_for("career_review"))
+    settings.save_career(data)
+    _drop("career_pending.json")
+    _drop("career_request.md")
+    usersync.fold_extras(get_conn())                    # "I have this" skills from before the file move into it
+    rescore_all(get_conn())
+    if p.get("reply"):                                  # the work folder's copies are no longer needed
+        try:
+            qd = queue_dir()
+            qd.sub("replies").remove(p["reply"])
+            qd.sub("requests").remove(career.request_for(p["reply"]))
+        except OSError as e:
+            flash(f"Saved, but the reply could not be removed from the work folder: {e}")
+    flash("Career file saved. Every posting was re-scored against it.")
+    sync_shared(get_conn())
+    return redirect(url_for("career_page"))
+
+
+@app.post("/career/discard")
+def career_discard():
+    _drop("career_pending.json")
+    flash("The new career file was discarded. Your current one is unchanged.")
+    return redirect(url_for("career_page"))
 
 
 @app.route("/settings")
@@ -1057,9 +1417,12 @@ def settings_page():
     c = cfg()
     keys = load_keys()
     rp = settings.resume_path(c)
+    google = {"linked": gdrive.linked(), "client": bool(keys.get("google_client_id") and keys.get("google_client_secret")),
+              "relink": gdrive.linked() and not gdrive.granted(gdrive.scope(c))}
     return render_template("settings.html", c=c, resume_name=os.path.basename(rp) if rp else "",
                            has_custom=settings.has_custom_instructions(c),
-                           instructions=settings.instructions_text(c),
+                           instructions=settings.instructions_text(c), google=google,
+                           data_folder=home.ROOT or HERE, default_folder=home.DEFAULT, avoided=db.avoided(get_conn()).values(),
                            key_fields=KEY_FIELDS, key_set={k for k, _ in KEY_FIELDS if keys.get(k)})
 
 
@@ -1072,12 +1435,18 @@ def settings_save():
         "target_titles": [t.lower() for t in _lines(f.get("target_titles"))],
         "search_keywords": [t.lower() for t in _lines(f.get("search_keywords"))],
         "locations": [t.lower() for t in _lines(f.get("locations"))],
-        "send_resume_in_requests": f.get("claude_has_resume") != "on",
+        "send_resume_in_requests": f.get("ai_has_resume") != "on",
         "jobspy": {"enabled": f.get("jobspy_enabled") == "on", "location": place},
         "linkedin": {"enabled": f.get("linkedin_enabled") == "on", "location": place},
         "adzuna": {"where": place},
         "usajobs": {"location": place},
     }
+    for k in ("queue_folder", "shared_folder"):        # this computer only
+        if k in f:
+            patch[k] = f.get(k, "").strip()
+    if "drive_section" in f:                          # this computer only
+        patch.update({"use_drive": f.get("use_drive") == "on", "drive_full": f.get("drive_full") == "full",
+                      "drive_permanent_delete": f.get("drive_permanent_delete") == "on"})
     settings.save_user(patch)
     settings.save_instructions("" if f.get("reset_instructions") == "on" else f.get("instructions", ""))
     keys = load_keys()
@@ -1093,6 +1462,7 @@ def settings_save():
         with open(keys_path(), "w", encoding="utf-8") as fh:
             json.dump(keys, fh, indent=2)
     flash("Settings saved.")
+    sync_shared(get_conn())
     return redirect(url_for("settings_page"))
 
 
@@ -1106,6 +1476,196 @@ def settings_resume():
     flash(msg)
     if ok:
         rescore_all(get_conn())
+        sync_shared(get_conn())
+    return redirect(url_for("settings_page"))
+
+
+@app.post("/data/move")
+def move_data():
+    """Moves this computer's data folder (home.py). The database is closed first so Windows lets it move."""
+    conn = g.pop("conn", None)
+    if conn is not None:
+        conn.close()
+    try:
+        flash(home.move_to(request.form.get("folder", "")))
+    except (OSError, ValueError) as e:
+        flash(f"Not moved: {e}")
+    return redirect(url_for("settings_page"))
+
+
+@app.get("/export")
+def export_file():
+    """Everything this copy holds as one JSON file (docs/formats.md), for a backup or the Android app."""
+    body = json.dumps(exchange.export_data(get_conn()), indent=1, ensure_ascii=False)
+    name = f"wildthing-export-{date.today():%Y-%m-%d}.json"
+    return Response(body, mimetype="application/json", headers={"Content-Disposition": f"attachment; filename={name}"})
+
+
+@app.post("/import")
+def import_file():
+    up = request.files.get("data")
+    if not up or not up.filename:
+        flash("Choose an export file first.")
+        return redirect(url_for("settings_page"))
+    try:
+        exchange.import_data(get_conn(), json.loads(up.read().decode("utf-8")))
+    except (ValueError, KeyError, TypeError) as e:
+        flash(f"Could not import that file: {e}")
+        return redirect(url_for("settings_page"))
+    rescore_all(get_conn())
+    flash("Imported. Everything from the file is here now, and every posting was re-scored.")
+    return redirect(url_for("settings_page"))
+
+
+# ---- Shared details: resume, search settings, instructions and skills in step with the phone (usersync.py) -----
+_synced_once = False
+
+
+def shared_dir():
+    """WildThing/user in Google Drive when it is linked and switched on, else the Shared details folder, else None."""
+    if drive_on():
+        return drive_home().sub("user")
+    root = usersync.folder(cfg())
+    return workfolder.LocalDir(root) if root else None
+
+
+def sync_shared(conn, resolve=None, quiet=True):
+    """Runs the sync when Drive or a shared folder is set. Re-scores after anything arrives. Returns the result or None."""
+    usersync.fold_extras(conn)
+    res = usersync.sync(conn, resolve, shared_dir())
+    if not res:
+        return None
+    if res["rescore"]:
+        rescore_all(conn)
+    if res["conflicts"]:
+        flash(f"{len(res['conflicts'])} shared file(s) changed both here and on another device. "
+              "Choose which to keep on the Sync page.")
+    for e in res["errors"]:
+        flash("Sync: " + e)
+    if not quiet and not res["conflicts"] and not res["errors"]:
+        moved = len(res["pushed"]) + len(res["pulled"])
+        flash(f"In step with the shared folder ({len(res['pulled'])} received, {len(res['pushed'])} sent)." if moved
+              else "Already in step with the shared folder.")
+    return res
+
+
+def sync_postings(conn, quiet=True):
+    """The shared postings database (shared_db.py), only with Google linked. Scores what arrived. Returns a result
+    or None."""
+    if not drive_on():
+        return None
+    try:
+        res = shared_db.sync(conn, shared_dir(), settings.device_id())
+    except (OSError, ValueError, sqlite3.DatabaseError) as e:
+        conn.rollback()
+        flash(f"Postings sync: {e}")
+        return None
+    if res["arrived"]:
+        have = have_terms(conn)
+        for jid in res["arrived"]:
+            r = conn.execute("SELECT title, description FROM jobs WHERE id=?", (jid,)).fetchone()
+            score_into(conn, jid, r["title"], r["description"], have)
+        conn.commit()
+        flash(f"{len(res['arrived'])} posting(s) arrived from your other device.")
+    elif not quiet:
+        flash(f"Postings in step with Google Drive ({res['postings']} in the shared file).")
+    return res
+
+
+@app.before_request
+def sync_at_start():
+    """Once per run of the app: catch up with what the other device changed."""
+    global _synced_once
+    if _synced_once or request.endpoint in (None, "static") or "code" in request.args:
+        return
+    _synced_once = True
+    sync_shared(get_conn())
+    sync_postings(get_conn())
+
+
+@app.route("/sync", methods=["GET", "POST"])
+def sync_page():
+    conn = get_conn()
+    res = sync_shared(conn, quiet=request.method == "GET")
+    if request.method == "POST":
+        sync_postings(conn, quiet=False)
+        return redirect(url_for("sync_page"))
+    labels = {"resume": "Master resume", "search.json": "Search settings and profiles", "instructions.md": "AI instructions",
+              "confirmed_skills.json": "\"I have this\" skills", "career.json": "Career file"}
+    where = shared_dir()
+    return render_template("sync.html", res=res, labels=labels, folder=where.label if where else None, postings=drive_on())
+
+
+@app.post("/sync/resolve")
+def sync_resolve():
+    key, keep = request.form.get("key", ""), request.form.get("keep", "")
+    if key in shared_details.FILES and keep in ("here", "folder"):
+        sync_shared(get_conn(), {key: keep}, quiet=False)
+    return redirect(url_for("sync_page"))
+
+
+# ---- Google sign-in (gdrive.py): the browser goes to Google and comes back to this app's own address -------------
+def _google_redirect():
+    return url_for("index", _external=True)
+
+
+@app.post("/google/link")
+def google_link():
+    keys = load_keys()
+    if not (keys.get("google_client_id") and keys.get("google_client_secret")):
+        flash("Save the Google OAuth client id and secret (section 6) first.")
+        return redirect(url_for("settings_page"))
+    verifier, challenge = gdrive.pkce()
+    session["google_state"], session["google_verifier"] = secrets.token_urlsafe(24), verifier
+    return redirect(gdrive.auth_url(keys["google_client_id"], _google_redirect(), gdrive.scope(cfg()),
+                                    session["google_state"], challenge))
+
+
+def google_finish():
+    """Google sent the browser back to the home page with a one-time code (or an error)."""
+    state, verifier = session.pop("google_state", None), session.pop("google_verifier", None)
+    if not state or request.args.get("state") != state:
+        flash("That Google sign-in did not come from this page. Try Link again.")
+    elif request.args.get("error"):
+        flash("Google sign-in was cancelled." if request.args["error"] == "access_denied"
+              else f"Google sign-in failed: {request.args['error']}")
+    else:
+        keys = load_keys()
+        try:
+            gdrive.exchange(request.args.get("code", ""), keys.get("google_client_id", ""),
+                            keys.get("google_client_secret", ""), verifier, _google_redirect())
+            settings.save_user({"use_drive": True})
+            flash("Google is linked. The AI queue and shared details now use the WildThing folder in your Drive.")
+            if not gdrive.granted(gdrive.scope(cfg())):
+                flash("Google did not grant the Drive access chosen in Settings. Link again and allow it.")
+            sync_shared(get_conn())
+        except gdrive.DriveError as e:
+            flash(f"Google sign-in failed: {e}")
+    return redirect(url_for("settings_page"))
+
+
+@app.post("/google/unlink")
+def google_unlink():
+    gdrive.revoke()
+    flash("Google is unlinked from this computer. Files already in your Drive stay there.")
+    return redirect(url_for("settings_page"))
+
+
+@app.post("/google/check")
+def google_check():
+    """Check Drive access: every file the app can see in the WildThing folder."""
+    if not drive_on():
+        flash("Link Google and switch on \"Use Google Drive\" first.")
+        return redirect(url_for("settings_page"))
+    try:
+        home = drive_home()
+        write_instructions()
+        for label, d in (("WildThing", home), ("requests", home.sub("requests")), ("replies", home.sub("replies")),
+                         ("user", home.sub("user"))):
+            names = [f["name"] for f in d.files()]
+            flash(f"{label}: " + (", ".join(names) if names else "(empty)"))
+    except OSError as e:
+        flash(f"Could not reach Google Drive: {e}")
     return redirect(url_for("settings_page"))
 
 
@@ -1118,4 +1678,6 @@ def rescore():
 
 
 if __name__ == "__main__":
+    _root, _moved = home.start()
+    print(f"Your data folder: {_root}" + (f" (moved here from the app folder: {', '.join(_moved)})" if _moved else ""), flush=True)
     app.run(host="127.0.0.1", port=5050, debug=False)

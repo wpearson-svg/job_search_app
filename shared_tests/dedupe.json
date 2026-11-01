@@ -1,0 +1,86 @@
+{
+ "norm": [
+  {
+   "text": "Acme Inc.",
+   "expect": "acme"
+  },
+  {
+   "text": "Beta LLC",
+   "expect": "beta"
+  },
+  {
+   "text": "  Help-Desk   Technician ",
+   "expect": "help desk technician"
+  },
+  {
+   "text": "",
+   "expect": ""
+  },
+  {
+   "text": null,
+   "expect": ""
+  },
+  {
+   "text": "The Company Co",
+   "expect": "the"
+  },
+  {
+   "text": "Café Ltd",
+   "expect": "caf"
+  }
+ ],
+ "dup_key": [
+  {
+   "title": "Help Desk Technician",
+   "company": "Acme Inc.",
+   "expect": "help desk technician|acme"
+  },
+  {
+   "title": "IT Support",
+   "company": "",
+   "expect": ""
+  },
+  {
+   "title": "Analyst",
+   "company": "Beta LLC",
+   "expect": "analyst|beta"
+  },
+  {
+   "title": "",
+   "company": "Zed",
+   "expect": "|zed"
+  }
+ ],
+ "same_place": [
+  {
+   "a": "Springfield, IL",
+   "b": "Springfield",
+   "expect": true
+  },
+  {
+   "a": "Springfield",
+   "b": "Tulsa",
+   "expect": false
+  },
+  {
+   "a": "",
+   "b": "Tulsa",
+   "expect": true
+  },
+  {
+   "a": "Kansas City, MO",
+   "b": "Kansas City, KS",
+   "expect": true
+  },
+  {
+   "a": "New York",
+   "b": "New York City, NY",
+   "expect": true
+  },
+  {
+   "a": null,
+   "b": null,
+   "expect": true
+  }
+ ]
+}

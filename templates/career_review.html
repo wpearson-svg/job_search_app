@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_career_view.html" import view %}
+{% block title %}Review your career file{% endblock %}
+{% block body %}
+<p><a href="{{ url_for('career_page') }}">&larr; Career file</a></p>
+<h1>Review your {{ 'new' if not cur else 'rebuilt' }} career file</h1>
+<p class="muted">Check it is all true. Nothing is kept until you accept it.{% if reply %} From the work folder: <code>{{ reply }}</code>.{% endif %}</p>
+
+{% if new.flags %}<div class="warnbox">Your AI found {{ new.flags|length }} thing{{ '' if new.flags|length == 1 else 's' }} to settle (listed below). They were left out of the file; if one is true, add it to your documents and rebuild.</div>{% endif %}
+
+{% if cur %}
+<h2>What changes</h2>
+{% for section, ch in changes.items() %}
+  <p><strong>{{ section|capitalize }}</strong><br>
+  {% for x in ch.added %}<span class="tag ok">+ {{ x }}</span> {% endfor %}
+  {% for x in ch.removed %}<span class="tag gap">&minus; {{ x }}</span> {% endfor %}</p>
+{% else %}<p class="muted">No roles, skills, certifications, education or projects were added or removed.</p>{% endfor %}
+{% endif %}
+{% if kept %}<p class="muted">Kept from your current file, because you confirmed them here: {{ kept|join(', ') }}.</p>{% endif %}
+
+<div class="bar">
+  <form method="post" action="{{ url_for('career_accept') }}"><button>Accept and save</button></form>
+  <form method="post" action="{{ url_for('career_discard') }}" onsubmit="return confirm('Discard this file? Your current one stays as it is.')"><button class="plain">Discard</button></form>
+</div>
+
+<h2>The file</h2>
+{{ view(new) }}
+{% endblock %}

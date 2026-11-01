@@ -1,7 +1,7 @@
-"""Builds a tailored resume (and optionally a cover letter) for one posting with the Claude API.
+"""Requests for an AI assistant (resume, cover letter, interview prep) and the tagged replies that come back.
 
-The instructions (your own file in data/, else the app's general default) are sent as the system prompt, followed by
-the master resume when settings say to include it. Only the posting goes in the user message.
+The app never calls an AI itself. A request is copied, shared or written to the work folder; any assistant that
+follows written instructions can answer it, and the reply is parsed here and saved with the posting.
 """
 import os
 import re
@@ -9,27 +9,13 @@ import shutil
 import subprocess
 from datetime import date
 
-import resume as resumemod
-import settings
-
 HERE = os.path.dirname(os.path.abspath(__file__))
-def load_system_prompt(cfg):
-    return settings.instructions_text(cfg)
-
-
-def master_resume_text(cfg):
-    p = settings.resume_path(cfg)
-    return resumemod.read_resume(p) if p else ""
-
-
-def system_with_resume(cfg):
-    """Instructions, plus the master resume when settings say the request should carry it."""
-    text = load_system_prompt(cfg)
-    if cfg.get("send_resume_in_requests", True):
-        r = master_resume_text(cfg).strip()
-        if r:
-            text += "\n\n<master_resume>\n" + r + "\n</master_resume>"
-    return text
+BASE = HERE            # where output/ goes: the data folder once home.start() has run
+def with_context(message, instructions, resume_text):
+    """Puts the instructions and master resume in front of a request, so it works in any AI chat."""
+    r = (resume_text or "").strip()
+    return ("<instructions>\n" + (instructions or "").strip() + "\n</instructions>\n\n"
+            + ("<master_resume>\n" + r + "\n</master_resume>\n\n" if r else "") + message)
 
 
 def build_user_message(job, want_cover):
@@ -71,8 +57,8 @@ def slug(text):
 
 
 def save_files(job, parts, cfg):
-    """Writes .md files (and .docx if pandoc is installed). Returns the list of paths written."""
-    out = os.path.join(HERE, cfg.get("output_dir", "output"))
+    """Writes .md files for a saved reply (and .docx copies if pandoc is installed). Returns the paths written."""
+    out = os.path.join(BASE, cfg.get("output_dir", "output"))
     os.makedirs(out, exist_ok=True)
     base = f"{date.today():%Y-%m-%d}_{job['id']}_{slug(job.get('company') or job.get('title'))}"
     written = []
@@ -85,8 +71,9 @@ def save_files(job, parts, cfg):
             if kind in ("resume", "cover_letter") and shutil.which("pandoc"):
                 docx = p[:-3] + ".docx"
                 cmd = ["pandoc", p, "-o", docx]
-                ref = os.path.join(HERE, cfg.get("reference_docx") or "-")
-                if os.path.isfile(ref):
+                ref = next((p for p in (os.path.join(d, cfg.get("reference_docx") or "-") for d in (BASE, os.path.join(BASE, "data"), HERE))
+                            if os.path.isfile(p)), None)
+                if ref:
                     cmd += [f"--reference-doc={ref}"]
                 try:
                     subprocess.run(cmd, check=True, capture_output=True, timeout=60)
@@ -96,36 +83,7 @@ def save_files(job, parts, cfg):
     return written
 
 
-def call_model(system_prompt, user_message, api_key, model, max_tokens):
-    try:
-        import anthropic
-    except ImportError as e:
-        raise RuntimeError("The anthropic package is not installed. Run run.bat again.") from e
-    client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
-    resp = client.messages.create(
-        model=model, max_tokens=max_tokens,
-        system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": user_message}])
-    return "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
-
-
-def generate(job, want_cover, cfg, keys, caller=call_model):
-    """Returns {parts, warnings, files}. Raises RuntimeError with a plain message if no key or the call fails."""
-    key = keys.get("anthropic_api_key") or os.environ.get("ANTHROPIC_API_KEY")
-    if not key:
-        raise RuntimeError("No Anthropic API key. Put it in keys.local.json as anthropic_api_key, or set ANTHROPIC_API_KEY.")
-    if not (job.get("description") or "").strip():
-        raise RuntimeError("This posting has no description text to build from.")
-    text = caller(system_with_resume(cfg), build_user_message(job, want_cover), key,
-                  cfg.get("anthropic_model", "claude-sonnet-5-5"), int(cfg.get("max_tokens", 4000)))
-    parts = parse_blocks(text)
-    if not parts["resume"]:
-        raise RuntimeError("The reply had no <resume> block. First 200 characters: " + (text or "")[:200])
-    warnings = check_resume(parts["resume"], cfg.get("resume_check_phrases"))
-    return {"parts": parts, "warnings": warnings, "files": save_files(job, parts, cfg)}
-
-
-# ---- Interview prep: a message to paste into the Claude project, and the reply parsed back ----
+# ---- Interview prep: a request for your AI, and the reply parsed back ----
 PREP_SECTIONS = [("likely_questions", "Questions they may ask you"), ("questions_to_ask", "Questions to ask them"),
                  ("gap_prep", "Gaps to be ready for"), ("research", "Research before the interview")]
 
@@ -162,7 +120,7 @@ def parse_prep(text):
 
 def save_prep(job, text, cfg):
     """Writes the prep as one markdown file next to the resumes. Returns its path."""
-    out = os.path.join(HERE, cfg.get("output_dir", "output"))
+    out = os.path.join(BASE, cfg.get("output_dir", "output"))
     os.makedirs(out, exist_ok=True)
     p = os.path.join(out, f"{date.today():%Y-%m-%d}_{job['id']}_{slug(job.get('company') or job.get('title'))}_interview_prep.md")
     sections = parse_prep(text)
@@ -174,7 +132,7 @@ def save_prep(job, text, cfg):
 
 def save_gap_plan(scope, text, parsed, cfg):
     """Writes a gap plan as one markdown file in the output folder. Returns its path."""
-    out = os.path.join(HERE, cfg.get("output_dir", "output"))
+    out = os.path.join(BASE, cfg.get("output_dir", "output"))
     os.makedirs(out, exist_ok=True)
     p = os.path.join(out, f"{date.today():%Y-%m-%d}_gap_plan_{slug(scope)}.md")
     n = 2

@@ -24,3 +24,23 @@ push_fix.bat
 push_license.bat
 push_rename.bat
 push_ui.bat
+
+# Android (android/): Gradle, Android Studio, local SDK path, signing keys, build output
+android/.gradle/
+android/build/
+android/*/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/*/*.iml
+android/captures/
+android/.kotlin/
+*.jks
+*.keystore
+*.apk
+*.aab
+google-services.json
+android/keystore.properties
+
+# IDE settings
+/.idea/

@@ -18,6 +18,10 @@
   {% if j.status not in applied_stages and j.status != 'dismissed' %}<button type="button" data-url="{{ j.url|safe_url }}" data-post="{{ url_for('apply_to', job_id=j.id) }}" onclick="applyTo(this)">{{ 'Apply: open the posting and mark applied' if j.url|safe_url else 'Mark applied' }}</button>{% endif %}
   {% if j.applied_on %}<span class="muted">Applied {{ j.applied_on }}. <a href="{{ url_for('applications') }}">All applications</a></span>{% endif %}
 </form>
+{% set back = request.full_path.rstrip('?') %}
+<details class="marks" {{ 'open' if j.ptags or j.avoid }}><summary>Tags{% for t in j.ptags %} <span class="tag mark{{ ' bad' if t == 'scam' }}">{{ tag_label(t) }}</span>{% endfor %}{% if j.avoid %} <span class="tag bad">avoided company</span>{% endif %}</summary>
+{% include "_tags.html" %}
+</details>
 <h2>What this posting asks for that your resume does not show</h2>
 {% if j.gaps %}
 <ul class="gaps">
@@ -30,10 +34,10 @@
 <h2>What you already show</h2>
 <p>{% for t in j.matched %}<span class="tag ok">{{ t }}</span> {% else %}<span class="muted">nothing matched</span>{% endfor %}</p>
 <h2 id="documents">Resume and cover letter</h2>
-<p class="muted">Copy the posting, paste it into your resume builder project in Claude, then paste its reply back here to keep it with this posting.</p>
+<p class="muted">Copy the request into your AI assistant, then paste its whole reply back here to keep it with this posting.</p>
 <div class="bar">
-  <button type="button" data-l="Copy for Claude: resume" onclick="cp('pkg_resume', this)">Copy for Claude: resume</button>
-  <button type="button" class="plain" data-l="Copy for Claude: resume and cover letter" onclick="cp('pkg_cover', this)">Copy for Claude: resume and cover letter</button>
+  <button type="button" data-l="Copy for your AI: resume" onclick="cp('pkg_resume', this)">Copy for your AI: resume</button>
+  <button type="button" class="plain" data-l="Copy for your AI: resume and cover letter" onclick="cp('pkg_cover', this)">Copy for your AI: resume and cover letter</button>
 </div>
 <form method="post" action="{{ url_for('queue_job', job_id=j.id) }}" class="bar">
   <span class="muted">Or send it to the folder:</span>
@@ -45,15 +49,9 @@
   <textarea id="pkg_cover" readonly rows="2" style="width:100%">{{ pkg_cover }}</textarea>
 </details>
 <form method="post" action="{{ url_for('import_reply', job_id=j.id) }}" class="paste">
-  <label>Claude's reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here (resume, cover letter, review notes)"></textarea></label>
+  <label>Your AI's reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here (resume, cover letter, review notes)"></textarea></label>
   <button>Keep this reply</button>
 </form>
-{% if has_key %}
-<form method="post" action="{{ url_for('build', job_id=j.id) }}" class="bar">
-  <button class="plain">Build with the API instead</button>
-  <label><input type="checkbox" name="cover_letter" value="1"> also a cover letter</label>
-</form>
-{% endif %}
 <script>
 function cp(id, btn) {
   var box = document.getElementById(id);
@@ -70,8 +68,8 @@ function cp(id, btn) {
 {% endif %}{% endfor %}
 {% if outs.get('resume') %}<p class="muted">Saved: {% for f in outs['resume'].files %}{{ f }}{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
 <h2 id="prep">Interview prep</h2>
-<p class="muted">Copy this into your resume builder project in Claude. It asks for likely questions with answer outlines from your real experience, questions for you to ask them, and how to handle each gap. Paste the reply back to keep it here.</p>
-<div class="bar"><button type="button" data-l="Copy for Claude: interview prep" onclick="cp('pkg_prep', this)">Copy for Claude: interview prep</button></div>
+<p class="muted">Copy this into your AI assistant. It asks for likely questions with answer outlines from your real experience, questions for you to ask them, and how to handle each gap. Paste the reply back to keep it here.</p>
+<div class="bar"><button type="button" data-l="Copy for your AI: interview prep" onclick="cp('pkg_prep', this)">Copy for your AI: interview prep</button></div>
 <form method="post" action="{{ url_for('queue_job', job_id=j.id) }}" class="bar">
   <button name="kind" value="prep" class="plain">Send to folder: interview prep</button>
 </form>
@@ -79,7 +77,7 @@ function cp(id, btn) {
   <textarea id="pkg_prep" readonly rows="8" style="width:100%">{{ pkg_prep }}</textarea>
 </details>
 <form method="post" action="{{ url_for('import_prep', job_id=j.id) }}" class="paste">
-  <label>Claude's prep reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here"></textarea></label>
+  <label>Your AI's prep reply <textarea name="reply" rows="8" placeholder="Paste the whole reply here"></textarea></label>
   <button>Keep this prep</button>
 </form>
 {% if prep %}

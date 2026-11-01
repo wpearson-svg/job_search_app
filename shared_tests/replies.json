@@ -1,0 +1,258 @@
+{
+ "parse_blocks": [
+  {
+   "text": "Built it.\n<resume>\n**Jane Doe**\nSpringfield, IL\n\n### SUMMARY\nLed a software rollout in 6 weeks against a 6-month plan.\n</resume>\n\n<cover_letter>\nDear Hiring Team, ...\n</cover_letter>\n\n<review_notes>\nHard gaps: none\n</review_notes>",
+   "expect": {
+    "resume": "**Jane Doe**\nSpringfield, IL\n\n### SUMMARY\nLed a software rollout in 6 weeks against a 6-month plan.",
+    "cover_letter": "Dear Hiring Team, ...",
+    "review_notes": "Hard gaps: none"
+   }
+  },
+  {
+   "text": "<resume>x</resume>",
+   "expect": {
+    "resume": "x",
+    "cover_letter": null,
+    "review_notes": null
+   }
+  },
+  {
+   "text": "plain text reply",
+   "expect": {
+    "resume": null,
+    "cover_letter": null,
+    "review_notes": null
+   }
+  },
+  {
+   "text": "",
+   "expect": {
+    "resume": null,
+    "cover_letter": null,
+    "review_notes": null
+   }
+  }
+ ],
+ "check_resume": [
+  {
+   "text": "I managed a team of 5 and have 2.5 years. [FILL IN]",
+   "rules": [
+    [
+     "managed a team",
+     "Says \"managed a team\" (the prompt's rules say use led/implemented/trained)."
+    ],
+    [
+     "2.5",
+     "Mentions 2.5 (the rules say \"over 2 years\")."
+    ]
+   ],
+   "expect": [
+    "Bracket marker left in the resume: [FILL IN]",
+    "Says \"managed a team\" (the prompt's rules say use led/implemented/trained).",
+    "Mentions 2.5 (the rules say \"over 2 years\")."
+   ]
+  },
+  {
+   "text": "Led a rollout. Trained users.",
+   "rules": [],
+   "expect": []
+  },
+  {
+   "text": null,
+   "rules": [],
+   "expect": [
+    "No <resume> block came back."
+   ]
+  },
+  {
+   "text": "I managed a team of 5.",
+   "rules": [],
+   "expect": []
+  },
+  {
+   "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+   "rules": [],
+   "expect": [
+    "About 650 words; the one-page target is 450 to 550."
+   ]
+  },
+  {
+   "text": "**Bold** # heading [x] and [y]",
+   "rules": [
+    [
+     "managed a team",
+     "Says \"managed a team\" (the prompt's rules say use led/implemented/trained)."
+    ],
+    [
+     "2.5",
+     "Mentions 2.5 (the rules say \"over 2 years\")."
+    ]
+   ],
+   "expect": [
+    "Bracket marker left in the resume: [x]",
+    "Bracket marker left in the resume: [y]"
+   ]
+  }
+ ],
+ "build_user_message": [
+  {
+   "job": {
+    "title": "Analyst",
+    "company": "Acme",
+    "location": "KC",
+    "description": "Do SQL",
+    "gaps": [
+     [
+      "itil",
+      2
+     ],
+     [
+      "aws",
+      1
+     ]
+    ]
+   },
+   "want_cover": true,
+   "expect": "Build a resume and a cover letter for this listing.\n\n<job_listing>\nTitle: Analyst\nCompany: Acme\nLocation: KC\n\nDo SQL\n</job_listing>"
+  },
+  {
+   "job": {
+    "title": "Analyst",
+    "company": "Acme",
+    "location": "KC",
+    "description": "Do SQL",
+    "gaps": [
+     [
+      "itil",
+      2
+     ],
+     [
+      "aws",
+      1
+     ]
+    ]
+   },
+   "want_cover": false,
+   "expect": "Build a resume for this listing.\n\n<job_listing>\nTitle: Analyst\nCompany: Acme\nLocation: KC\n\nDo SQL\n</job_listing>"
+  },
+  {
+   "job": {
+    "title": "Coordinator",
+    "description": "Plan things"
+   },
+   "want_cover": false,
+   "expect": "Build a resume for this listing.\n\n<job_listing>\nTitle: Coordinator\n\nPlan things\n</job_listing>"
+  }
+ ],
+ "build_prep_message": [
+  {
+   "job": {
+    "title": "Analyst",
+    "company": "Acme",
+    "location": "KC",
+    "description": "Do SQL",
+    "gaps": [
+     [
+      "itil",
+      2
+     ],
+     [
+      "aws",
+      1
+     ]
+    ]
+   },
+   "expect": "Prepare me for an interview for this listing. Use only facts from my master resume; do not invent experience.\n\nReply using exactly these tags:\n<likely_questions> 8 to 12 questions I am likely to be asked (behavioral, technical, role-specific), each with a short answer outline built from my real experience </likely_questions>\n<questions_to_ask> 10 strong questions I should ask them: the team, what success looks like, how they work, the hiring process, and what worries them </questions_to_ask>\n<gap_prep> for each gap below, an honest way to address it </gap_prep>\n<research> what to look up about the company and role before the interview </research>\n\nGaps the app found between my resume and this listing: itil, aws\n\n<job_listing>\nTitle: Analyst\nCompany: Acme\nLocation: KC\n\nDo SQL\n</job_listing>"
+  },
+  {
+   "job": {
+    "title": "Coordinator",
+    "description": "Plan things"
+   },
+   "expect": "Prepare me for an interview for this listing. Use only facts from my master resume; do not invent experience.\n\nReply using exactly these tags:\n<likely_questions> 8 to 12 questions I am likely to be asked (behavioral, technical, role-specific), each with a short answer outline built from my real experience </likely_questions>\n<questions_to_ask> 10 strong questions I should ask them: the team, what success looks like, how they work, the hiring process, and what worries them </questions_to_ask>\n<gap_prep> for each gap below, an honest way to address it </gap_prep>\n<research> what to look up about the company and role before the interview </research>\n\nGaps the app found between my resume and this listing: none found\n\n<job_listing>\nTitle: Coordinator\n\nPlan things\n</job_listing>"
+  }
+ ],
+ "parse_prep": [
+  {
+   "text": "<likely_questions>Tell me about a rollout.</likely_questions>\n<questions_to_ask>What does success look like?</questions_to_ask><gap_prep> </gap_prep><research>Read the annual report.</research>",
+   "expect": [
+    [
+     "Questions they may ask you",
+     "Tell me about a rollout."
+    ],
+    [
+     "Questions to ask them",
+     "What does success look like?"
+    ],
+    [
+     "Research before the interview",
+     "Read the annual report."
+    ]
+   ]
+  },
+  {
+   "text": "nothing tagged",
+   "expect": []
+  }
+ ],
+ "with_context": [
+  {
+   "message": "Build a resume for this listing.",
+   "instructions": "  # Rules\nBe honest.\n",
+   "resume": "Jane Doe\nSpringfield, IL\n\nSUMMARY\nProject coordinator and IT support specialist with 3 years of experience.\n\nEXPERIENCE\nAcme Services, Implementation Specialist, 2022 - 2025\n- Led the software implementation of new scheduling software for 40 customer sites; delivered user training and ongoing user training sessions.\n- Provided tier 1-3 support for a help desk, troubleshooting tickets and writing SQL queries and Excel reports.\n- Ran agile / scrum ceremonies for a 5-person team and handled vendor management and stakeholder communication.\n- Built internal tools with C# and Docker, and prototyped an AI / LLM assistant for the support team.\n",
+   "expect": "<instructions>\n# Rules\nBe honest.\n</instructions>\n\n<master_resume>\nJane Doe\nSpringfield, IL\n\nSUMMARY\nProject coordinator and IT support specialist with 3 years of experience.\n\nEXPERIENCE\nAcme Services, Implementation Specialist, 2022 - 2025\n- Led the software implementation of new scheduling software for 40 customer sites; delivered user training and ongoing user training sessions.\n- Provided tier 1-3 support for a help desk, troubleshooting tickets and writing SQL queries and Excel reports.\n- Ran agile / scrum ceremonies for a 5-person team and handled vendor management and stakeholder communication.\n- Built internal tools with C# and Docker, and prototyped an AI / LLM assistant for the support team.\n</master_resume>\n\nBuild a resume for this listing."
+  },
+  {
+   "message": "Build a resume for this listing.",
+   "instructions": "  # Rules\nBe honest.\n",
+   "resume": "",
+   "expect": "<instructions>\n# Rules\nBe honest.\n</instructions>\n\nBuild a resume for this listing."
+  },
+  {
+   "message": "Build a resume for this listing.",
+   "instructions": "  # Rules\nBe honest.\n",
+   "resume": "   ",
+   "expect": "<instructions>\n# Rules\nBe honest.\n</instructions>\n\nBuild a resume for this listing."
+  }
+ ],
+ "slug": [
+  {
+   "text": "Acme Co",
+   "expect": "acme-co"
+  },
+  {
+   "text": "",
+   "expect": "posting"
+  },
+  {
+   "text": null,
+   "expect": "posting"
+  },
+  {
+   "text": "A very long company name that goes past forty characters",
+   "expect": "a-very-long-company-name-that-goes-past-"
+  },
+  {
+   "text": "Ünïcode & Co!",
+   "expect": "n-code-co"
+  }
+ ],
+ "prep_sections": [
+  [
+   "likely_questions",
+   "Questions they may ask you"
+  ],
+  [
+   "questions_to_ask",
+   "Questions to ask them"
+  ],
+  [
+   "gap_prep",
+   "Gaps to be ready for"
+  ],
+  [
+   "research",
+   "Research before the interview"
+  ]
+ ]
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The crown fills the 66 dp safe zone of the 108 dp adaptive icon. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="21dp">
+    <bitmap android:src="@drawable/wildthing_crown" android:gravity="fill" android:filter="true" />
+</inset>

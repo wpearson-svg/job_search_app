@@ -1,0 +1,2400 @@
+{
+ "file": "wildthing.db",
+ "format": "wildthing-shared-db",
+ "version": 2,
+ "combine": "\n\n--- Also written on another device ---\n",
+ "merge": [
+  {
+   "name": "only here, only there",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "greenhouse",
+      "ext_id": "9",
+      "title": "Analyst",
+      "company": "Beta",
+      "location": "Springfield, IL",
+      "url": "https://example.com/9",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      },
+      "b": {
+       "source": "greenhouse",
+       "ext_id": "9",
+       "title": "Analyst",
+       "company": "Beta",
+       "location": "Springfield, IL",
+       "url": "https://example.com/9",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "same posting, matched by source and id",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "saved",
+      "status_at": "2026-10-20T09:00:00+00:00",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "b": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "saved",
+       "status_at": "2026-10-20T09:00:00+00:00",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {
+     "a": "b"
+    }
+   }
+  },
+  {
+   "name": "same posting, matched by link",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "pasted",
+      "ext_id": "p1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "greenhouse",
+      "ext_id": "g7",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": [
+       {
+        "source": "remotive",
+        "url": "https://example.com/1"
+       }
+      ]
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "b": {
+       "source": "pasted",
+       "ext_id": "p1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": [
+        {
+         "source": "remotive",
+         "url": "https://example.com/1"
+        }
+       ]
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {
+     "a": "b"
+    }
+   }
+  },
+  {
+   "name": "same posting, matched by title and company in the same place",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "pasted",
+      "ext_id": "p1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "lever",
+      "ext_id": "l2",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "b": {
+       "source": "pasted",
+       "ext_id": "p1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {
+     "a": "b"
+    }
+   }
+  },
+  {
+   "name": "same title and company in another place is another posting",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "pasted",
+      "ext_id": "p1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "lever",
+      "ext_id": "l2",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Denver, CO",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "pasted",
+       "ext_id": "p1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      },
+      "b": {
+       "source": "lever",
+       "ext_id": "l2",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Denver, CO",
+       "url": "",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "newer status wins, with its applied date",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "applied",
+      "status_at": "2026-10-25T09:00:00+00:00",
+      "applied_on": "2026-10-25",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "interview",
+      "status_at": "2026-10-28T09:00:00+00:00",
+      "applied_on": "2026-10-24",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "interview",
+       "status_at": "2026-10-28T09:00:00+00:00",
+       "applied_on": "2026-10-24",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "older status there loses",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "offer",
+      "status_at": "2026-10-28T09:00:00+00:00",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "saved",
+      "status_at": "2026-10-20T09:00:00+00:00",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "offer",
+       "status_at": "2026-10-28T09:00:00+00:00",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "notes changed only there",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "old",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "called them",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {
+    "a": "old"
+   },
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "called them",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "notes changed only here",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "sent thank-you",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "old",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {
+    "a": "old"
+   },
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "sent thank-you",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "notes changed on both are kept together",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "phone: Tuesday",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "recruiter is Sam",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {
+    "a": "old"
+   },
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "phone: Tuesday\n\n--- Also written on another device ---\nrecruiter is Sam",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "first sync, notes on one side only",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "from the phone",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "from the phone",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "notes cleared here on purpose",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "old",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {
+    "a": "old"
+   },
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "deleted here: gone there, with its interviews and AI work",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {
+     "a": {
+      "kind": "posting",
+      "at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {
+     "e1": {
+      "posting": "a",
+      "kind": "Interview",
+      "starts_at": "2026-11-05T10:00",
+      "minutes": 60,
+      "place": "",
+      "notes": "",
+      "time_zone": "",
+      "changed_at": "2026-10-30T10:00:00+00:00"
+     }
+    },
+    "outputs": {
+     "a|resume": {
+      "posting": "a",
+      "kind": "resume",
+      "content": "R",
+      "warnings_json": "[]",
+      "created_at": "2026-10-20T09:00:00+00:00"
+     }
+    },
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {
+      "a": {
+       "kind": "posting",
+       "at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "interviews: the newer change wins; one deleted",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {
+     "e1": {
+      "posting": "a",
+      "kind": "Interview",
+      "starts_at": "2026-11-05T10:00",
+      "minutes": 60,
+      "place": "Zoom",
+      "notes": "",
+      "time_zone": "",
+      "changed_at": "2026-10-28T09:00:00+00:00"
+     },
+     "e2": {
+      "posting": "a",
+      "kind": "Interview",
+      "starts_at": "2026-11-05T10:00",
+      "minutes": 60,
+      "place": "",
+      "notes": "",
+      "time_zone": "",
+      "changed_at": "2026-10-30T10:00:00+00:00"
+     }
+    },
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {
+     "e3": {
+      "kind": "event",
+      "at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {
+     "e1": {
+      "posting": "a",
+      "kind": "Interview",
+      "starts_at": "2026-11-05T10:00",
+      "minutes": 60,
+      "place": "Office",
+      "notes": "",
+      "time_zone": "",
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     },
+     "e3": {
+      "posting": "a",
+      "kind": "Interview",
+      "starts_at": "2026-11-05T10:00",
+      "minutes": 60,
+      "place": "",
+      "notes": "",
+      "time_zone": "",
+      "changed_at": "2026-10-30T10:00:00+00:00"
+     }
+    },
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {
+      "e1": {
+       "posting": "a",
+       "kind": "Interview",
+       "starts_at": "2026-11-05T10:00",
+       "minutes": 60,
+       "place": "Zoom",
+       "notes": "",
+       "time_zone": "",
+       "changed_at": "2026-10-28T09:00:00+00:00"
+      },
+      "e2": {
+       "posting": "a",
+       "kind": "Interview",
+       "starts_at": "2026-11-05T10:00",
+       "minutes": 60,
+       "place": "",
+       "notes": "",
+       "time_zone": "",
+       "changed_at": "2026-10-30T10:00:00+00:00"
+      }
+     },
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {
+      "e3": {
+       "kind": "event",
+       "at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "saved AI work: the newer one wins",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {
+     "a|resume": {
+      "posting": "a",
+      "kind": "resume",
+      "content": "older resume",
+      "warnings_json": "[]",
+      "created_at": "2026-10-20T09:00:00+00:00"
+     }
+    },
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {
+     "a|resume": {
+      "posting": "a",
+      "kind": "resume",
+      "content": "newer resume",
+      "warnings_json": "[]",
+      "created_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {
+      "a|resume": {
+       "posting": "a",
+       "kind": "resume",
+       "content": "newer resume",
+       "warnings_json": "[]",
+       "created_at": "2026-10-25T09:00:00+00:00"
+      }
+     },
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "links from both are kept",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": [
+       {
+        "source": "remoteok",
+        "url": "https://example.com/1"
+       }
+      ]
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": [
+       {
+        "source": "adzuna",
+        "url": "https://example.com/a"
+       }
+      ]
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": [
+        {
+         "source": "remoteok",
+         "url": "https://example.com/1"
+        },
+        {
+         "source": "adzuna",
+         "url": "https://example.com/a"
+        }
+       ]
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "gap plans from both, less the deleted",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {
+     "g1": {
+      "scope": "all postings",
+      "content": "A",
+      "created_at": "2026-10-20T09:00:00+00:00"
+     }
+    },
+    "tombstones": {
+     "g2": {
+      "kind": "gap_plan",
+      "at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {
+     "g2": {
+      "scope": "PM",
+      "content": "B",
+      "created_at": "2026-10-25T09:00:00+00:00"
+     },
+     "g3": {
+      "scope": "PM",
+      "content": "C",
+      "created_at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "tombstones": {},
+    "avoided": {},
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {
+      "g1": {
+       "scope": "all postings",
+       "content": "A",
+       "created_at": "2026-10-20T09:00:00+00:00"
+      },
+      "g3": {
+       "scope": "PM",
+       "content": "C",
+       "created_at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "tombstones": {
+      "g2": {
+       "kind": "gap_plan",
+       "at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "avoided companies from both are kept",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme Inc",
+      "reason": "lowball offer",
+      "active": 1,
+      "changed_at": "2026-10-20T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "there": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "beta": {
+      "company": "Beta",
+      "reason": "",
+      "active": 1,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {
+      "acme": {
+       "company": "Acme Inc",
+       "reason": "lowball offer",
+       "active": 1,
+       "changed_at": "2026-10-20T09:00:00+00:00"
+      },
+      "beta": {
+       "company": "Beta",
+       "reason": "",
+       "active": 1,
+       "changed_at": "2026-10-25T09:00:00+00:00"
+      }
+     },
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "stopped avoiding here, later: stays stopped",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "",
+      "active": 0,
+      "changed_at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "there": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "rude",
+      "active": 1,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {
+      "acme": {
+       "company": "Acme",
+       "reason": "",
+       "active": 0,
+       "changed_at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "avoided again there, later: avoided",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "",
+      "active": 0,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "there": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "still rude",
+      "active": 1,
+      "changed_at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {
+      "acme": {
+       "company": "Acme",
+       "reason": "still rude",
+       "active": 1,
+       "changed_at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "avoided and stopped at the same moment: avoided",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "",
+      "active": 0,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "there": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {
+     "acme": {
+      "company": "Acme",
+      "reason": "",
+      "active": 1,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    },
+    "tags": {}
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {
+      "acme": {
+       "company": "Acme",
+       "reason": "",
+       "active": 1,
+       "changed_at": "2026-10-25T09:00:00+00:00"
+      }
+     },
+     "tags": {}
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "tags from both are kept",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|scam": {
+      "posting": "a",
+      "tag": "scam",
+      "active": 1,
+      "changed_at": "2026-10-20T09:00:00+00:00"
+     }
+    }
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|c:Slow to reply": {
+      "posting": "a",
+      "tag": "c:Slow to reply",
+      "active": 1,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    }
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {
+      "a|c:Slow to reply": {
+       "posting": "a",
+       "tag": "c:Slow to reply",
+       "active": 1,
+       "changed_at": "2026-10-25T09:00:00+00:00"
+      },
+      "a|scam": {
+       "posting": "a",
+       "tag": "scam",
+       "active": 1,
+       "changed_at": "2026-10-20T09:00:00+00:00"
+      }
+     }
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "tag removed there, later: removed",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|ghost": {
+      "posting": "a",
+      "tag": "ghost",
+      "active": 1,
+      "changed_at": "2026-10-20T09:00:00+00:00"
+     }
+    }
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|ghost": {
+      "posting": "a",
+      "tag": "ghost",
+      "active": 0,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    }
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {
+      "a|ghost": {
+       "posting": "a",
+       "tag": "ghost",
+       "active": 0,
+       "changed_at": "2026-10-25T09:00:00+00:00"
+      }
+     }
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "tag added again here, later: on",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|ghost": {
+      "posting": "a",
+      "tag": "ghost",
+      "active": 1,
+      "changed_at": "2026-10-28T09:00:00+00:00"
+     }
+    }
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|ghost": {
+      "posting": "a",
+      "tag": "ghost",
+      "active": 0,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    }
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "a": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {
+      "a|ghost": {
+       "posting": "a",
+       "tag": "ghost",
+       "active": 1,
+       "changed_at": "2026-10-28T09:00:00+00:00"
+      }
+     }
+    },
+    "rename": {}
+   }
+  },
+  {
+   "name": "tags follow a posting matched to the other device's",
+   "here": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|ai_interview": {
+      "posting": "a",
+      "tag": "ai_interview",
+      "active": 1,
+      "changed_at": "2026-10-20T09:00:00+00:00"
+     }
+    }
+   },
+   "there": {
+    "postings": {
+     "b": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "b|no_pay": {
+      "posting": "b",
+      "tag": "no_pay",
+      "active": 1,
+      "changed_at": "2026-10-25T09:00:00+00:00"
+     }
+    }
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {
+      "b": {
+       "source": "remoteok",
+       "ext_id": "1",
+       "title": "Help Desk Analyst",
+       "company": "Acme",
+       "location": "Springfield, IL",
+       "url": "https://example.com/1",
+       "description": "Help desk, SQL.",
+       "posted": "",
+       "added_at": "2026-10-01T10:00:00+00:00",
+       "status": "new",
+       "status_at": "",
+       "applied_on": "",
+       "notes": "",
+       "pasted": 0,
+       "links": []
+      }
+     },
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {},
+     "avoided": {},
+     "tags": {
+      "b|ai_interview": {
+       "posting": "b",
+       "tag": "ai_interview",
+       "active": 1,
+       "changed_at": "2026-10-20T09:00:00+00:00"
+      },
+      "b|no_pay": {
+       "posting": "b",
+       "tag": "no_pay",
+       "active": 1,
+       "changed_at": "2026-10-25T09:00:00+00:00"
+      }
+     }
+    },
+    "rename": {
+     "a": "b"
+    }
+   }
+  },
+  {
+   "name": "tags on a deleted posting go with it",
+   "here": {
+    "postings": {},
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {
+     "a": {
+      "kind": "posting",
+      "at": "2026-10-28T09:00:00+00:00"
+     }
+    },
+    "avoided": {},
+    "tags": {}
+   },
+   "there": {
+    "postings": {
+     "a": {
+      "source": "remoteok",
+      "ext_id": "1",
+      "title": "Help Desk Analyst",
+      "company": "Acme",
+      "location": "Springfield, IL",
+      "url": "https://example.com/1",
+      "description": "Help desk, SQL.",
+      "posted": "",
+      "added_at": "2026-10-01T10:00:00+00:00",
+      "status": "new",
+      "status_at": "",
+      "applied_on": "",
+      "notes": "",
+      "pasted": 0,
+      "links": []
+     }
+    },
+    "events": {},
+    "outputs": {},
+    "gap_plans": {},
+    "tombstones": {},
+    "avoided": {},
+    "tags": {
+     "a|scam": {
+      "posting": "a",
+      "tag": "scam",
+      "active": 1,
+      "changed_at": "2026-10-20T09:00:00+00:00"
+     }
+    }
+   },
+   "base": {},
+   "expect": {
+    "merged": {
+     "postings": {},
+     "events": {},
+     "outputs": {},
+     "gap_plans": {},
+     "tombstones": {
+      "a": {
+       "kind": "posting",
+       "at": "2026-10-28T09:00:00+00:00"
+      }
+     },
+     "avoided": {},
+     "tags": {}
+    },
+    "rename": {}
+   }
+  }
+ ]
+}

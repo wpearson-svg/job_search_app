@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}How the AI queue works{% endblock %}
+{% block body %}
+<h1>How the AI queue works</h1>
+<p>The queue hands requests to an AI assistant as files in a folder, and takes its replies back the same way.
+It works with any assistant that can read and create files in that folder. WildThing never calls an AI itself.</p>
+
+<h2>Set it up</h2>
+<ol>
+  <li><strong>Choose the work folder.</strong> It is now <code>{{ folder }}</code>. To share one queue with the phone app, link Google in
+    <a href="{{ url_for('settings_page') }}">Settings</a> (section 5): WildThing then uses the <code>WildThing</code> folder in your Google Drive
+    directly, the same one the phone uses, with no Drive for desktop. Without Google, set the AI work folder in section 4.</li>
+  <li><strong>WildThing writes <code>AI_INSTRUCTIONS.md</code> there</strong> the first time you send a request, with
+    <code>requests/</code> and <code>replies/</code> beside it.</li>
+  <li><strong>Connect your AI to that folder.</strong> This differs between assistants: you need one that can read and create files there
+    (for a Drive folder, one with access to that Google Drive).</li>
+</ol>
+
+<h2>Use it</h2>
+<ol start="4">
+  <li><strong>Send requests</strong> with the "Send to folder" buttons on a posting (resume, cover letter, interview prep) or on the Gap plan page.
+    They gather in one batch.</li>
+  <li><strong>Tell your AI:</strong> "read AI_INSTRUCTIONS.md and process the pending batch". It writes one reply per request and a short
+    report saying done, skipped or failed for each.</li>
+  <li><strong>Import:</strong> open the <a href="{{ url_for('queue_page') }}">Queue</a> page (it imports on its own) or press Import replies.
+    Each reply is filed with its posting, exactly as if you had pasted it.</li>
+  <li><strong>Clean-up:</strong> after a reply is saved, its reply and request files are deleted. When a whole batch is in, its two TODO files go
+    too, so after a normal run the folders are empty.</li>
+</ol>
+
+<h2>If something goes wrong</h2>
+<ul>
+  <li><strong>The AI cannot see the folder.</strong> It may be signed in to a different account than the folder belongs to. Share the folder
+    with the account your AI uses, or point it at the right one.</li>
+  <li><strong>A reply is not showing up.</strong> Check that the AI wrote it into <code>replies/</code> under exactly the reply file name in the TODO.
+    The Queue page says "Reported done, reply file not there yet" when the report lists it but the file is missing; a Drive-synced
+    folder can take a minute to catch up.</li>
+  <li><strong>Replies are in Drive but WildThing does not see them.</strong> With the narrow Drive access, Google lets WildThing see only files
+    it created. Press Check Drive access in Settings; if your AI's files are not listed, choose "All of my Drive" and link again.</li>
+  <li><strong>An item came back skipped or failed.</strong> The Queue page shows the reason your AI gave. Fix the cause (for example, paste the full
+    posting text) and send it again, or press Remove.</li>
+</ul>
+
+<h2>Without a folder</h2>
+<p>Copy and paste always works with any assistant: use the "Copy for your AI" buttons, then paste the reply back on the same page.</p>
+
+<h2>Privacy</h2>
+<p>Request files contain your resume (unless your AI already holds it) and the posting text. They stay in the work folder, and in Google Drive
+if it is a Drive folder, until they are imported and deleted.</p>
+{% endblock %}

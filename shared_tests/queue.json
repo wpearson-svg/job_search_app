@@ -1,0 +1,732 @@
+{
+ "kinds": {
+  "resume": "Resume",
+  "resume_cover": "Resume and cover letter",
+  "prep": "Interview prep",
+  "gap": "Gap plan"
+ },
+ "reply_tags": {
+  "resume": "<resume>, <review_notes>",
+  "resume_cover": "<resume>, <cover_letter>, <review_notes>",
+  "prep": "<likely_questions>, <questions_to_ask>, <gap_prep>, <research>",
+  "gap": "<priorities>, <plan>, <proof>, <resume_changes>, <skip>, <questions>"
+ },
+ "batch_id": "20261031-1810-k3f9",
+ "item_names": [
+  "20261031-1810-k3f9_01_resume_acme-co.md",
+  "20261031-1810-k3f9_02_prep_beta.md",
+  "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+  "20261031-1810-k3f9_04_gap_all-postings.md"
+ ],
+ "render_todo": [
+  {
+   "batch": "20261031-1810-k3f9",
+   "origin": "android-7x2q",
+   "created": "2026-10-31T18:10:00+00:00",
+   "items": [
+    {
+     "n": 1,
+     "kind": "resume",
+     "label": "Acme Co"
+    },
+    {
+     "n": 2,
+     "kind": "prep",
+     "label": "Beta"
+    },
+    {
+     "n": 3,
+     "kind": "resume_cover",
+     "label": "Gamma Health"
+    },
+    {
+     "n": 4,
+     "kind": "gap",
+     "label": "all postings"
+    }
+   ],
+   "carries_context": true,
+   "expect": "# WildThing batch 20261031-1810-k3f9\n\n- From: android-7x2q\n- Created: 2026-10-31T18:10:00+00:00\n- Items: 4\n\nFollow AI_INSTRUCTIONS.md in the WildThing folder. In short: do each item below, write each reply to `replies/` under the reply file name shown, then write `replies/TODO_20261031-1810-k3f9.reply.md` with one row per item. Skip any item whose reply file already exists. Use only facts from the master resume; do not invent experience.\n\nEach request file contains the resume-writing instructions and the master resume.\n\n| Item | Type | Request file | Reply file | Reply tags |\n|---|---|---|---|---|\n| 01 | Resume | 20261031-1810-k3f9_01_resume_acme-co.md | 20261031-1810-k3f9_01_resume_acme-co.md | <resume>, <review_notes> |\n| 02 | Interview prep | 20261031-1810-k3f9_02_prep_beta.md | 20261031-1810-k3f9_02_prep_beta.md | <likely_questions>, <questions_to_ask>, <gap_prep>, <research> |\n| 03 | Resume and cover letter | 20261031-1810-k3f9_03_resume_cover_gamma-health.md | 20261031-1810-k3f9_03_resume_cover_gamma-health.md | <resume>, <cover_letter>, <review_notes> |\n| 04 | Gap plan | 20261031-1810-k3f9_04_gap_all-postings.md | 20261031-1810-k3f9_04_gap_all-postings.md | <priorities>, <plan>, <proof>, <resume_changes>, <skip>, <questions> |\n"
+  },
+  {
+   "batch": "20261031-1810-k3f9",
+   "origin": "android-7x2q",
+   "created": "2026-10-31T18:10:00+00:00",
+   "items": [
+    {
+     "n": 1,
+     "kind": "resume",
+     "label": "Acme Co"
+    },
+    {
+     "n": 2,
+     "kind": "prep",
+     "label": "Beta"
+    },
+    {
+     "n": 3,
+     "kind": "resume_cover",
+     "label": "Gamma Health"
+    },
+    {
+     "n": 4,
+     "kind": "gap",
+     "label": "all postings"
+    }
+   ],
+   "carries_context": false,
+   "expect": "# WildThing batch 20261031-1810-k3f9\n\n- From: android-7x2q\n- Created: 2026-10-31T18:10:00+00:00\n- Items: 4\n\nFollow AI_INSTRUCTIONS.md in the WildThing folder. In short: do each item below, write each reply to `replies/` under the reply file name shown, then write `replies/TODO_20261031-1810-k3f9.reply.md` with one row per item. Skip any item whose reply file already exists. Use only facts from the master resume; do not invent experience.\n\nUse the resume-writing instructions and master resume you already hold for this person.\n\n| Item | Type | Request file | Reply file | Reply tags |\n|---|---|---|---|---|\n| 01 | Resume | 20261031-1810-k3f9_01_resume_acme-co.md | 20261031-1810-k3f9_01_resume_acme-co.md | <resume>, <review_notes> |\n| 02 | Interview prep | 20261031-1810-k3f9_02_prep_beta.md | 20261031-1810-k3f9_02_prep_beta.md | <likely_questions>, <questions_to_ask>, <gap_prep>, <research> |\n| 03 | Resume and cover letter | 20261031-1810-k3f9_03_resume_cover_gamma-health.md | 20261031-1810-k3f9_03_resume_cover_gamma-health.md | <resume>, <cover_letter>, <review_notes> |\n| 04 | Gap plan | 20261031-1810-k3f9_04_gap_all-postings.md | 20261031-1810-k3f9_04_gap_all-postings.md | <priorities>, <plan>, <proof>, <resume_changes>, <skip>, <questions> |\n"
+  }
+ ],
+ "render_request": [
+  {
+   "batch": "20261031-1810-k3f9",
+   "n": 2,
+   "kind": "prep",
+   "label": "Beta",
+   "body": "Prepare me for an interview.",
+   "expect": "# Request 02 of batch 20261031-1810-k3f9: Interview prep, Beta\n\nWrite your answer to `replies/20261031-1810-k3f9_02_prep_beta.md`. Reply with the tagged parts only (<likely_questions>, <questions_to_ask>, <gap_prep>, <research>); use only facts from the master resume and do not invent experience.\n\n---\n\nPrepare me for an interview.\n"
+  }
+ ],
+ "parse_item_name": [
+  {
+   "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+   "expect": [
+    "20261031-1810-k3f9",
+    1,
+    "resume"
+   ]
+  },
+  {
+   "name": "20261031-1810-k3f9_02_prep_beta.md",
+   "expect": [
+    "20261031-1810-k3f9",
+    2,
+    "prep"
+   ]
+  },
+  {
+   "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+   "expect": [
+    "20261031-1810-k3f9",
+    3,
+    "resume_cover"
+   ]
+  },
+  {
+   "name": "20261031-1810-k3f9_04_gap_all-postings.md",
+   "expect": [
+    "20261031-1810-k3f9",
+    4,
+    "gap"
+   ]
+  },
+  {
+   "name": "TODO_20261031-1810-k3f9.md",
+   "expect": null
+  },
+  {
+   "name": "003_prep_acme.md",
+   "expect": null
+  },
+  {
+   "name": "20261031-1810-k3f9_01_cooking_x.md",
+   "expect": null
+  },
+  {
+   "name": "",
+   "expect": null
+  }
+ ],
+ "todo_names": [
+  {
+   "name": "TODO_20261031-1810-k3f9.md",
+   "todo": "20261031-1810-k3f9",
+   "reply_todo": null
+  },
+  {
+   "name": "TODO_20261031-1810-k3f9.reply.md",
+   "todo": null,
+   "reply_todo": "20261031-1810-k3f9"
+  },
+  {
+   "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+   "todo": null,
+   "reply_todo": null
+  },
+  {
+   "name": "TODO.md",
+   "todo": null,
+   "reply_todo": null
+  }
+ ],
+ "parse_reply_todo": [
+  {
+   "text": "# Replies for batch 20261031-1810-k3f9\n\n| Item | Status | Reply file | Reason |\n|---|---|---|---|\n| 01 | done | 20261031-1810-k3f9_01_resume_acme-co.md |  |\n| 02 | skipped |  | The posting text was empty. |\n| 03 | failed |  | Could not read the request file. |\n",
+   "expect": {
+    "1": {
+     "status": "done",
+     "reply": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "reason": ""
+    },
+    "2": {
+     "status": "skipped",
+     "reply": "",
+     "reason": "The posting text was empty."
+    },
+    "3": {
+     "status": "failed",
+     "reply": "",
+     "reason": "Could not read the request file."
+    }
+   }
+  },
+  {
+   "text": "Replies:\n- 01: done 20261031-1810-k3f9_01_resume_acme-co.md\n- 2 skipped - not a real posting\n* 03) FAILED: timed out\n",
+   "expect": {
+    "1": {
+     "status": "done",
+     "reply": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "reason": ""
+    },
+    "2": {
+     "status": "skipped",
+     "reply": "",
+     "reason": "not a real posting"
+    },
+    "3": {
+     "status": "failed",
+     "reply": "",
+     "reason": "timed out"
+    }
+   }
+  },
+  {
+   "text": "| item | status | reply | reason |\n|---|---|---|---|\n| 01 | Done | `20261031-1810-k3f9_01_resume_acme-co.md` | |\n| 01 | skipped | | changed my mind |\n",
+   "expect": {
+    "1": {
+     "status": "skipped",
+     "reply": "",
+     "reason": "changed my mind"
+    }
+   }
+  },
+  {
+   "text": "",
+   "expect": {}
+  },
+  {
+   "text": null,
+   "expect": {}
+  }
+ ],
+ "plan_import": [
+  {
+   "name": "nothing back yet",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [],
+   "reply_todo": null,
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     }
+    ],
+    "complete": false
+   }
+  },
+  {
+   "name": "all done with report",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "modified": "2026-10-31T19:00:00Z"
+    },
+    {
+     "name": "20261031-1810-k3f9_02_prep_beta.md",
+     "modified": "2026-10-31T19:00:00Z"
+    },
+    {
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+     "modified": "2026-10-31T19:00:00Z"
+    },
+    {
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md",
+     "modified": "2026-10-31T19:00:00Z"
+    }
+   ],
+   "reply_todo": "# Replies for batch 20261031-1810-k3f9\n\n| Item | Status | Reply file | Reason |\n|---|---|---|---|\n| 01 | done | 20261031-1810-k3f9_01_resume_acme-co.md |  |\n| 02 | done | 20261031-1810-k3f9_02_prep_beta.md |  |\n| 03 | done | 20261031-1810-k3f9_03_resume_cover_gamma-health.md |  |\n| 04 | done | 20261031-1810-k3f9_04_gap_all-postings.md |  |\n",
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "import",
+      "reply": 0,
+      "delete": [
+       0
+      ],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "import",
+      "reply": 1,
+      "delete": [
+       1
+      ],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "import",
+      "reply": 2,
+      "delete": [
+       2
+      ],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "import",
+      "reply": 3,
+      "delete": [
+       3
+      ],
+      "reason": ""
+     }
+    ],
+    "complete": true
+   }
+  },
+  {
+   "name": "report missing, match by name",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "20261031-1810-k3f9_02_prep_beta.md",
+     "modified": "2026-10-31T19:00:00Z"
+    }
+   ],
+   "reply_todo": null,
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "import",
+      "reply": 0,
+      "delete": [
+       0
+      ],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     }
+    ],
+    "complete": false
+   }
+  },
+  {
+   "name": "skipped, failed and missing",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "modified": "2026-10-31T19:00:00Z"
+    }
+   ],
+   "reply_todo": "# Replies for batch 20261031-1810-k3f9\n\n| Item | Status | Reply file | Reason |\n|---|---|---|---|\n| 01 | done | 20261031-1810-k3f9_01_resume_acme-co.md |  |\n| 02 | skipped |  | The posting text was empty. |\n| 03 | done | 20261031-1810-k3f9_03_resume_cover_gamma-health.md |  |\n| 04 | failed |  | Could not read the request file. |\n",
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "import",
+      "reply": 0,
+      "delete": [
+       0
+      ],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "skipped",
+      "reply": null,
+      "delete": [],
+      "reason": "The posting text was empty."
+     },
+     {
+      "n": 3,
+      "action": "missing",
+      "reply": null,
+      "delete": [],
+      "reason": "The report says done, but the reply file is not in replies/ yet."
+     },
+     {
+      "n": 4,
+      "action": "failed",
+      "reply": null,
+      "delete": [],
+      "reason": "Could not read the request file."
+     }
+    ],
+    "complete": false
+   }
+  },
+  {
+   "name": "duplicates: newest wins",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "modified": "2026-10-31T19:00:00Z"
+    },
+    {
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md",
+     "modified": "2026-10-31T19:05:00Z"
+    },
+    {
+     "name": "unrelated.md",
+     "modified": "2026-10-31T19:06:00Z"
+    }
+   ],
+   "reply_todo": null,
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "import",
+      "reply": 1,
+      "delete": [
+       0,
+       1
+      ],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     }
+    ],
+    "complete": false
+   }
+  },
+  {
+   "name": "some already imported",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+     "modified": "x"
+    },
+    {
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md",
+     "modified": "y"
+    }
+   ],
+   "reply_todo": null,
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "gone",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "gone",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "import",
+      "reply": 0,
+      "delete": [
+       0
+      ],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "import",
+      "reply": 1,
+      "delete": [
+       1
+      ],
+      "reason": ""
+     }
+    ],
+    "complete": true
+   }
+  },
+  {
+   "name": "reply under another name",
+   "items": [
+    {
+     "n": 1,
+     "name": "20261031-1810-k3f9_01_resume_acme-co.md"
+    },
+    {
+     "n": 2,
+     "name": "20261031-1810-k3f9_02_prep_beta.md"
+    },
+    {
+     "n": 3,
+     "name": "20261031-1810-k3f9_03_resume_cover_gamma-health.md"
+    },
+    {
+     "n": 4,
+     "name": "20261031-1810-k3f9_04_gap_all-postings.md"
+    }
+   ],
+   "requests_present": [
+    "20261031-1810-k3f9_01_resume_acme-co.md",
+    "20261031-1810-k3f9_02_prep_beta.md",
+    "20261031-1810-k3f9_03_resume_cover_gamma-health.md",
+    "20261031-1810-k3f9_04_gap_all-postings.md"
+   ],
+   "replies": [
+    {
+     "name": "resume-acme.md",
+     "modified": "2026-10-31T19:00:00Z"
+    }
+   ],
+   "reply_todo": "| 01 | done | resume-acme.md | |",
+   "expect": {
+    "items": [
+     {
+      "n": 1,
+      "action": "import",
+      "reply": 0,
+      "delete": [
+       0
+      ],
+      "reason": ""
+     },
+     {
+      "n": 2,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 3,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     },
+     {
+      "n": 4,
+      "action": "waiting",
+      "reply": null,
+      "delete": [],
+      "reason": ""
+     }
+    ],
+    "complete": false
+   }
+  }
+ ]
+}

@@ -28,6 +28,13 @@
         <option value="newest" {{ 'selected' if sort=='newest' }}>newest first</option>
       </select></label>
     <label>Score at least <input type="number" name="min" value="{{ min_score }}" min="0" max="100" onchange="this.form.submit()"></label>
+    <label>Tag
+      <select name="tag" onchange="this.form.submit()">
+        <option value="">any</option>
+        {% for t in tags_in_use %}<option value="{{ t }}" {{ 'selected' if t==tag_f }}>{{ tag_label(t) }}</option>{% endfor %}
+      </select></label>
+    <label title="Postings from companies you avoid"><input type="checkbox" name="avoided" value="1" {{ 'checked' if show_avoided }} onchange="this.form.submit()">
+      Show avoided{% if hidden and not show_avoided %} ({{ hidden }} hidden){% endif %}</label>
   </form>
 </div>
 <details class="muted" style="margin:.5rem 0">
@@ -45,10 +52,11 @@
 <thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Source</th><th>Status</th><th></th></tr></thead>
 <tbody>
 {% for j in jobs %}
-<tr class="job{{ ' sel' if sel and sel.id == j.id }}" data-sel="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile, sel=j.id) }}" data-full="{{ url_for('job', job_id=j.id) }}">
+<tr class="job{{ ' sel' if sel and sel.id == j.id }}{{ ' avoided' if j.avoided }}" data-sel="{{ url_for('index', sel=j.id, **keep) }}" data-full="{{ url_for('job', job_id=j.id) }}">
   <td><span class="score s{{ (j.score // 25) }}">{{ j.score }}</span></td>
-  <td><a href="{{ url_for('index', status=keep.status, min=keep.min, sort=keep.sort, profile=keep.profile, sel=j.id) }}">{{ j.title }}</a>{% if j.flags %}<span class="flag" title="{{ j.flags|join(' ') }}">!</span>{% endif %}</td>
-  <td>{{ j.company }}</td>
+  <td><a href="{{ url_for('index', sel=j.id, **keep) }}">{{ j.title }}</a>{% if j.flags %}<span class="flag" title="{{ j.flags|join(' ') }}">!</span>{% endif %}
+    {% for t in j.ptags %}<span class="tag mark{{ ' bad' if t == 'scam' }}">{{ tag_label(t) }}</span> {% endfor %}</td>
+  <td>{{ j.company }}{% if j.avoided %} <span class="tag bad" title="A company you avoid">avoided</span>{% endif %}</td>
   <td>{{ j.location }}{% if not j.location_ok %} <span class="muted">(outside your areas)</span>{% endif %}</td>
   <td class="src">{{ 'pasted' if j.pasted else j.source }}</td>
   <td><span class="st {{ j.status }}">{{ status_label.get(j.status, j.status) }}</span>{% if j.applied_on %}<br><span class="muted">{{ j.applied_on }}</span>{% endif %}</td>

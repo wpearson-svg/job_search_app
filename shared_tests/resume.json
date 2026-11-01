@@ -1,0 +1,4 @@
+{
+ "docx_file": "sample_resume.docx",
+ "expect": "Jane Doe\nSpringfield, IL\nSkills: SQL & Excel\nTier 1-3 support\nSplit run"
+}

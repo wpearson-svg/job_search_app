@@ -1,0 +1,3547 @@
+{
+ "format": "wildthing-career",
+ "version": 1,
+ "file": "career.json",
+ "tag": "career_file",
+ "sample_file": "career_sample.json",
+ "sample_problems": [],
+ "sample_skills": [
+  "sql",
+  "active directory",
+  "training",
+  "excel",
+  "itil"
+ ],
+ "sample_text": "Six years in IT support and software rollouts for clinics and small offices.\nIT support and systems implementation\nSystems Analyst\nImplemented the scheduling system chosen by the director; trained staff; did not manage anyone.\nMoved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.\nImplemented online scheduling at four clinics and trained 40 staff.\nsql\ntraining\nCut missed appointments by 18% with text reminders.\nHelp Desk Technician\nFirst-line support for 120 users.\nTicket queue, password resets, laptop setup, Active Directory accounts.\nKept a 95% first-week close rate on tickets.\nticketing\nClinic inventory sheet\nA shared spreadsheet that replaced paper supply counts.\nexcel\nsql\nactive directory\ntraining\nexcel\nitil\nCompTIA A+\nCompTIA\nAAS\nComputer Information Systems",
+ "invalid": [
+  {
+   "name": "not an object",
+   "data": [
+    1,
+    2
+   ],
+   "problems": [
+    "That is not a career file (it should be one JSON object)."
+   ]
+  },
+  {
+   "name": "another format",
+   "data": {
+    "format": "other"
+   },
+   "problems": [
+    "That is not a WildThing career file (\"format\" should be \"wildthing-career\")."
+   ]
+  },
+  {
+   "name": "from a newer version",
+   "data": {
+    "format": "wildthing-career",
+    "version": 99,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "That career file comes from a newer version of WildThing. Update this copy first."
+   ]
+  },
+  {
+   "name": "no name",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": " ",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "\"person.name\" is missing."
+   ]
+  },
+  {
+   "name": "a role without a title, with a bad date",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "",
+      "start": "April 2022",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "roles[0] needs \"title\".",
+    "roles[0].start should be YYYY or YYYY-MM, not \"April 2022\"."
+   ]
+  },
+  {
+   "name": "a role that ends before it starts",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2018-01",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "roles[1] ends before it starts."
+   ]
+  },
+  {
+   "name": "the same id twice",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "r1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "projects[0] uses the id \"r1\" again; every role and project needs its own."
+   ]
+  },
+  {
+   "name": "a skill listed twice",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     },
+     {
+      "name": "SQL",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ]
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "skills[5] repeats the skill \"SQL\" (also skills[0])."
+   ]
+  },
+  {
+   "name": "a skill pointing nowhere",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r9"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "skills[0] points to \"r9\", which is not a role or project id."
+   ]
+  },
+  {
+   "name": "a skill from the documents with no evidence or notes",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": ""
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "skills[3] (\"excel\") needs evidence (a role or project id) or notes saying where it comes from."
+   ]
+  },
+  {
+   "name": "an unknown skill source",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "posting",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "skills[4].source should be \"documents\" or \"confirmed\"."
+   ]
+  },
+  {
+   "name": "an unknown certification status",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "pending"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "certifications[0].status should be one of earned, in_progress, expired."
+   ]
+  },
+  {
+   "name": "privacy and wording of the wrong shape",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": "Northside"
+    },
+    "wording": {
+     "avoid": [
+      "managed"
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "\"privacy.never_name\" should be a list of text.",
+    "\"wording.avoid\" should be a list of {\"phrase\", \"why\"}."
+   ]
+  },
+  {
+   "name": "an achievement without text",
+   "data": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       },
+       {
+        "skills": []
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "roles[0].achievements[2] needs \"text\"."
+   ]
+  }
+ ],
+ "replies": [
+  {
+   "name": "plain",
+   "text": "<career_file>\n{\n \"format\": \"wildthing-career\",\n \"version\": 1,\n \"updated_at\": \"2026-11-01T12:00:00+00:00\",\n \"person\": {\n  \"name\": \"Jane Doe\",\n  \"headline\": \"IT support and systems implementation\",\n  \"contact\": {\n   \"email\": \"jane@example.com\",\n   \"phone\": \"555-0100\",\n   \"location\": \"Springfield, IL\",\n   \"links\": [\n    {\n     \"label\": \"LinkedIn\",\n     \"url\": \"https://www.linkedin.com/in/example\"\n    }\n   ]\n  }\n },\n \"summary\": \"Six years in IT support and software rollouts for clinics and small offices.\",\n \"roles\": [\n  {\n   \"id\": \"r1\",\n   \"employer\": \"Northside Clinics\",\n   \"show_as\": \"a regional clinic network\",\n   \"title\": \"Systems Analyst\",\n   \"start\": \"2022-04\",\n   \"end\": \"\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.\",\n   \"details\": \"Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.\",\n   \"achievements\": [\n    {\n     \"text\": \"Implemented online scheduling at four clinics and trained 40 staff.\",\n     \"skills\": [\n      \"sql\",\n      \"training\"\n     ],\n     \"numbers\": [\n      \"4\",\n      \"40\"\n     ]\n    },\n    {\n     \"text\": \"Cut missed appointments by 18% with text reminders.\",\n     \"skills\": [],\n     \"numbers\": [\n      \"18%\"\n     ]\n    }\n   ]\n  },\n  {\n   \"id\": \"r2\",\n   \"employer\": \"Acme Services\",\n   \"title\": \"Help Desk Technician\",\n   \"start\": \"2019-06\",\n   \"end\": \"2022-03\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"First-line support for 120 users.\",\n   \"details\": \"Ticket queue, password resets, laptop setup, Active Directory accounts.\",\n   \"achievements\": [\n    {\n     \"text\": \"Kept a 95% first-week close rate on tickets.\",\n     \"skills\": [\n      \"ticketing\"\n     ],\n     \"numbers\": [\n      \"95%\"\n     ]\n    }\n   ]\n  }\n ],\n \"skills\": [\n  {\n   \"name\": \"sql\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"active directory\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r2\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"training\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"excel\",\n   \"source\": \"documents\",\n   \"evidence\": [],\n   \"notes\": \"Daily use in every role; named in her skills list.\"\n  },\n  {\n   \"name\": \"itil\",\n   \"source\": \"confirmed\",\n   \"evidence\": [],\n   \"notes\": \"\"\n  }\n ],\n \"certifications\": [\n  {\n   \"name\": \"CompTIA A+\",\n   \"issuer\": \"CompTIA\",\n   \"date\": \"2019\",\n   \"status\": \"earned\"\n  },\n  {\n   \"name\": \"ITIL 4 Foundation\",\n   \"issuer\": \"PeopleCert\",\n   \"date\": \"\",\n   \"status\": \"in_progress\"\n  }\n ],\n \"education\": [\n  {\n   \"school\": \"Lincoln Land Community College\",\n   \"credential\": \"AAS\",\n   \"field\": \"Computer Information Systems\",\n   \"start\": \"2017\",\n   \"end\": \"2019\",\n   \"notes\": \"\"\n  }\n ],\n \"projects\": [\n  {\n   \"id\": \"p1\",\n   \"name\": \"Clinic inventory sheet\",\n   \"date\": \"2023\",\n   \"description\": \"A shared spreadsheet that replaced paper supply counts.\",\n   \"skills\": [\n    \"excel\"\n   ],\n   \"link\": \"\"\n  }\n ],\n \"privacy\": {\n  \"never_name\": [\n   \"Northside Clinics\"\n  ],\n  \"never_mention\": [\n   \"medical leave\"\n  ]\n },\n \"wording\": {\n  \"avoid\": [\n   {\n    \"phrase\": \"managed a team\",\n    \"why\": \"she led and implemented; she did not manage people\"\n   }\n  ]\n },\n \"flags\": [\n  {\n   \"text\": \"An older skills list says \\\"agile backlogs\\\"; nothing else supports it, so it was left out.\",\n   \"sources\": [\n    \"skills_v2.docx\"\n   ]\n  }\n ]\n}\n</career_file>",
+   "ok": true,
+   "problems": []
+  },
+  {
+   "name": "in a json fence, with words around it",
+   "text": "Here it is.\n<career_file>\n```json\n{\n \"format\": \"wildthing-career\",\n \"version\": 1,\n \"updated_at\": \"2026-11-01T12:00:00+00:00\",\n \"person\": {\n  \"name\": \"Jane Doe\",\n  \"headline\": \"IT support and systems implementation\",\n  \"contact\": {\n   \"email\": \"jane@example.com\",\n   \"phone\": \"555-0100\",\n   \"location\": \"Springfield, IL\",\n   \"links\": [\n    {\n     \"label\": \"LinkedIn\",\n     \"url\": \"https://www.linkedin.com/in/example\"\n    }\n   ]\n  }\n },\n \"summary\": \"Six years in IT support and software rollouts for clinics and small offices.\",\n \"roles\": [\n  {\n   \"id\": \"r1\",\n   \"employer\": \"Northside Clinics\",\n   \"show_as\": \"a regional clinic network\",\n   \"title\": \"Systems Analyst\",\n   \"start\": \"2022-04\",\n   \"end\": \"\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.\",\n   \"details\": \"Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.\",\n   \"achievements\": [\n    {\n     \"text\": \"Implemented online scheduling at four clinics and trained 40 staff.\",\n     \"skills\": [\n      \"sql\",\n      \"training\"\n     ],\n     \"numbers\": [\n      \"4\",\n      \"40\"\n     ]\n    },\n    {\n     \"text\": \"Cut missed appointments by 18% with text reminders.\",\n     \"skills\": [],\n     \"numbers\": [\n      \"18%\"\n     ]\n    }\n   ]\n  },\n  {\n   \"id\": \"r2\",\n   \"employer\": \"Acme Services\",\n   \"title\": \"Help Desk Technician\",\n   \"start\": \"2019-06\",\n   \"end\": \"2022-03\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"First-line support for 120 users.\",\n   \"details\": \"Ticket queue, password resets, laptop setup, Active Directory accounts.\",\n   \"achievements\": [\n    {\n     \"text\": \"Kept a 95% first-week close rate on tickets.\",\n     \"skills\": [\n      \"ticketing\"\n     ],\n     \"numbers\": [\n      \"95%\"\n     ]\n    }\n   ]\n  }\n ],\n \"skills\": [\n  {\n   \"name\": \"sql\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"active directory\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r2\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"training\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"excel\",\n   \"source\": \"documents\",\n   \"evidence\": [],\n   \"notes\": \"Daily use in every role; named in her skills list.\"\n  },\n  {\n   \"name\": \"itil\",\n   \"source\": \"confirmed\",\n   \"evidence\": [],\n   \"notes\": \"\"\n  }\n ],\n \"certifications\": [\n  {\n   \"name\": \"CompTIA A+\",\n   \"issuer\": \"CompTIA\",\n   \"date\": \"2019\",\n   \"status\": \"earned\"\n  },\n  {\n   \"name\": \"ITIL 4 Foundation\",\n   \"issuer\": \"PeopleCert\",\n   \"date\": \"\",\n   \"status\": \"in_progress\"\n  }\n ],\n \"education\": [\n  {\n   \"school\": \"Lincoln Land Community College\",\n   \"credential\": \"AAS\",\n   \"field\": \"Computer Information Systems\",\n   \"start\": \"2017\",\n   \"end\": \"2019\",\n   \"notes\": \"\"\n  }\n ],\n \"projects\": [\n  {\n   \"id\": \"p1\",\n   \"name\": \"Clinic inventory sheet\",\n   \"date\": \"2023\",\n   \"description\": \"A shared spreadsheet that replaced paper supply counts.\",\n   \"skills\": [\n    \"excel\"\n   ],\n   \"link\": \"\"\n  }\n ],\n \"privacy\": {\n  \"never_name\": [\n   \"Northside Clinics\"\n  ],\n  \"never_mention\": [\n   \"medical leave\"\n  ]\n },\n \"wording\": {\n  \"avoid\": [\n   {\n    \"phrase\": \"managed a team\",\n    \"why\": \"she led and implemented; she did not manage people\"\n   }\n  ]\n },\n \"flags\": [\n  {\n   \"text\": \"An older skills list says \\\"agile backlogs\\\"; nothing else supports it, so it was left out.\",\n   \"sources\": [\n    \"skills_v2.docx\"\n   ]\n  }\n ]\n}\n```\n</career_file>\nDone.",
+   "ok": true,
+   "problems": []
+  },
+  {
+   "name": "no tag",
+   "text": "{\n \"format\": \"wildthing-career\",\n \"version\": 1,\n \"updated_at\": \"2026-11-01T12:00:00+00:00\",\n \"person\": {\n  \"name\": \"Jane Doe\",\n  \"headline\": \"IT support and systems implementation\",\n  \"contact\": {\n   \"email\": \"jane@example.com\",\n   \"phone\": \"555-0100\",\n   \"location\": \"Springfield, IL\",\n   \"links\": [\n    {\n     \"label\": \"LinkedIn\",\n     \"url\": \"https://www.linkedin.com/in/example\"\n    }\n   ]\n  }\n },\n \"summary\": \"Six years in IT support and software rollouts for clinics and small offices.\",\n \"roles\": [\n  {\n   \"id\": \"r1\",\n   \"employer\": \"Northside Clinics\",\n   \"show_as\": \"a regional clinic network\",\n   \"title\": \"Systems Analyst\",\n   \"start\": \"2022-04\",\n   \"end\": \"\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.\",\n   \"details\": \"Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.\",\n   \"achievements\": [\n    {\n     \"text\": \"Implemented online scheduling at four clinics and trained 40 staff.\",\n     \"skills\": [\n      \"sql\",\n      \"training\"\n     ],\n     \"numbers\": [\n      \"4\",\n      \"40\"\n     ]\n    },\n    {\n     \"text\": \"Cut missed appointments by 18% with text reminders.\",\n     \"skills\": [],\n     \"numbers\": [\n      \"18%\"\n     ]\n    }\n   ]\n  },\n  {\n   \"id\": \"r2\",\n   \"employer\": \"Acme Services\",\n   \"title\": \"Help Desk Technician\",\n   \"start\": \"2019-06\",\n   \"end\": \"2022-03\",\n   \"location\": \"Springfield, IL\",\n   \"type\": \"full-time\",\n   \"scope\": \"First-line support for 120 users.\",\n   \"details\": \"Ticket queue, password resets, laptop setup, Active Directory accounts.\",\n   \"achievements\": [\n    {\n     \"text\": \"Kept a 95% first-week close rate on tickets.\",\n     \"skills\": [\n      \"ticketing\"\n     ],\n     \"numbers\": [\n      \"95%\"\n     ]\n    }\n   ]\n  }\n ],\n \"skills\": [\n  {\n   \"name\": \"sql\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"active directory\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r2\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"training\",\n   \"source\": \"documents\",\n   \"evidence\": [\n    \"r1\"\n   ],\n   \"notes\": \"\"\n  },\n  {\n   \"name\": \"excel\",\n   \"source\": \"documents\",\n   \"evidence\": [],\n   \"notes\": \"Daily use in every role; named in her skills list.\"\n  },\n  {\n   \"name\": \"itil\",\n   \"source\": \"confirmed\",\n   \"evidence\": [],\n   \"notes\": \"\"\n  }\n ],\n \"certifications\": [\n  {\n   \"name\": \"CompTIA A+\",\n   \"issuer\": \"CompTIA\",\n   \"date\": \"2019\",\n   \"status\": \"earned\"\n  },\n  {\n   \"name\": \"ITIL 4 Foundation\",\n   \"issuer\": \"PeopleCert\",\n   \"date\": \"\",\n   \"status\": \"in_progress\"\n  }\n ],\n \"education\": [\n  {\n   \"school\": \"Lincoln Land Community College\",\n   \"credential\": \"AAS\",\n   \"field\": \"Computer Information Systems\",\n   \"start\": \"2017\",\n   \"end\": \"2019\",\n   \"notes\": \"\"\n  }\n ],\n \"projects\": [\n  {\n   \"id\": \"p1\",\n   \"name\": \"Clinic inventory sheet\",\n   \"date\": \"2023\",\n   \"description\": \"A shared spreadsheet that replaced paper supply counts.\",\n   \"skills\": [\n    \"excel\"\n   ],\n   \"link\": \"\"\n  }\n ],\n \"privacy\": {\n  \"never_name\": [\n   \"Northside Clinics\"\n  ],\n  \"never_mention\": [\n   \"medical leave\"\n  ]\n },\n \"wording\": {\n  \"avoid\": [\n   {\n    \"phrase\": \"managed a team\",\n    \"why\": \"she led and implemented; she did not manage people\"\n   }\n  ]\n },\n \"flags\": [\n  {\n   \"text\": \"An older skills list says \\\"agile backlogs\\\"; nothing else supports it, so it was left out.\",\n   \"sources\": [\n    \"skills_v2.docx\"\n   ]\n  }\n ]\n}",
+   "ok": false,
+   "problems": [
+    "The reply has no <career_file> block."
+   ]
+  },
+  {
+   "name": "not JSON",
+   "text": "<career_file>{name: Jane}</career_file>",
+   "ok": false,
+   "problems": [
+    "The career file is not valid JSON"
+   ]
+  },
+  {
+   "name": "JSON that is not a usable file",
+   "text": "<career_file>{\"format\": \"wildthing-career\", \"version\": 1, \"person\": {\"name\": \"\"}}</career_file>",
+   "ok": false,
+   "problems": [
+    "\"person.name\" is missing."
+   ]
+  }
+ ],
+ "now": "2026-11-02T09:00:00+00:00",
+ "edits": {
+  "add_new": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "2026-11-02T09:00:00+00:00",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "IT support and systems implementation",
+    "contact": {
+     "email": "jane@example.com",
+     "phone": "555-0100",
+     "location": "Springfield, IL",
+     "links": [
+      {
+       "label": "LinkedIn",
+       "url": "https://www.linkedin.com/in/example"
+      }
+     ]
+    }
+   },
+   "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+   "roles": [
+    {
+     "id": "r1",
+     "employer": "Northside Clinics",
+     "show_as": "a regional clinic network",
+     "title": "Systems Analyst",
+     "start": "2022-04",
+     "end": "",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+     "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+     "achievements": [
+      {
+       "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+       "skills": [
+        "sql",
+        "training"
+       ],
+       "numbers": [
+        "4",
+        "40"
+       ]
+      },
+      {
+       "text": "Cut missed appointments by 18% with text reminders.",
+       "skills": [],
+       "numbers": [
+        "18%"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "r2",
+     "employer": "Acme Services",
+     "title": "Help Desk Technician",
+     "start": "2019-06",
+     "end": "2022-03",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "First-line support for 120 users.",
+     "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+     "achievements": [
+      {
+       "text": "Kept a 95% first-week close rate on tickets.",
+       "skills": [
+        "ticketing"
+       ],
+       "numbers": [
+        "95%"
+       ]
+      }
+     ]
+    }
+   ],
+   "skills": [
+    {
+     "name": "sql",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "active directory",
+     "source": "documents",
+     "evidence": [
+      "r2"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "training",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "excel",
+     "source": "documents",
+     "evidence": [],
+     "notes": "Daily use in every role; named in her skills list."
+    },
+    {
+     "name": "itil",
+     "source": "confirmed",
+     "evidence": [],
+     "notes": ""
+    },
+    {
+     "name": "Salesforce",
+     "source": "confirmed",
+     "evidence": [],
+     "notes": ""
+    }
+   ],
+   "certifications": [
+    {
+     "name": "CompTIA A+",
+     "issuer": "CompTIA",
+     "date": "2019",
+     "status": "earned"
+    },
+    {
+     "name": "ITIL 4 Foundation",
+     "issuer": "PeopleCert",
+     "date": "",
+     "status": "in_progress"
+    }
+   ],
+   "education": [
+    {
+     "school": "Lincoln Land Community College",
+     "credential": "AAS",
+     "field": "Computer Information Systems",
+     "start": "2017",
+     "end": "2019",
+     "notes": ""
+    }
+   ],
+   "projects": [
+    {
+     "id": "p1",
+     "name": "Clinic inventory sheet",
+     "date": "2023",
+     "description": "A shared spreadsheet that replaced paper supply counts.",
+     "skills": [
+      "excel"
+     ],
+     "link": ""
+    }
+   ],
+   "privacy": {
+    "never_name": [
+     "Northside Clinics"
+    ],
+    "never_mention": [
+     "medical leave"
+    ]
+   },
+   "wording": {
+    "avoid": [
+     {
+      "phrase": "managed a team",
+      "why": "she led and implemented; she did not manage people"
+     }
+    ]
+   },
+   "flags": [
+    {
+     "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+     "sources": [
+      "skills_v2.docx"
+     ]
+    }
+   ]
+  },
+  "add_known": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "2026-11-01T12:00:00+00:00",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "IT support and systems implementation",
+    "contact": {
+     "email": "jane@example.com",
+     "phone": "555-0100",
+     "location": "Springfield, IL",
+     "links": [
+      {
+       "label": "LinkedIn",
+       "url": "https://www.linkedin.com/in/example"
+      }
+     ]
+    }
+   },
+   "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+   "roles": [
+    {
+     "id": "r1",
+     "employer": "Northside Clinics",
+     "show_as": "a regional clinic network",
+     "title": "Systems Analyst",
+     "start": "2022-04",
+     "end": "",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+     "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+     "achievements": [
+      {
+       "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+       "skills": [
+        "sql",
+        "training"
+       ],
+       "numbers": [
+        "4",
+        "40"
+       ]
+      },
+      {
+       "text": "Cut missed appointments by 18% with text reminders.",
+       "skills": [],
+       "numbers": [
+        "18%"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "r2",
+     "employer": "Acme Services",
+     "title": "Help Desk Technician",
+     "start": "2019-06",
+     "end": "2022-03",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "First-line support for 120 users.",
+     "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+     "achievements": [
+      {
+       "text": "Kept a 95% first-week close rate on tickets.",
+       "skills": [
+        "ticketing"
+       ],
+       "numbers": [
+        "95%"
+       ]
+      }
+     ]
+    }
+   ],
+   "skills": [
+    {
+     "name": "sql",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "active directory",
+     "source": "documents",
+     "evidence": [
+      "r2"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "training",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "excel",
+     "source": "documents",
+     "evidence": [],
+     "notes": "Daily use in every role; named in her skills list."
+    },
+    {
+     "name": "itil",
+     "source": "confirmed",
+     "evidence": [],
+     "notes": ""
+    }
+   ],
+   "certifications": [
+    {
+     "name": "CompTIA A+",
+     "issuer": "CompTIA",
+     "date": "2019",
+     "status": "earned"
+    },
+    {
+     "name": "ITIL 4 Foundation",
+     "issuer": "PeopleCert",
+     "date": "",
+     "status": "in_progress"
+    }
+   ],
+   "education": [
+    {
+     "school": "Lincoln Land Community College",
+     "credential": "AAS",
+     "field": "Computer Information Systems",
+     "start": "2017",
+     "end": "2019",
+     "notes": ""
+    }
+   ],
+   "projects": [
+    {
+     "id": "p1",
+     "name": "Clinic inventory sheet",
+     "date": "2023",
+     "description": "A shared spreadsheet that replaced paper supply counts.",
+     "skills": [
+      "excel"
+     ],
+     "link": ""
+    }
+   ],
+   "privacy": {
+    "never_name": [
+     "Northside Clinics"
+    ],
+    "never_mention": [
+     "medical leave"
+    ]
+   },
+   "wording": {
+    "avoid": [
+     {
+      "phrase": "managed a team",
+      "why": "she led and implemented; she did not manage people"
+     }
+    ]
+   },
+   "flags": [
+    {
+     "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+     "sources": [
+      "skills_v2.docx"
+     ]
+    }
+   ]
+  },
+  "remove_confirmed": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "2026-11-02T09:00:00+00:00",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "IT support and systems implementation",
+    "contact": {
+     "email": "jane@example.com",
+     "phone": "555-0100",
+     "location": "Springfield, IL",
+     "links": [
+      {
+       "label": "LinkedIn",
+       "url": "https://www.linkedin.com/in/example"
+      }
+     ]
+    }
+   },
+   "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+   "roles": [
+    {
+     "id": "r1",
+     "employer": "Northside Clinics",
+     "show_as": "a regional clinic network",
+     "title": "Systems Analyst",
+     "start": "2022-04",
+     "end": "",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+     "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+     "achievements": [
+      {
+       "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+       "skills": [
+        "sql",
+        "training"
+       ],
+       "numbers": [
+        "4",
+        "40"
+       ]
+      },
+      {
+       "text": "Cut missed appointments by 18% with text reminders.",
+       "skills": [],
+       "numbers": [
+        "18%"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "r2",
+     "employer": "Acme Services",
+     "title": "Help Desk Technician",
+     "start": "2019-06",
+     "end": "2022-03",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "First-line support for 120 users.",
+     "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+     "achievements": [
+      {
+       "text": "Kept a 95% first-week close rate on tickets.",
+       "skills": [
+        "ticketing"
+       ],
+       "numbers": [
+        "95%"
+       ]
+      }
+     ]
+    }
+   ],
+   "skills": [
+    {
+     "name": "sql",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "active directory",
+     "source": "documents",
+     "evidence": [
+      "r2"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "training",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "excel",
+     "source": "documents",
+     "evidence": [],
+     "notes": "Daily use in every role; named in her skills list."
+    }
+   ],
+   "certifications": [
+    {
+     "name": "CompTIA A+",
+     "issuer": "CompTIA",
+     "date": "2019",
+     "status": "earned"
+    },
+    {
+     "name": "ITIL 4 Foundation",
+     "issuer": "PeopleCert",
+     "date": "",
+     "status": "in_progress"
+    }
+   ],
+   "education": [
+    {
+     "school": "Lincoln Land Community College",
+     "credential": "AAS",
+     "field": "Computer Information Systems",
+     "start": "2017",
+     "end": "2019",
+     "notes": ""
+    }
+   ],
+   "projects": [
+    {
+     "id": "p1",
+     "name": "Clinic inventory sheet",
+     "date": "2023",
+     "description": "A shared spreadsheet that replaced paper supply counts.",
+     "skills": [
+      "excel"
+     ],
+     "link": ""
+    }
+   ],
+   "privacy": {
+    "never_name": [
+     "Northside Clinics"
+    ],
+    "never_mention": [
+     "medical leave"
+    ]
+   },
+   "wording": {
+    "avoid": [
+     {
+      "phrase": "managed a team",
+      "why": "she led and implemented; she did not manage people"
+     }
+    ]
+   },
+   "flags": [
+    {
+     "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+     "sources": [
+      "skills_v2.docx"
+     ]
+    }
+   ]
+  },
+  "remove_documents": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "2026-11-01T12:00:00+00:00",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "IT support and systems implementation",
+    "contact": {
+     "email": "jane@example.com",
+     "phone": "555-0100",
+     "location": "Springfield, IL",
+     "links": [
+      {
+       "label": "LinkedIn",
+       "url": "https://www.linkedin.com/in/example"
+      }
+     ]
+    }
+   },
+   "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+   "roles": [
+    {
+     "id": "r1",
+     "employer": "Northside Clinics",
+     "show_as": "a regional clinic network",
+     "title": "Systems Analyst",
+     "start": "2022-04",
+     "end": "",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+     "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+     "achievements": [
+      {
+       "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+       "skills": [
+        "sql",
+        "training"
+       ],
+       "numbers": [
+        "4",
+        "40"
+       ]
+      },
+      {
+       "text": "Cut missed appointments by 18% with text reminders.",
+       "skills": [],
+       "numbers": [
+        "18%"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "r2",
+     "employer": "Acme Services",
+     "title": "Help Desk Technician",
+     "start": "2019-06",
+     "end": "2022-03",
+     "location": "Springfield, IL",
+     "type": "full-time",
+     "scope": "First-line support for 120 users.",
+     "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+     "achievements": [
+      {
+       "text": "Kept a 95% first-week close rate on tickets.",
+       "skills": [
+        "ticketing"
+       ],
+       "numbers": [
+        "95%"
+       ]
+      }
+     ]
+    }
+   ],
+   "skills": [
+    {
+     "name": "sql",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "active directory",
+     "source": "documents",
+     "evidence": [
+      "r2"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "training",
+     "source": "documents",
+     "evidence": [
+      "r1"
+     ],
+     "notes": ""
+    },
+    {
+     "name": "excel",
+     "source": "documents",
+     "evidence": [],
+     "notes": "Daily use in every role; named in her skills list."
+    },
+    {
+     "name": "itil",
+     "source": "confirmed",
+     "evidence": [],
+     "notes": ""
+    }
+   ],
+   "certifications": [
+    {
+     "name": "CompTIA A+",
+     "issuer": "CompTIA",
+     "date": "2019",
+     "status": "earned"
+    },
+    {
+     "name": "ITIL 4 Foundation",
+     "issuer": "PeopleCert",
+     "date": "",
+     "status": "in_progress"
+    }
+   ],
+   "education": [
+    {
+     "school": "Lincoln Land Community College",
+     "credential": "AAS",
+     "field": "Computer Information Systems",
+     "start": "2017",
+     "end": "2019",
+     "notes": ""
+    }
+   ],
+   "projects": [
+    {
+     "id": "p1",
+     "name": "Clinic inventory sheet",
+     "date": "2023",
+     "description": "A shared spreadsheet that replaced paper supply counts.",
+     "skills": [
+      "excel"
+     ],
+     "link": ""
+    }
+   ],
+   "privacy": {
+    "never_name": [
+     "Northside Clinics"
+    ],
+    "never_mention": [
+     "medical leave"
+    ]
+   },
+   "wording": {
+    "avoid": [
+     {
+      "phrase": "managed a team",
+      "why": "she led and implemented; she did not manage people"
+     }
+    ]
+   },
+   "flags": [
+    {
+     "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+     "sources": [
+      "skills_v2.docx"
+     ]
+    }
+   ]
+  },
+  "replace": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "2026-11-02T09:00:00+00:00",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "",
+    "contact": {
+     "email": "",
+     "phone": "",
+     "location": "",
+     "links": []
+    }
+   },
+   "summary": "",
+   "roles": [],
+   "skills": [
+    {
+     "name": "sql",
+     "source": "documents",
+     "evidence": [],
+     "notes": "x"
+    },
+    {
+     "name": "itil",
+     "source": "confirmed",
+     "evidence": [],
+     "notes": ""
+    }
+   ],
+   "certifications": [],
+   "education": [],
+   "projects": [],
+   "privacy": {
+    "never_name": [],
+    "never_mention": []
+   },
+   "wording": {
+    "avoid": []
+   },
+   "flags": []
+  },
+  "empty": {
+   "format": "wildthing-career",
+   "version": 1,
+   "updated_at": "",
+   "person": {
+    "name": "Jane Doe",
+    "headline": "",
+    "contact": {
+     "email": "",
+     "phone": "",
+     "location": "",
+     "links": []
+    }
+   },
+   "summary": "",
+   "roles": [],
+   "skills": [],
+   "certifications": [],
+   "education": [],
+   "projects": [],
+   "privacy": {
+    "never_name": [],
+    "never_mention": []
+   },
+   "wording": {
+    "avoid": []
+   },
+   "flags": []
+  }
+ },
+ "check": [
+  {
+   "doc": "I implemented scheduling for a regional clinic network.",
+   "warnings": []
+  },
+  {
+   "doc": "At NORTHSIDE CLINICS I managed a team.",
+   "warnings": [
+    "Names \"Northside Clinics\", which your career file says never to name.",
+    "Uses \"managed a team\": she led and implemented; she did not manage people"
+   ]
+  },
+  {
+   "doc": "Back from medical leave in 2023.",
+   "warnings": [
+    "Mentions \"medical leave\", which your career file says never to mention."
+   ]
+  }
+ ],
+ "section": {
+  "md": "# Title\n\nIntro.\n\n## Building the career file\n\nStep one.\n\nStep two.\n\n## Next part\n\nNot this.\n",
+  "expect": "Step one.\n\nStep two."
+ },
+ "request": {
+  "section": "SECTION",
+  "sources": [
+   [
+    "a.md",
+    "A"
+   ],
+   [
+    "b \"x\".txt",
+    "  B\n\n"
+   ]
+  ],
+  "expect": "Build my career file, following these instructions. Use only the documents below and the current file. Reply with the whole file between <career_file> and </career_file>, and nothing else.\n\n<career_file_instructions>\nSECTION\n</career_file_instructions>\n\n<source_document name=\"a.md\">\nA\n</source_document>\n\n<source_document name=\"b x.txt\">\nB\n</source_document>\n"
+ },
+ "names": {
+  "request": "career_20261102-0905.md",
+  "reply": "career_20261102-0905.reply.md",
+  "request_for": "career_20261102-0905.md",
+  "listed": [
+   "career_20261101-1000.reply.md",
+   "TODO_x.md",
+   "career_20261102-0905.reply.md",
+   "career_20261102-0905.md"
+  ],
+  "newest": "career_20261102-0905.reply.md"
+ },
+ "changes": [
+  {
+   "old": null,
+   "new": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "roles": {
+     "added": [
+      "Systems Analyst at Northside Clinics (2022-04 to now)",
+      "Help Desk Technician at Acme Services (2019-06 to 2022-03)"
+     ],
+     "removed": []
+    },
+    "skills": {
+     "added": [
+      "sql",
+      "active directory",
+      "training",
+      "excel",
+      "itil"
+     ],
+     "removed": []
+    },
+    "certifications": {
+     "added": [
+      "CompTIA A+ (earned)",
+      "ITIL 4 Foundation (in_progress)"
+     ],
+     "removed": []
+    },
+    "education": {
+     "added": [
+      "AAS Computer Information Systems, Lincoln Land Community College"
+     ],
+     "removed": []
+    },
+    "projects": {
+     "added": [
+      "Clinic inventory sheet"
+     ],
+     "removed": []
+    }
+   }
+  },
+  {
+   "old": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-01T12:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "IT support and systems implementation",
+     "contact": {
+      "email": "jane@example.com",
+      "phone": "555-0100",
+      "location": "Springfield, IL",
+      "links": [
+       {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/example"
+       }
+      ]
+     }
+    },
+    "summary": "Six years in IT support and software rollouts for clinics and small offices.",
+    "roles": [
+     {
+      "id": "r1",
+      "employer": "Northside Clinics",
+      "show_as": "a regional clinic network",
+      "title": "Systems Analyst",
+      "start": "2022-04",
+      "end": "",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "Implemented the scheduling system chosen by the director; trained staff; did not manage anyone.",
+      "details": "Moved four clinics from paper to an online scheduler over eight months. Wrote SQL reports for the front desk.",
+      "achievements": [
+       {
+        "text": "Implemented online scheduling at four clinics and trained 40 staff.",
+        "skills": [
+         "sql",
+         "training"
+        ],
+        "numbers": [
+         "4",
+         "40"
+        ]
+       },
+       {
+        "text": "Cut missed appointments by 18% with text reminders.",
+        "skills": [],
+        "numbers": [
+         "18%"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "r2",
+      "employer": "Acme Services",
+      "title": "Help Desk Technician",
+      "start": "2019-06",
+      "end": "2022-03",
+      "location": "Springfield, IL",
+      "type": "full-time",
+      "scope": "First-line support for 120 users.",
+      "details": "Ticket queue, password resets, laptop setup, Active Directory accounts.",
+      "achievements": [
+       {
+        "text": "Kept a 95% first-week close rate on tickets.",
+        "skills": [
+         "ticketing"
+        ],
+        "numbers": [
+         "95%"
+        ]
+       }
+      ]
+     }
+    ],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "active directory",
+      "source": "documents",
+      "evidence": [
+       "r2"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "training",
+      "source": "documents",
+      "evidence": [
+       "r1"
+      ],
+      "notes": ""
+     },
+     {
+      "name": "excel",
+      "source": "documents",
+      "evidence": [],
+      "notes": "Daily use in every role; named in her skills list."
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [
+     {
+      "name": "CompTIA A+",
+      "issuer": "CompTIA",
+      "date": "2019",
+      "status": "earned"
+     },
+     {
+      "name": "ITIL 4 Foundation",
+      "issuer": "PeopleCert",
+      "date": "",
+      "status": "in_progress"
+     }
+    ],
+    "education": [
+     {
+      "school": "Lincoln Land Community College",
+      "credential": "AAS",
+      "field": "Computer Information Systems",
+      "start": "2017",
+      "end": "2019",
+      "notes": ""
+     }
+    ],
+    "projects": [
+     {
+      "id": "p1",
+      "name": "Clinic inventory sheet",
+      "date": "2023",
+      "description": "A shared spreadsheet that replaced paper supply counts.",
+      "skills": [
+       "excel"
+      ],
+      "link": ""
+     }
+    ],
+    "privacy": {
+     "never_name": [
+      "Northside Clinics"
+     ],
+     "never_mention": [
+      "medical leave"
+     ]
+    },
+    "wording": {
+     "avoid": [
+      {
+       "phrase": "managed a team",
+       "why": "she led and implemented; she did not manage people"
+      }
+     ]
+    },
+    "flags": [
+     {
+      "text": "An older skills list says \"agile backlogs\"; nothing else supports it, so it was left out.",
+      "sources": [
+       "skills_v2.docx"
+      ]
+     }
+    ]
+   },
+   "new": {
+    "format": "wildthing-career",
+    "version": 1,
+    "updated_at": "2026-11-02T09:00:00+00:00",
+    "person": {
+     "name": "Jane Doe",
+     "headline": "",
+     "contact": {
+      "email": "",
+      "phone": "",
+      "location": "",
+      "links": []
+     }
+    },
+    "summary": "",
+    "roles": [],
+    "skills": [
+     {
+      "name": "sql",
+      "source": "documents",
+      "evidence": [],
+      "notes": "x"
+     },
+     {
+      "name": "itil",
+      "source": "confirmed",
+      "evidence": [],
+      "notes": ""
+     }
+    ],
+    "certifications": [],
+    "education": [],
+    "projects": [],
+    "privacy": {
+     "never_name": [],
+     "never_mention": []
+    },
+    "wording": {
+     "avoid": []
+    },
+    "flags": []
+   },
+   "expect": {
+    "roles": {
+     "added": [],
+     "removed": [
+      "Systems Analyst at Northside Clinics (2022-04 to now)",
+      "Help Desk Technician at Acme Services (2019-06 to 2022-03)"
+     ]
+    },
+    "skills": {
+     "added": [],
+     "removed": [
+      "active directory",
+      "training",
+      "excel"
+     ]
+    },
+    "certifications": {
+     "added": [],
+     "removed": [
+      "CompTIA A+ (earned)",
+      "ITIL 4 Foundation (in_progress)"
+     ]
+    },
+    "education": {
+     "added": [],
+     "removed": [
+      "AAS Computer Information Systems, Lincoln Land Community College"
+     ]
+    },
+    "projects": {
+     "added": [],
+     "removed": [
+      "Clinic inventory sheet"
+     ]
+    }
+   }
+  }
+ ]
+}
