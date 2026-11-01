@@ -197,6 +197,7 @@ fun SettingsScreen(state: AppState, back: () -> Unit, help: () -> Unit) {
     val sourcesOn = remember(v) { wildthing.core.Sources.enabled(s.sourceChoices).toMutableStateList() }
     var hasResume by remember(v) { mutableStateOf(!s.sendResumeInRequests) }
     var instructions by remember(v) { mutableStateOf(store.instructions()) }
+    var showInstructions by remember { mutableStateOf(false) }       // long, so it starts folded away
     val keyInputs = remember(v) { SecretKeys.FIELDS.associate { it.first to mutableStateOf("") } }
     var confirmImport by remember { mutableStateOf<Uri?>(null) }
     var clearKeys by remember { mutableStateOf(false) }
@@ -273,9 +274,15 @@ fun SettingsScreen(state: AppState, back: () -> Unit, help: () -> Unit) {
                 Switch(hasResume, { hasResume = it })
             }
             Muted(if (hasResume) "Requests leave them out and tell the assistant to use the ones it holds." else "Every request carries your instructions and master resume, so it works in any chat.")
-            OutlinedTextField(instructions, { instructions = it }, Modifier.fillMaxWidth().padding(top = 8.dp), label = { Text("How to write your resume") }, minLines = 6)
-            Row {
+            Text("How to write your resume (${"%,d".format(instructions.length)} characters)", Modifier.padding(top = 8.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { showInstructions = !showInstructions }) { Text(if (showInstructions) "Hide" else "Show and edit") }
+                OutlinedButton(onClick = { copyText(context, instructions, "Resume instructions"); say("Instructions copied.") }) { Text("Copy") }
                 TextButton(onClick = { store.saveInstructions(""); state.changed(); say("Instructions reset to the app's default.") }) { Text("Reset to default") }
+            }
+            if (showInstructions) {
+                OutlinedTextField(instructions, { instructions = it }, Modifier.fillMaxWidth().padding(top = 4.dp), label = { Text("How to write your resume") }, minLines = 6)
+                TextButton(onClick = { showInstructions = false }) { Text("Hide") }
             }
 
             Spacer(Modifier.height(8.dp))

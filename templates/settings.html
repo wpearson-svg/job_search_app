@@ -38,8 +38,10 @@ the volume small.</p>
 <h2>4. How the AI writes for you</h2>
 <p><label><input type="checkbox" name="ai_has_resume" {% if not c.send_resume_in_requests %}checked{% endif %}>
 My AI assistant (a project or saved chat) already holds my resume and instructions, so do not repeat them in each request.</label></p>
-<p><label>Resume-writing instructions {% if not has_custom %}(the app's general default is shown; edit to make it yours){% endif %}<br>
-<textarea name="instructions" rows="14" cols="90">{{ instructions }}</textarea></label></p>
+<details><summary>Resume-writing instructions ({{ "{:,}".format(instructions|length) }} characters){% if not has_custom %}: the app's general default; open to make it yours{% endif %}</summary>
+<p><textarea id="instructions" name="instructions" rows="14" cols="90">{{ instructions }}</textarea></p>
+</details>
+<p><button type="button" class="plain" data-l="Copy the instructions" onclick="cp('instructions', this)">Copy the instructions</button></p>
 <p><label><input type="checkbox" name="reset_instructions"> Go back to the default instructions</label></p>
 <p><label>AI work folder (this computer only)<br><input type="text" name="queue_folder" size="70" value="{{ c.queue_folder or '' }}"
   placeholder="blank: the app's own folder"></label><br>
@@ -114,4 +116,12 @@ With Google linked, this list is shared with the phone.</p>
   <input type="hidden" name="back" value="{{ url_for('settings_page') }}"><input type="hidden" name="on" value="1">
   <input name="company" placeholder="Company" required> <input name="reason" placeholder="Why (optional)" maxlength="200"> <button class="plain">Avoid</button>
 </form>
+<script>
+function cp(id, btn) {
+  var box = document.getElementById(id);
+  var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = btn.dataset.l; }, 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { box.select(); document.execCommand("copy"); done(); }); }
+  else { box.select(); document.execCommand("copy"); done(); }
+}
+</script>
 {% endblock %}
